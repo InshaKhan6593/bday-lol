@@ -183,6 +183,30 @@
   object-fit: cover;
 }
 
+/* × badge on the photo's top-right edge: 28px to see, 40px to tap (without reaching the Name field). */
+.photoRemove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.photoRemove::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+
 .photoError {
   position: absolute;
   top: calc(100% + var(--space-2xs));

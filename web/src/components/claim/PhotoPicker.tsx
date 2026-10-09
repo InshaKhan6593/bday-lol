@@ -35,7 +35,7 @@ type Props = {
   onChange: (photo: Photo | null) => void;
 };
 
-/** The dashed "Add photo" circle. Shows the photo once picked; tap again to change it. */
+/** The dashed "Add photo" circle. Shows the photo once picked: tap it to change, or × to remove. */
 export function PhotoPicker({ photo, onChange }: Props) {
   const input = useRef<HTMLInputElement>(null);
   const [error, setError] = useState(false);
@@ -74,6 +74,19 @@ export function PhotoPicker({ photo, onChange }: Props) {
           <Icon name="plus" size={24} />
         )}
       </button>
+      {photo && (
+        <button
+          type="button"
+          aria-label="Remove photo"
+          onClick={() => {
+            setError(false);
+            onChange(null);
+          }}
+          className={cx(styles.photoRemove, "lift")}
+        >
+          <Icon name="close" size={16} />
+        </button>
+      )}
       <input
         ref={input}
         type="file"
