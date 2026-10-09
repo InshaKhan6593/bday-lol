@@ -1,0 +1,62 @@
+/* Dev-only preview of the emails. */
+
+.main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--space-3xl) var(--gutter) var(--space-5xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4xl);
+}
+
+.h1 {
+  font-size: var(--text-h1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-heading);
+}
+
+.sub {
+  margin-top: calc(-1 * var(--space-2xl));
+  font-size: var(--text-lead);
+  color: var(--color-text-secondary);
+}
+
+.email {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.label {
+  font-size: var(--text-title);
+  font-weight: var(--weight-bold);
+}
+
+.subject {
+  font-size: var(--text-body);
+}
+
+.frames {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xl);
+  align-items: flex-start;
+}
+
+.wide,
+.phone {
+  height: 1080px;
+  border: var(--border);
+  border-radius: var(--radius-card);
+  background: var(--color-paper);
+}
+
+.wide {
+  flex: 1 1 620px;
+  max-width: 660px;
+}
+
+.phone {
+  width: 390px;
+  flex: none;
+}
