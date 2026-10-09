@@ -2,7 +2,7 @@ export { Avatar, initials } from "./Avatar";
 export { Badge } from "./Badge";
 export { Button } from "./Button";
 export { Chip } from "./Chip";
-export { Field, Input, Textarea } from "./Field";
+export { Field, Hint, Input, Textarea } from "./Field";
 export { Icon, type IconName, type IconSize } from "./Icon";
 export { IconButton } from "./IconButton";
 export { Kicker } from "./Kicker";

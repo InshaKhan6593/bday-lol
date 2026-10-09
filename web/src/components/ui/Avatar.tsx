@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { cx } from "@/lib/cx";
 import styles from "./Avatar.module.css";
 
-export type AvatarSize = "xs" | "sm" | "md" | "lg";
+export type AvatarSize = "xs" | "sm" | "md" | "card" | "lg";
 
 type Props = {
   name?: string;

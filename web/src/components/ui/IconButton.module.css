@@ -19,7 +19,7 @@
   border-radius: var(--radius-cell) !important;
 }
 
-/* 40 close · 44 calendar months / mobile header · 48 date nav / row share */
+/* 40 close · 44 calendar months / mobile header · 48 date nav / row share · 52 remove gift link */
 .sm {
   width: 40px;
   height: 40px;
@@ -35,5 +35,11 @@
 .lg {
   width: var(--control-md);
   height: var(--control-md);
+  border-radius: var(--radius-control);
+}
+
+.xl {
+  width: var(--control-lg);
+  height: var(--control-lg);
   border-radius: var(--radius-control);
 }

@@ -22,8 +22,25 @@ export function Field({ label, aside, hint, hintTone = "muted", className, child
         {aside && <span className={styles.aside}> {aside}</span>}
       </span>
       {children}
-      {hint && <span className={cx(styles.hint, styles[`hint-${hintTone}`])}>{hint}</span>}
+      {hint && <Hint tone={hintTone}>{hint}</Hint>}
     </label>
+  );
+}
+
+/** Small line under a control: muted help, a bold confirmation, or a red error. */
+export function Hint({
+  tone = "muted",
+  className,
+  children,
+}: {
+  tone?: FieldProps["hintTone"];
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <span role={tone === "error" ? "alert" : undefined} className={cx(styles.hint, styles[`hint-${tone}`], className)}>
+      {children}
+    </span>
   );
 }
 

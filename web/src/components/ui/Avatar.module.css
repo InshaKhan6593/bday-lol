@@ -20,7 +20,7 @@
   background: var(--ground);
 }
 
-/* 44 others bar · 52 mobile list · 60 desktop list · 120 hero */
+/* 44 others bar · 52 mobile list · 60 desktop list · 64 claim preview · 120 hero */
 .xs {
   width: 44px;
   height: 44px;
@@ -37,6 +37,12 @@
   width: 60px;
   height: 60px;
   font-size: var(--text-action);
+}
+
+.card {
+  width: 64px;
+  height: 64px;
+  font-size: var(--text-title);
 }
 
 .lg {

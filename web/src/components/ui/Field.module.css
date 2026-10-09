@@ -13,6 +13,7 @@
 }
 
 .hint {
+  display: block;
   font-size: var(--text-caption);
   line-height: var(--leading-normal);
 }
@@ -64,7 +65,7 @@
 
 /* Big bold value, e.g. the bid amount. */
 .emphasis {
-  font-size: 28px;
+  font-size: var(--text-amount);
   font-weight: var(--weight-bold);
 }
 

@@ -50,11 +50,12 @@ src/
   components/home/     homepage sections
   components/date/     date page ("Find your birthday"): date picker, ranked list, gift menu, About
   components/how/      How it works page styles
+  components/claim/    Claim form: photo picker, gift links, color swatches
   components/boost/    the Boost box (homepage + date page)
   components/share/    share and copy-link buttons
   config/              themes (12), board type settings (min bid, min boost, time zone…)
   db/                  schema.ts (board → entries → payments model), client
-  lib/                 pure rules: birthday.ts (ET, leap years, board years), date-page, facts, money, boost math, gifts, routes, clock, ids
+  lib/                 pure rules: birthday.ts (ET, leap years, board years), date-page, claim, facts, money, boost math, gifts, routes, clock, ids
   test/                database test helpers (rolled-back transactions)
   server/              server logic: leaderboard queries, homepage + date page data, famous people, reminders; actions/ = form actions
   styles/tokens.css    design tokens: color, type roles, shape, shadows, spacing, motion

@@ -2,7 +2,7 @@
 
 **Read this first.** This folder holds the full brief for a client build (the `.md` files) and the app itself (`web/`).
 The foundation is built and runs locally: database schema, date rules with tests, the design system and seed data.
-The homepage, the date page ("Find your birthday") and How it works are built. Next up is Claim and Success.
+The homepage, the date page ("Find your birthday"), How it works and the Claim form are built. Next up is Success.
 
 ## One-paragraph summary
 
@@ -76,7 +76,8 @@ Mailpit on :8030). Production plan: Vercel Pro + Neon Postgres + Vercel Blob + S
 | 5a. Homepage from live data (desktop + mobile, #1 card, nobody-yet state, Boost box, countdown, Coming up, reminder signup) | ✅ Done (`web/src/app/page.tsx`, `web/src/components/home/`) |
 | 5b. Date page from live data (`/october-7`: date picker with top bids, ranked list, held lines, search, claim-this-rank, Boost box, gift menu, About facts; `/oct-7` redirects) | ✅ Done (`web/src/app/[slug]/page.tsx`, `web/src/components/date/`) |
 | 5c. How it works (`/how-it-works`: 3 steps, FAQ accordion with FAQPage structured data, "Find your date" bar) | ✅ Done (`web/src/app/how-it-works/page.tsx`, copy in `web/src/lib/how-it-works.ts`) |
-| 5c. Claim, success (desktop + mobile) | ⏭️ Next |
+| 5c. Claim (`/claim?date=october-7&rank=2`: date + bid with the leader box, B23 low-bid error, photo cropped to 512px in the browser, gift-link detection by real host, 12 color swatches that recolor the page, preview card; "Pay & claim" waits for step 6) | ✅ Done (`web/src/app/claim/page.tsx`, `web/src/components/claim/`, rules in `web/src/lib/claim.ts`) |
+| 5c. Success (desktop + mobile) | ⏭️ Next |
 | 6. Money path: claim → Stripe Checkout → webhook → live on board → homepage | ⬜ |
 | 7. Boosts, #1 log and outbid alerts | ⬜ |
 | 8. The 8 emails (checked in Mailpit) | ⬜ |
@@ -84,7 +85,7 @@ Mailpit on :8030). Production plan: Vercel Pro + Neon Postgres + Vercel Blob + S
 | 10. Admin | ⬜ |
 | 11. Deploy to Vercel + Neon, test live | ⬜ |
 
-**Tests:** every feature ships with tests (`pnpm test`, 85 so far): pure rules in `web/src/lib/*.test.ts` and
+**Tests:** every feature ships with tests (`pnpm test`, 104 so far): pure rules in `web/src/lib/*.test.ts` and
 database tests in `*.db.test.ts`, which run against the local Docker Postgres inside a rolled-back transaction.
 
 **Design decisions** (details in [04-design-system.md](04-design-system.md#implementation-decisions)): keep the client's look exactly

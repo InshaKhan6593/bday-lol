@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Button } from "@/components/ui";
+import { Button, IconButton } from "@/components/ui";
 import { BIRTHDAY_BOARD_TYPE } from "@/config/board-types";
 import { zonedDate } from "@/lib/birthday";
 import { now } from "@/lib/clock";
+import { cx } from "@/lib/cx";
 import { routes } from "@/lib/routes";
 import { MobileMenu } from "./MobileMenu";
 import styles from "./SiteHeader.module.css";
@@ -12,6 +13,11 @@ type NavKey = "find" | "how" | "claim";
 type Props = {
   /** Each page leaves out the link to itself (Find page: no "find"; Claim and Success: no "claim"). */
   omit?: NavKey[];
+  /**
+   * Mobile layout. "menu" = logo + "Claim yours" + menu button. "back" = a round
+   * back button and a centered logo (Claim and Success boards).
+   */
+  mobile?: "menu" | "back";
 };
 
 /**
@@ -19,7 +25,7 @@ type Props = {
  * Mobile: logo + "Claim yours" pill + menu button. The logo always goes to the
  * top of the homepage.
  */
-export function SiteHeader({ omit = [] }: Props) {
+export function SiteHeader({ omit = [], mobile = "menu" }: Props) {
   const today = zonedDate(now(), BIRTHDAY_BOARD_TYPE.settings.timezone);
   const findHref = routes.date(today);
   const links = [
@@ -29,7 +35,10 @@ export function SiteHeader({ omit = [] }: Props) {
   const showClaim = !omit.includes("claim");
 
   return (
-    <header className={styles.header}>
+    <header className={cx(styles.header, mobile === "back" && styles.backMode)}>
+      {mobile === "back" && (
+        <IconButton href={routes.home} icon="chevronLeft" label="Back to today" size="md" iconSize={20} className={styles.back} />
+      )}
       <Link href={routes.home} className={styles.logo}>
         bday.lol
       </Link>
@@ -46,6 +55,8 @@ export function SiteHeader({ omit = [] }: Props) {
           </Button>
         )}
       </nav>
+
+      {mobile === "back" && <span aria-hidden="true" className={styles.backSpacer} />}
 
       <div className={styles.mobileNav}>
         {showClaim && (

@@ -54,6 +54,7 @@
   --text-title-sm: 22px;  /* panel and bar titles */
   --text-title: 24px;     /* dialog and card titles */
   --text-title-lg: 26px;  /* section card titles */
+  --text-amount: 28px;    /* bid input, mobile leader total */
   --text-stat: 30px;      /* prices, countdown */
   --text-h2: 32px;
   --text-h2-lg: 36px;
@@ -66,11 +67,13 @@
   --leading-tight: 0.95;
   --leading-snug: 1.05;
   --leading-normal: 1.35;
+  --leading-fine: 1.4;     /* fine print, footnotes */
   --leading-relaxed: 1.45; /* step card bodies */
   --leading-loose: 1.5;    /* FAQ answers */
 
   --tracking-display: -0.045em;
   --tracking-heading: -0.04em;
+  --tracking-heading-sm: -0.03em;
   --tracking-title: -0.02em;
   --tracking-snug: -0.01em;
   --tracking-caps-sm: 0.08em;

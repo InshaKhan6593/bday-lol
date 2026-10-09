@@ -8,7 +8,7 @@ type StyleProps = {
   icon: IconName;
   /** Required: icon-only buttons need a spoken label. */
   label: string;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   /** "muted" = borderless grey square (search clear button). */
   tone?: "paper" | "muted";
   /** Glyph size. Defaults to 20 for lg buttons and 16 otherwise. */
@@ -24,7 +24,7 @@ type AsLink = StyleProps & Omit<ComponentProps<typeof Link>, "className" | "chil
 export function IconButton(props: AsButton | AsLink) {
   const { icon, label, size = "lg", tone = "paper", iconSize, className, ...rest } = props;
   const cls = cx(styles.iconButton, styles[size], styles[tone], tone === "paper" && "lift", className);
-  const glyph = <Icon name={icon} size={iconSize ?? (size === "lg" ? 20 : 16)} />;
+  const glyph = <Icon name={icon} size={iconSize ?? (size === "lg" || size === "xl" ? 20 : 16)} />;
 
   if ("href" in rest && rest.href !== undefined) {
     return (

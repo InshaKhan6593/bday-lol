@@ -43,6 +43,12 @@
   font-size: var(--text-note);
 }
 
+/* "back" mobile layout: only shown on phones. */
+.back,
+.backSpacer {
+  display: none;
+}
+
 @media (max-width: 640px) {
   .header {
     flex-wrap: nowrap;
@@ -60,5 +66,32 @@
 
   .mobileNav {
     display: flex;
+  }
+}
+
+/* Claim and Success on phones: round back button, centered logo (Claim.dc.html). */
+@media (max-width: 640px) {
+  .backMode {
+    display: grid;
+    grid-template-columns: var(--control-sm) 1fr var(--control-sm);
+    padding: var(--space-xl) 18px 0;
+  }
+
+  .backMode .back {
+    display: flex;
+    border-radius: var(--radius-pill);
+  }
+
+  .backMode .backSpacer {
+    display: block;
+  }
+
+  .backMode .logo {
+    justify-self: center;
+    font-size: var(--text-title-sm);
+  }
+
+  .backMode .mobileNav {
+    display: none;
   }
 }
