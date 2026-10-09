@@ -5,7 +5,7 @@ import { About } from "@/components/date/About";
 import { DateBoard } from "@/components/date/DateBoard";
 import { DateNav } from "@/components/date/DateNav";
 import styles from "@/components/date/date.module.css";
-import { Countdown } from "@/components/home/Countdown";
+import { Countdown } from "@/components/site/Countdown";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { ThemeScope } from "@/components/ui";
 import { db } from "@/db";

@@ -4,7 +4,7 @@ import { famousHidden, famousPeople } from "@/db/schema";
 import { toKey, type MonthDay } from "@/lib/birthday";
 
 /** How many famous people the "About" section lists (06-seo.md). */
-export const FAMOUS_LIMIT = 10;
+const FAMOUS_LIMIT = 10;
 
 export type FamousPerson = {
   name: string;

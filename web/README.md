@@ -46,7 +46,7 @@ DEV_NOW=2028-02-27T12:00:00-05:00 pnpm db:reset   # Feb 29, 2028 is "coming up"
 src/
   app/                 routes (pages, API, cron)
   components/ui/       design-language primitives: Button, Chip, Surface, Avatar, Badge, Kicker, Field, Select, Menu, Icon…
-  components/site/     header shared by every page
+  components/site/     shared by every page: header, menu, countdown
   components/home/     homepage sections
   components/date/     date page ("Find your birthday"): date picker, ranked list, gift menu, About
   components/boost/    the Boost box (homepage + date page)

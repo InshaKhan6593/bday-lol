@@ -2,7 +2,7 @@ import { Button, Kicker, Surface } from "@/components/ui";
 import type { MonthDay } from "@/lib/birthday";
 import { formatUsd } from "@/lib/money";
 import { routes } from "@/lib/routes";
-import { Countdown } from "./Countdown";
+import { Countdown } from "@/components/site/Countdown";
 import styles from "./home.module.css";
 
 type Props = {

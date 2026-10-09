@@ -139,10 +139,6 @@ export function zonedDate(instant: Date, timeZone: string): CalendarDate {
   return { year: z.getFullYear(), month: z.getMonth() + 1, day: z.getDate() };
 }
 
-export function isTodayIn(md: MonthDay, instant: Date, timeZone: string): boolean {
-  return compareMonthDay(md, zonedDate(instant, timeZone)) === 0;
-}
-
 /**
  * Year of the board that is open right now for this month-day.
  * Today or later this year → this year. Already passed → the next year it occurs
