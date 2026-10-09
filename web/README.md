@@ -48,13 +48,14 @@ src/
   components/ui/       design-language primitives: Button, Chip, Surface, Avatar, Badge, Kicker, Field, Select, Menu, Icon…
   components/site/     header shared by every page
   components/home/     homepage sections
+  components/date/     date page ("Find your birthday"): date picker, ranked list, gift menu, About
   components/boost/    the Boost box (homepage + date page)
   components/share/    share and copy-link buttons
   config/              themes (12), board type settings (min bid, min boost, time zone…)
   db/                  schema.ts (board → entries → payments model), client
-  lib/                 pure rules: birthday.ts (ET, leap years, board years), money, boost math, gifts, routes, clock, ids
+  lib/                 pure rules: birthday.ts (ET, leap years, board years), date-page, facts, money, boost math, gifts, routes, clock, ids
   test/                database test helpers (rolled-back transactions)
-  server/              server logic: leaderboard queries, homepage data, reminders; actions/ = form actions
+  server/              server logic: leaderboard queries, homepage + date page data, famous people, reminders; actions/ = form actions
   styles/tokens.css    design tokens: color, type roles, shape, shadows, spacing, motion
 scripts/               seed, reset
 drizzle/               generated SQL migrations

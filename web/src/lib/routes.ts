@@ -1,15 +1,20 @@
 import type { Route } from "next";
-import { toSlug, type MonthDay } from "./birthday";
+import { monthSlug, toSlug, type MonthDay } from "./birthday";
 
 /**
- * Every internal URL in one place. The date, claim and how-it-works pages are
+ * Every internal URL in one place. The claim, how-it-works and month pages are
  * built in later steps, so their paths are typed here instead of inferred.
  */
 export const routes = {
   home: "/" as Route,
   howItWorks: "/how-it-works" as Route,
-  claim: (md?: MonthDay) => (md ? `/claim?date=${toSlug(md)}` : "/claim") as Route,
+  /** Claim page, optionally pre-filled with a date and the rank to take ("Claim #2 for $226"). */
+  claim: (md?: MonthDay, rank?: number) => {
+    if (!md) return "/claim" as Route;
+    return `/claim?date=${toSlug(md)}${rank && rank > 1 ? `&rank=${rank}` : ""}` as Route;
+  },
   date: (md: MonthDay) => `/${toSlug(md)}` as Route,
+  month: (month: number) => `/${monthSlug(month)}` as Route,
 };
 
 /** Absolute URL for sharing, e.g. https://bday.lol/october-7. */

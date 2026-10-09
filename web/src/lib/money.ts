@@ -1,6 +1,6 @@
 import type { BoardTypeSettings } from "@/config/board-types";
 
-type MoneyRules = Pick<BoardTypeSettings, "minOpenBidCents" | "minStepCents" | "minBoostCents">;
+type MoneyRules = Pick<BoardTypeSettings, "minOpenBidCents" | "minStepCents">;
 
 /** "$12,500". Whole dollars only, like the mockup. */
 export function formatUsd(cents: number): string {
@@ -8,7 +8,7 @@ export function formatUsd(cents: number): string {
 }
 
 /** Smallest bid that passes someone with this total. */
-export function minToPass(totalCents: number, rules: MoneyRules): number {
+export function minToPass(totalCents: number, rules: Pick<MoneyRules, "minStepCents">): number {
   return totalCents + rules.minStepCents;
 }
 

@@ -1,0 +1,815 @@
+/* Date page ("Find your birthday"). Values map 1:1 to Day.dc.html / DayMobile.dc.html through tokens. */
+
+/* ---------- Page ---------- */
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--page-narrow);
+  margin: 0 auto;
+  padding: var(--space-sm) var(--gutter) var(--space-5xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.top {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---------- Date nav ---------- */
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.pickDate {
+  gap: 10px;
+  font-size: var(--text-body-lg);
+}
+
+.backToday {
+  min-height: var(--control-md);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-lg);
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+}
+
+/* ---------- Date picker ---------- */
+
+.calendar {
+  z-index: 40;
+  width: min(var(--dialog), calc(100vw - 2 * var(--gutter)));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--color-paper);
+  border: var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-section);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+.calendar:focus {
+  outline: none;
+}
+
+.calHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.calMonth {
+  font-size: var(--text-action);
+  font-weight: var(--weight-bold);
+}
+
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-xs);
+}
+
+.cell {
+  min-height: var(--control-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: var(--space-3xs);
+  border: var(--border-thin);
+  border-radius: var(--radius-cell);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+/* Today = today's #1 ground, whatever date is being viewed. */
+.cellToday {
+  background: var(--today-ground);
+}
+
+.cellSelected,
+.cellSelected:hover {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+.cellNum {
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+}
+
+.cellSub {
+  font-size: var(--text-micro);
+  font-weight: var(--weight-medium);
+  line-height: 1.1;
+}
+
+.calNote {
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+}
+
+/* ---------- Heading ---------- */
+
+.h1 {
+  margin-top: var(--space-2xs);
+  font-size: var(--text-h1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-heading);
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.status {
+  font-size: var(--text-lead);
+  font-weight: var(--weight-medium);
+}
+
+.countdown {
+  font-variant-numeric: tabular-nums;
+}
+
+.giftNote {
+  font-size: var(--text-body);
+  color: var(--color-text-secondary);
+}
+
+/* ---------- Claim bar ---------- */
+
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding: var(--space-xl) 22px;
+}
+
+.ctaText {
+  flex: 1 1 300px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.ctaTitle {
+  font-size: var(--text-title-sm);
+  font-weight: var(--weight-bold);
+}
+
+.ctaSub {
+  font-size: var(--text-body);
+  color: var(--color-on-ink-secondary);
+}
+
+.goTop {
+  align-self: flex-start;
+  margin-top: var(--space-3xs);
+  padding: var(--space-2xs) 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-paper);
+  font-size: var(--text-label);
+  font-weight: var(--weight-link);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ctaButton {
+  flex: 0 1 280px;
+  padding-inline: 26px;
+}
+
+/* ---------- Empty, search, no match ---------- */
+
+.empty {
+  padding: var(--space-3xl);
+  text-align: center;
+  font-size: var(--text-lead);
+}
+
+.searchWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.search {
+  min-height: var(--control-xl);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 var(--space-sm) 0 var(--space-lg);
+  background: var(--color-paper);
+  border: var(--border);
+  border-radius: var(--radius-button);
+}
+
+.search:focus-within {
+  outline: var(--stroke) solid var(--color-ink);
+  outline-offset: 3px;
+}
+
+.search > svg {
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--color-ink);
+  font-size: var(--text-body-lg);
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.count {
+  font-size: var(--text-note);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.noMatch {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-2xl);
+}
+
+.noMatchTitle {
+  font-size: var(--text-title);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-snug);
+  overflow-wrap: anywhere;
+}
+
+.noMatchText {
+  font-size: var(--text-body);
+  color: var(--color-text-secondary);
+}
+
+.noMatchActions {
+  width: 100%;
+}
+
+.claimForThem {
+  padding: var(--space-xs) 0;
+  font-size: var(--text-label);
+  font-weight: var(--weight-link);
+}
+
+/* ---------- Ranked list ---------- */
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+  padding: 18px var(--space-xl);
+  background: var(--color-paper);
+  border: var(--border);
+  border-radius: var(--radius-card);
+}
+
+/* Only #1 gets a shadow. */
+.rowTop {
+  box-shadow: var(--shadow-section);
+}
+
+/*
+ * The whole card is one "Claim this rank" button laid underneath everything.
+ * Text lets clicks fall through to it; the Boost pill and the gift/share
+ * controls sit on top and keep their own clicks.
+ */
+.claim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.avatarWrap,
+.text {
+  pointer-events: none;
+}
+
+.boostWrap,
+.actions {
+  position: relative;
+  z-index: 1;
+}
+
+.avatarWrap {
+  display: contents;
+}
+
+.rank {
+  width: 40px;
+  flex-shrink: 0;
+  font-size: var(--text-title);
+  font-weight: var(--weight-bold);
+}
+
+.text {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.nameLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.name {
+  font-size: var(--text-title-sm);
+  font-weight: var(--weight-bold);
+  overflow-wrap: anywhere;
+}
+
+.bio {
+  font-size: var(--text-body);
+  color: var(--color-text-secondary);
+}
+
+.held {
+  font-size: var(--text-note);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-tertiary);
+}
+
+.boostWrap {
+  flex-shrink: 0;
+  display: flex;
+}
+
+.row .boostPill {
+  min-height: 0;
+  gap: var(--space-xs);
+  padding: var(--space-xs) 14px var(--space-xs) var(--space-md);
+  font-size: var(--text-action);
+}
+
+.actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.giftWrap {
+  display: flex;
+}
+
+.giftChevron {
+  flex-shrink: 0;
+  transition: transform var(--duration-quick) var(--ease);
+}
+
+.giftButton[data-state="open"] .giftChevron {
+  transform: rotate(180deg);
+}
+
+.giftsOpen {
+  min-height: var(--control-md);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-lg);
+  border: var(--border-dashed-thin);
+  border-radius: var(--radius-control);
+  font-size: var(--text-label);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* ---------- Gift menu (portalled) ---------- */
+
+.giftMenu {
+  z-index: 60;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm);
+  background: var(--color-paper);
+  border: var(--border);
+  border-radius: var(--radius-button);
+  box-shadow: var(--shadow-menu);
+  font-family: var(--font-sans);
+}
+
+.giftOption {
+  min-height: var(--control-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 14px;
+  background: var(--accent);
+  border: var(--border);
+  border-radius: var(--radius-small);
+  color: var(--color-ink);
+  font-size: var(--text-label);
+  font-weight: var(--weight-bold);
+  text-decoration: none;
+  white-space: nowrap;
+  outline: none;
+}
+
+.giftOption:hover {
+  color: var(--color-ink);
+}
+
+.giftOption[data-highlighted]:focus-visible {
+  outline: var(--stroke) solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+/* ---------- Tooltips ("Claim this rank for $241", "Boost Jess") ---------- */
+
+.tip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 12px);
+  z-index: 5;
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--accent);
+  border: var(--border);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-lift);
+  color: var(--color-ink);
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-normal);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 4px);
+  transition:
+    opacity var(--duration-quick) var(--ease),
+    transform var(--duration-quick) var(--ease);
+}
+
+/* Arrow: an ink triangle with a smaller accent one inside. */
+.tip::before,
+.tip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  border-style: solid;
+  border-color: transparent;
+}
+
+.tip::before {
+  margin-left: -11px;
+  border-width: 11px;
+  border-top-color: var(--color-ink);
+}
+
+.tip::after {
+  margin-left: -7px;
+  border-width: 7px;
+  border-top-color: var(--accent);
+}
+
+.row:has(> .claim:focus-visible) > .tip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (hover: hover) {
+  .row:hover > .tip,
+  .boostWrap:hover > .tip {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  /* Over the Boost pill or the gift/share controls, only their own tip shows. */
+  .row:has(.boostWrap:hover, .actions:hover) > .tip {
+    opacity: 0;
+    transform: translate(-50%, 4px);
+  }
+
+  .giftButton:hover .giftChevron {
+    transform: rotate(180deg);
+  }
+}
+
+/* ---------- About [date] birthdays ---------- */
+
+.about {
+  margin-top: var(--space-2xl);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.aboutTitle {
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-title);
+  line-height: 1.1;
+}
+
+.factGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  padding: var(--space-lg) 18px;
+}
+
+.factKey {
+  font-size: var(--text-fine);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.factValue {
+  font-size: var(--text-title-sm);
+  font-weight: var(--weight-bold);
+  overflow-wrap: anywhere;
+}
+
+.factSub {
+  font-size: var(--text-caption);
+  color: var(--color-text-tertiary);
+}
+
+.famous {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.famousTitle {
+  font-size: var(--text-action);
+  font-weight: var(--weight-bold);
+}
+
+.famousList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.famousRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-top: var(--stroke-thin) solid var(--color-divider);
+}
+
+.famousName {
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+}
+
+.famousWhat {
+  font-size: var(--text-note);
+  color: var(--color-text-tertiary);
+}
+
+.famousAge {
+  flex-shrink: 0;
+  font-size: var(--text-note);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-tertiary);
+}
+
+.dayLinks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  font-size: var(--text-label);
+  font-weight: var(--weight-bold);
+}
+
+.dayLinks a {
+  padding: var(--space-sm) 0;
+}
+
+/* ---------- Mobile board (390px) ---------- */
+
+@media (max-width: 640px) {
+  .h1 {
+    font-size: var(--text-h2-lg);
+  }
+
+  .searchInput {
+    font-size: var(--text-body);
+  }
+
+  .noMatch {
+    padding: 18px;
+  }
+
+  .noMatchTitle {
+    font-size: var(--text-action);
+  }
+
+  .list {
+    gap: var(--space-md);
+  }
+
+  /*
+   * Stacked card: avatar (with a rank bubble), name and bio, Boost pill on
+   * top; then the badge, the held line, and a full-width gift row.
+   */
+  .row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "avatar name boost"
+      "avatar bio boost"
+      "badge badge badge"
+      "held held held"
+      "actions actions actions";
+    column-gap: var(--space-md);
+    row-gap: 0;
+    align-items: center;
+    padding: 14px;
+    border-radius: var(--radius-tile);
+  }
+
+  .text,
+  .nameLine {
+    display: contents;
+  }
+
+  .avatarWrap {
+    grid-area: avatar;
+    display: block;
+    position: relative;
+  }
+
+  .row .avatar {
+    width: 52px;
+    height: 52px;
+    font-size: var(--text-body-lg);
+  }
+
+  .rank {
+    position: absolute;
+    left: -6px;
+    top: -6px;
+    width: auto;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 var(--space-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-pill);
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-size: var(--text-fine);
+  }
+
+  .hash {
+    display: none;
+  }
+
+  .name {
+    grid-area: name;
+    align-self: end;
+    font-size: var(--text-body-lg);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* No bio: the name centres next to the avatar. */
+  .nameOnly {
+    grid-row: 1 / 3;
+    align-self: center;
+  }
+
+  .bio {
+    grid-area: bio;
+    align-self: start;
+    margin-top: var(--space-3xs);
+    font-size: var(--text-caption);
+    line-height: 1.3;
+    color: var(--color-text-tertiary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .badge {
+    grid-area: badge;
+    justify-self: start;
+    margin-top: var(--space-md);
+    font-size: var(--text-tiny);
+  }
+
+  .held {
+    grid-area: held;
+    margin-top: var(--space-md);
+    font-size: var(--text-fine);
+  }
+
+  .boostWrap {
+    grid-area: boost;
+  }
+
+  .row .boostPill {
+    padding: var(--space-2xs) 10px var(--space-2xs) 9px;
+    font-size: var(--text-body);
+  }
+
+  .actions {
+    grid-area: actions;
+    margin-top: var(--space-md);
+  }
+
+  .giftWrap {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .row .giftButton {
+    width: 100%;
+    min-height: var(--control-sm);
+    border-radius: var(--radius-small);
+    font-size: var(--text-label);
+  }
+
+  .giftsOpen {
+    flex: 1;
+    min-height: var(--control-sm);
+    justify-content: center;
+    border-radius: var(--radius-small);
+    font-size: var(--text-note);
+  }
+
+  .row .share {
+    width: var(--control-sm);
+    height: var(--control-sm);
+    border-radius: var(--radius-small);
+  }
+
+  .aboutTitle {
+    font-size: var(--text-title-lg);
+  }
+
+  .factGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

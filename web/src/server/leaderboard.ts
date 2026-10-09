@@ -1,7 +1,7 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, gt, lte, max } from "drizzle-orm";
 import type { BoardTypeSettings } from "@/config/board-types";
 import type { Executor } from "@/db";
-import { boards, entries } from "@/db/schema";
+import { boards, entries, leaderLog } from "@/db/schema";
 import { currentBoardYear, toKey, type MonthDay } from "@/lib/birthday";
 import { getBoardType } from "./boards";
 
@@ -65,4 +65,36 @@ export async function getCurrentBoard(
     .orderBy(desc(entries.totalCents), asc(entries.totalReachedAt));
 
   return { md, year, boardId: board.id, entries: rows.map((row, i) => ({ ...row, rank: i + 1 })) };
+}
+
+/**
+ * Top total of every board that is open right now, keyed by month-day ("10-07").
+ * A board is open from the moment the previous year's board closed until its
+ * own date ends, so this always reads each date's current board (never last
+ * year's). Dates nobody has claimed are missing. Powers the date picker.
+ */
+export async function getCurrentTopTotals(
+  db: Executor,
+  typeId: number,
+  instant: Date,
+): Promise<Record<string, number>> {
+  const rows = await db
+    .select({ key: boards.key, top: max(entries.totalCents) })
+    .from(boards)
+    .innerJoin(entries, and(eq(entries.boardId, boards.id), eq(entries.status, "live")))
+    .where(and(eq(boards.boardTypeId, typeId), lte(boards.opensAt, instant), gt(boards.closesAt, instant)))
+    .groupBy(boards.key);
+  return Object.fromEntries(rows.flatMap((r) => (r.top === null ? [] : [[r.key, r.top]])));
+}
+
+/** Every #1 change on a board, oldest first (for the "held the homepage" lines). */
+export async function getLeaderLog(
+  db: Executor,
+  boardId: string,
+): Promise<Array<{ entryId: string; startedAt: Date; endedAt: Date | null }>> {
+  return db
+    .select({ entryId: leaderLog.entryId, startedAt: leaderLog.startedAt, endedAt: leaderLog.endedAt })
+    .from(leaderLog)
+    .where(eq(leaderLog.boardId, boardId))
+    .orderBy(asc(leaderLog.startedAt));
 }

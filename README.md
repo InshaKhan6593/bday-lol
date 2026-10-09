@@ -2,7 +2,7 @@
 
 **Read this first.** This folder holds the full brief for a client build (the `.md` files) and the app itself (`web/`).
 The foundation is built and runs locally: database schema, date rules with tests, the design system and seed data.
-The homepage is built from live data. Next up is the date page ("Find your birthday").
+The homepage and the date page ("Find your birthday") are built from live data. Next up is How it works, Claim and Success.
 
 ## One-paragraph summary
 
@@ -74,7 +74,8 @@ Mailpit on :8030). Production plan: Vercel Pro + Neon Postgres + Vercel Blob + S
 | Design system: tokens + UI components, dev-only style guide at `/styleguide` | ✅ Done |
 | 4. Seed data: the mockup's demo people on today's real date | ✅ Done (`pnpm db:seed`) |
 | 5a. Homepage from live data (desktop + mobile, #1 card, nobody-yet state, Boost box, countdown, Coming up, reminder signup) | ✅ Done (`web/src/app/page.tsx`, `web/src/components/home/`) |
-| 5b. Date page, how it works, claim, success (desktop + mobile) | ⏭️ Next |
+| 5b. Date page from live data (`/october-7`: date picker with top bids, ranked list, held lines, search, claim-this-rank, Boost box, gift menu, About facts; `/oct-7` redirects) | ✅ Done (`web/src/app/[slug]/page.tsx`, `web/src/components/date/`) |
+| 5c. How it works, claim, success (desktop + mobile) | ⏭️ Next |
 | 6. Money path: claim → Stripe Checkout → webhook → live on board → homepage | ⬜ |
 | 7. Boosts, #1 log and outbid alerts | ⬜ |
 | 8. The 8 emails (checked in Mailpit) | ⬜ |
@@ -82,7 +83,7 @@ Mailpit on :8030). Production plan: Vercel Pro + Neon Postgres + Vercel Blob + S
 | 10. Admin | ⬜ |
 | 11. Deploy to Vercel + Neon, test live | ⬜ |
 
-**Tests:** every feature ships with tests (`pnpm test`, 46 so far): pure rules in `web/src/lib/*.test.ts` and
+**Tests:** every feature ships with tests (`pnpm test`, 79 so far): pure rules in `web/src/lib/*.test.ts` and
 database tests in `*.db.test.ts`, which run against the local Docker Postgres inside a rolled-back transaction.
 
 **Design decisions** (details in [04-design-system.md](04-design-system.md#implementation-decisions)): keep the client's look exactly

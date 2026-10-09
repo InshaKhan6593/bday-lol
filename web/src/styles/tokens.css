@@ -36,9 +36,12 @@
   --weight-regular: 400;
   --weight-medium: 600;
   --weight-bold: 800;
+  /* Only for the mockup's small underlined text links ("Or go for #1", "Or claim it for them"). */
+  --weight-link: 700;
 
   /* Type roles */
   --text-micro: 11px;     /* calendar cell sub-label */
+  --text-tiny: 12px;      /* badges on the mobile list */
   --text-fine: 13px;      /* fine print */
   --text-caption: 14px;   /* field labels, kickers on bars, footnotes */
   --text-note: 15px;      /* secondary info */
@@ -78,6 +81,7 @@
   --border: var(--stroke) solid var(--color-ink);
   --border-thin: var(--stroke-thin) solid var(--color-ink);
   --border-dashed: var(--stroke) dashed var(--color-ink);
+  --border-dashed-thin: var(--stroke-thin) dashed var(--color-ink);
 
   --radius-pill: 999px;
   --radius-hero: 28px;    /* homepage #1 card, claim form */

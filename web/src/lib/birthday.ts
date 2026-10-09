@@ -101,9 +101,27 @@ export function parseSlug(slug: string): ParsedSlug | null {
   return isValidMonthDay(md) ? { kind: "date", md } : null;
 }
 
+/**
+ * Old short slug from the mockup's share links: "oct-7". These 301-redirect to
+ * the real URL (decided, 07 A1).
+ */
+export function parseShortSlug(slug: string): MonthDay | null {
+  const match = /^([a-z]{3})-([1-9]\d?)$/.exec(slug);
+  if (!match) return null;
+  const monthIndex = MONTHS_SHORT.findIndex((m) => m.toLowerCase() === match[1]);
+  if (monthIndex === -1) return null;
+  const md = { month: monthIndex + 1, day: Number(match[2]) };
+  return isValidMonthDay(md) ? md : null;
+}
+
 /** "October 7" */
 export function formatLong({ month, day }: MonthDay): string {
   return `${MONTHS[month - 1]} ${day}`;
+}
+
+/** "October 7" with a no-break space, so headings never split the month from the day. */
+export function formatLongNb(md: MonthDay): string {
+  return formatLong(md).replace(" ", " ");
 }
 
 /** "Oct 7" */

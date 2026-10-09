@@ -25,7 +25,7 @@ are **demo data**.
 Each page leaves out the link to itself (Find page: How it works + Claim. How page: Find + Claim. Claim and Success: Find + How, with no Claim pill).
 
 **Mobile** (padding 16px): logo 24px. On the right a black pill **"Claim yours"** (44px tall) + a **hamburger menu** button (44×44, 3px border, radius 12).
-The Find page's mobile header has only "Claim yours" (no hamburger). Claim and Success on mobile use a simple centered/left "bday.lol" header.
+The Find page's mobile header also has the hamburger (`DayMobile.dc.html`); its menu holds "How it works". Claim and Success on mobile use a simple centered/left "bday.lol" header.
 Success mobile has a round **back** button. Menu contents aren't designed (see open questions).
 
 The logo always links to the top of the homepage.

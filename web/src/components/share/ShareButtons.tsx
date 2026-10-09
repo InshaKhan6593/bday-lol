@@ -5,6 +5,7 @@ import { cx } from "@/lib/cx";
 import { facebookShareUrl, smsShareUrl } from "@/lib/share";
 import styles from "./ShareButtons.module.css";
 import { useCopy } from "./useCopy";
+import { useShare } from "./useShare";
 
 type Props = {
   url: string;
@@ -15,23 +16,11 @@ type Props = {
 
 /** The 2×2 share grid: phone share sheet, Facebook, text message, copy link. */
 export function ShareButtons({ url, message, className }: Props) {
-  const { copied, copy } = useCopy();
-
-  async function share() {
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: message, text: message, url });
-        return;
-      } catch (error) {
-        if ((error as DOMException).name === "AbortError") return;
-      }
-    }
-    await copy(url);
-  }
+  const { copied, copy, share } = useShare();
 
   return (
     <div className={cx(styles.grid, className)}>
-      <Button variant="paper" onClick={share} iconStart={<Icon name="share" size={20} />}>
+      <Button variant="paper" onClick={() => share(url, message)} iconStart={<Icon name="share" size={20} />}>
         Share
       </Button>
       <Button
