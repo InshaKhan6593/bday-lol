@@ -27,7 +27,8 @@ export function Field({ label, aside, hint, hintTone = "muted", className, child
   );
 }
 
-type ControlSize = "lg" | "2xl";
+/** md = 48px (Boost "Other amount"), lg = 52px, 2xl = 60px. */
+type ControlSize = "md" | "lg" | "2xl";
 
 export function Input({
   size = "lg",

@@ -7,6 +7,7 @@ import {
   daysUntil,
   isLeapYear,
   msUntilDayEnds,
+  nextDates,
   parseKey,
   parseSlug,
   startOfDayIn,
@@ -113,5 +114,22 @@ describe("countdowns", () => {
 describe("start of day", () => {
   it("is midnight ET, not midnight UTC", () => {
     expect(startOfDayIn(new Date("2026-10-07T23:00:00-04:00"), ET).toISOString()).toBe("2026-10-07T04:00:00.000Z");
+  });
+});
+
+describe("next dates (Coming up)", () => {
+  const md = (d: { month: number; day: number }) => `${d.month}-${d.day}`;
+
+  it("rolls over the end of the year", () => {
+    expect(nextDates({ year: 2026, month: 12, day: 30 }, 4).map(md)).toEqual(["12-31", "1-1", "1-2", "1-3"]);
+  });
+
+  it("skips Feb 29 in common years and includes it in leap years", () => {
+    expect(nextDates({ year: 2027, month: 2, day: 27 }, 2).map(md)).toEqual(["2-28", "3-1"]);
+    expect(nextDates({ year: 2028, month: 2, day: 27 }, 2).map(md)).toEqual(["2-28", "2-29"]);
+  });
+
+  it("carries the year of each date", () => {
+    expect(nextDates({ year: 2026, month: 12, day: 31 }, 1)[0]).toEqual({ year: 2027, month: 1, day: 1 });
   });
 });

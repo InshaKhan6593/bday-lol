@@ -1,12 +1,11 @@
 import { and, eq } from "drizzle-orm";
 import type { BoardTypeSettings } from "@/config/board-types";
-import type { Db } from "@/db";
+import type { Executor } from "@/db";
 import { boards, boardTypes } from "@/db/schema";
 import { boardClosesAt, boardOpensAt, currentBoardYear, toKey, type MonthDay } from "@/lib/birthday";
 
 type BoardType = typeof boardTypes.$inferSelect;
 type Board = typeof boards.$inferSelect;
-type Executor = Pick<Db, "select" | "insert">;
 
 export async function getBoardType(db: Executor, slug: string): Promise<BoardType> {
   const [type] = await db.select().from(boardTypes).where(eq(boardTypes.slug, slug)).limit(1);

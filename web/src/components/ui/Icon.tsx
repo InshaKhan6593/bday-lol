@@ -7,7 +7,7 @@ import {
   CaretLeftIcon,
   CaretRightIcon,
   CaretUpIcon,
-  ChatCircleIcon,
+  ChatCircleTextIcon,
   CheckIcon,
   ExportIcon,
   FacebookLogoIcon,
@@ -33,7 +33,7 @@ const ICONS = {
   boost: TriangleIcon,
   share: ShareNetworkIcon,
   facebook: FacebookLogoIcon,
-  text: ChatCircleIcon,
+  text: ChatCircleTextIcon,
   link: LinkIcon,
   arrowUpRight: ArrowUpRightIcon,
   arrowRight: ArrowRightIcon,
@@ -52,12 +52,18 @@ const ICONS = {
 
 export type IconName = keyof typeof ICONS;
 
+/**
+ * Only sizes that stay whole pixels on scaled screens (100%, 125%, 150%, 200%).
+ * An 18px icon becomes 22.5px at Windows' 125% scaling and its edges blur.
+ */
+export type IconSize = 12 | 16 | 20 | 24 | 28 | 32;
+
 /** The ▲ boost triangle is solid; everything else uses the bold outline. */
 const DEFAULT_WEIGHT: Partial<Record<IconName, IconWeight>> = { boost: "fill" };
 
 type Props = Omit<SVGProps<SVGSVGElement>, "name" | "ref"> & {
   name: IconName;
-  size?: number;
+  size?: IconSize;
   weight?: IconWeight;
 };
 

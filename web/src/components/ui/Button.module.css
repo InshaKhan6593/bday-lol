@@ -62,6 +62,20 @@
   color: var(--color-paper);
 }
 
+/* ▲ Boost controls: ink fill with white text on hover. */
+.hoverInvert {
+  transition:
+    transform var(--duration-press) var(--ease),
+    box-shadow var(--duration-press) var(--ease),
+    background-color var(--duration-quick) var(--ease),
+    color var(--duration-quick) var(--ease);
+}
+
+.hoverInvert:hover {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
 /* ---------- Sizes (height + type) ---------- */
 
 .size-sm {

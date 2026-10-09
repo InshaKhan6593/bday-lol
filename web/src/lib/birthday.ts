@@ -168,6 +168,16 @@ export function daysUntil(target: CalendarDate, instant: Date, timeZone: string)
   return Math.round((b - a) / 86_400_000);
 }
 
+/** The next `count` real calendar dates after `from` (Feb 29 only in leap years). */
+export function nextDates(from: CalendarDate, count: number): CalendarDate[] {
+  const dates: CalendarDate[] = [];
+  for (let offset = 1; dates.length < count; offset++) {
+    const d = new Date(Date.UTC(from.year, from.month - 1, from.day + offset));
+    dates.push({ year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate() });
+  }
+  return dates;
+}
+
 /** Midnight at the start of the current day in the time zone. */
 export function startOfDayIn(instant: Date, timeZone: string): Date {
   const today = zonedDate(instant, timeZone);

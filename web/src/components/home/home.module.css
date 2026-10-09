@@ -1,0 +1,427 @@
+/* Homepage sections. Values map 1:1 to Main.dc.html / MainMobile.dc.html through tokens. */
+
+/* ---------- Page ---------- */
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--page);
+  margin: 0 auto;
+  padding: var(--space-lg) var(--gutter) var(--space-5xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4xl);
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  align-items: center;
+  text-align: center;
+}
+
+.date {
+  font-size: var(--text-display);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+  overflow-wrap: anywhere;
+}
+
+.today {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+/* ---------- #1 card ---------- */
+
+.heroCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.owner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2xl);
+}
+
+.ownerText {
+  flex: 1 1 240px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.ownerName {
+  font-size: var(--text-name);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-title);
+  line-height: var(--leading-snug);
+  overflow-wrap: anywhere;
+}
+
+.ownerBio {
+  font-size: var(--text-lead);
+  color: var(--color-text-secondary);
+}
+
+.boost {
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.panels {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--space-lg);
+}
+
+.giftPanel {
+  flex: 3 1 340px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.panelTitle {
+  font-size: var(--text-title-sm);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-snug);
+  line-height: var(--leading-normal);
+}
+
+.giftGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-sm);
+}
+
+.giftButton {
+  gap: 10px;
+  padding-inline: var(--space-lg);
+}
+
+.note {
+  font-size: var(--text-note);
+  color: var(--color-text-secondary);
+}
+
+.sharePanel {
+  flex: 2 1 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shareHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.shareUrl {
+  font-size: var(--text-note);
+  color: var(--color-text-tertiary);
+}
+
+/* ---------- Nobody yet ---------- */
+
+.invite {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px var(--space-xl);
+}
+
+.inviteText {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+}
+
+.inviteSub {
+  font-size: var(--text-label);
+  color: var(--color-text-secondary);
+}
+
+.inviteActions {
+  flex: 1 1 320px;
+}
+
+/* ---------- Claim bar ---------- */
+
+.claimBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-lg) var(--space-3xl);
+  padding: var(--space-xl) clamp(20px, 3vw, 32px);
+}
+
+.claimPrice {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+}
+
+.ownLine {
+  font-size: var(--text-body-lg);
+  color: var(--color-on-ink-secondary);
+}
+
+.ownPrice {
+  margin-left: var(--space-sm);
+  font-size: var(--text-stat);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-title);
+  color: var(--color-paper);
+}
+
+.claimTimer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+}
+
+.countdown {
+  font-size: var(--text-stat);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--leading-normal);
+}
+
+.claimCta {
+  flex: 0 1 260px;
+}
+
+/* ---------- Others bar ---------- */
+
+.othersBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding: 18px 22px;
+}
+
+.othersLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.avatarStack {
+  display: flex;
+}
+
+.stacked {
+  margin-right: -10px;
+}
+
+.othersText {
+  padding-left: 10px;
+  font-size: var(--text-lead);
+  font-weight: var(--weight-bold);
+}
+
+.seeAll {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+}
+
+/* ---------- Coming up ---------- */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.h2 {
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-title);
+}
+
+.headLink {
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+}
+
+.upcomingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+}
+
+.dayCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-xl);
+}
+
+.dayDate {
+  font-size: var(--text-title-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-title);
+}
+
+.dayOwner {
+  font-size: var(--text-body);
+  color: var(--color-text-tertiary);
+}
+
+.dayPrice {
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+}
+
+/* ---------- Steps ---------- */
+
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-lg);
+}
+
+/* Subgrid lines up titles and bodies across the three columns. */
+.step {
+  display: grid;
+  grid-row: span 3;
+  grid-template-rows: subgrid;
+  row-gap: var(--space-xs);
+  align-content: start;
+}
+
+.stepNumber {
+  font-size: var(--text-number);
+  font-weight: var(--weight-bold);
+}
+
+.stepTitle {
+  font-size: var(--text-action);
+  font-weight: var(--weight-bold);
+}
+
+.stepBody {
+  font-size: var(--text-body);
+  color: var(--color-text-secondary);
+}
+
+/* ---------- Reminder signup ---------- */
+
+.reminder {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.reminderHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.reminderTitle {
+  font-size: var(--text-title-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-snug);
+}
+
+.reminderSub {
+  font-size: var(--text-body);
+  color: var(--color-text-secondary);
+}
+
+.reminderForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.formField {
+  gap: var(--space-2xs);
+  font-size: var(--text-caption);
+}
+
+.monthField {
+  flex: 1 1 140px;
+  max-width: 200px;
+}
+
+.dayField {
+  flex: 0 0 96px;
+}
+
+.emailField {
+  flex: 1 1 260px;
+}
+
+.remindButton {
+  flex: 1 1 260px;
+  font-size: var(--text-body-lg);
+}
+
+.footnote {
+  font-size: var(--text-caption);
+  color: var(--color-text-tertiary);
+}
+
+.footnoteOk {
+  font-weight: var(--weight-bold);
+  color: var(--color-ink);
+}
+
+.footnoteError {
+  color: var(--color-error);
+}
+
+/* ---------- Mobile board (390px) ---------- */
+
+@media (max-width: 640px) {
+  .kicker {
+    font-size: var(--text-caption);
+  }
+
+  /* Boost sits above the name, pushed right; the name takes the full row. */
+  .boost {
+    order: 1;
+    margin-left: auto;
+  }
+
+  .ownerText {
+    order: 2;
+    flex-basis: 100%;
+  }
+}

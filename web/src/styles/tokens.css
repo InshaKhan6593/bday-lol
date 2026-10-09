@@ -123,6 +123,10 @@
   --page: 1180px;       /* home, claim */
   --page-narrow: 980px; /* find, how it works */
   --dialog: 440px;
+  /*
+   * Mobile breakpoint: 640px. Media queries can't read custom properties, so
+   * modules write `@media (max-width: 640px)` for the mockup's mobile boards (390px).
+   */
 
   /* ---------- Motion ---------- */
   --ease: ease;

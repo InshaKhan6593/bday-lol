@@ -47,6 +47,11 @@
   color: var(--color-text-tertiary);
 }
 
+.size-md {
+  min-height: var(--control-md);
+  padding: 0 14px;
+}
+
 .size-lg {
   min-height: var(--control-lg);
   padding: 0 14px;

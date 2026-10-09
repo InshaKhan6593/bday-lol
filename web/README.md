@@ -26,7 +26,7 @@ pnpm dev                        # http://localhost:3000
 
 | Script | Does |
 |---|---|
-| `pnpm test` | Unit tests (date rules, ranking, money) |
+| `pnpm test` | Unit tests + database tests (`*.db.test.ts`, need `pnpm db:up`; they roll back, so seed data is untouched) |
 | `pnpm typecheck` / `pnpm lint` | Static checks |
 | `pnpm db:generate` | New migration from `src/db/schema.ts` changes |
 | `pnpm db:reset` | Wipe the local DB, migrate, seed (refuses non-local databases) |
@@ -45,11 +45,16 @@ DEV_NOW=2028-02-27T12:00:00-05:00 pnpm db:reset   # Feb 29, 2028 is "coming up"
 ```
 src/
   app/                 routes (pages, API, cron)
-  components/ui/       design-language primitives: Button, Surface, Avatar, Badge, Kicker, Field, Icon…
+  components/ui/       design-language primitives: Button, Chip, Surface, Avatar, Badge, Kicker, Field, Select, Menu, Icon…
+  components/site/     header shared by every page
+  components/home/     homepage sections
+  components/boost/    the Boost box (homepage + date page)
+  components/share/    share and copy-link buttons
   config/              themes (12), board type settings (min bid, min boost, time zone…)
   db/                  schema.ts (board → entries → payments model), client
-  lib/                 pure rules: birthday.ts (ET, leap years, board years), clock, ids
-  server/              server-only logic (boards, payments, emails…)
+  lib/                 pure rules: birthday.ts (ET, leap years, board years), money, boost math, gifts, routes, clock, ids
+  test/                database test helpers (rolled-back transactions)
+  server/              server logic: leaderboard queries, homepage data, reminders; actions/ = form actions
   styles/tokens.css    design tokens: color, type roles, shape, shadows, spacing, motion
 scripts/               seed, reset
 drizzle/               generated SQL migrations

@@ -20,6 +20,8 @@ export function ThemeScope({ theme, paint = false, className, children }: Props)
   const style = { "--ground": t.ground, "--accent": t.accent } as CSSProperties;
   return (
     <div style={style} className={cx(paint && styles.paint, className)}>
+      {/* Page shells also color the document, so overscroll on phones matches. */}
+      {paint && <style>{`html,body{background-color:${t.ground}}`}</style>}
       {children}
     </div>
   );

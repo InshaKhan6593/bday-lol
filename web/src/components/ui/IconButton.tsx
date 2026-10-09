@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes } from "react";
 import { cx } from "@/lib/cx";
-import { Icon, type IconName } from "./Icon";
+import { Icon, type IconName, type IconSize } from "./Icon";
 import styles from "./IconButton.module.css";
 
 type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> & {
@@ -10,10 +10,12 @@ type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> & {
   size?: "sm" | "md" | "lg";
   /** "muted" = borderless grey square (search clear button). */
   tone?: "paper" | "muted";
+  /** Glyph size. Defaults to 20 for lg buttons and 16 otherwise. */
+  iconSize?: IconSize;
 };
 
 /** Square outlined button holding a single icon (arrows, close, menu, share). */
-export function IconButton({ icon, label, size = "lg", tone = "paper", className, ...rest }: Props) {
+export function IconButton({ icon, label, size = "lg", tone = "paper", iconSize, className, ...rest }: Props) {
   return (
     <button
       type="button"
@@ -21,7 +23,7 @@ export function IconButton({ icon, label, size = "lg", tone = "paper", className
       className={cx(styles.iconButton, styles[size], styles[tone], tone === "paper" && "lift", className)}
       {...rest}
     >
-      <Icon name={icon} size={size === "lg" ? 20 : 16} />
+      <Icon name={icon} size={iconSize ?? (size === "lg" ? 20 : 16)} />
     </button>
   );
 }

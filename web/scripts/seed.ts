@@ -14,7 +14,7 @@ import {
   reminders,
   type GiftLink,
 } from "@/db/schema";
-import { formatLong, startOfDayIn, zonedDate, type MonthDay } from "@/lib/birthday";
+import { formatLong, nextDates, startOfDayIn, zonedDate, type MonthDay } from "@/lib/birthday";
 import { now } from "@/lib/clock";
 import { publicId } from "@/lib/ids";
 import { ensureCurrentBoard } from "@/server/boards";
@@ -61,11 +61,6 @@ const cents = (usd: number) => usd * 100;
 const emailFor = (name: string) => `${name.toLowerCase().replace(/[^a-z]+/g, ".")}@example.com`;
 let sessionCounter = 0;
 const fakeSession = () => `cs_test_seed_${String(++sessionCounter).padStart(4, "0")}`;
-
-function addDays(today: { year: number; month: number; day: number }, days: number): MonthDay {
-  const d = new Date(Date.UTC(today.year, today.month - 1, today.day + days));
-  return { month: d.getUTCMonth() + 1, day: d.getUTCDate() };
-}
 
 const at = now();
 const tz = BIRTHDAY_BOARD_TYPE.settings.timezone;
@@ -132,9 +127,11 @@ await db.transaction(async (tx) => {
   ]);
 
   // Coming up.
+  const upcomingDates = nextDates(today, UPCOMING.length);
   for (const [i, person] of UPCOMING.entries()) {
     if (!person) continue;
-    const md = addDays(today, i + 1);
+    const { month, day } = upcomingDates[i]!;
+    const md = { month, day };
     const { board, entry } = await addPerson(md, person, t(0.5), t(0.5));
     await tx.insert(leaderLog).values({ boardId: board.id, entryId: entry.id, startedAt: t(0.5) });
   }

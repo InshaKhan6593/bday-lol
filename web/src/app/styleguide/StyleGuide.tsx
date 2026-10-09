@@ -5,6 +5,7 @@ import {
   Avatar,
   Badge,
   Button,
+  Chip,
   Field,
   Icon,
   IconButton,
@@ -101,12 +102,21 @@ export function StyleGuide() {
         <Section title="Buttons" note="Hover lifts up-left with a hard shadow (mouse only). Click presses flat.">
           <div className={styles.row}>
             <Button variant="ink">Remind me</Button>
-            <Button variant="paper" iconStart={<Icon name="share" size={18} />}>Share</Button>
+            <Button variant="paper" iconStart={<Icon name="share" size={20} />}>Share</Button>
             <Button variant="accent" size="2xl" shape="large">Claim the top spot</Button>
             <Button variant="ink" shape="pill">Claim your birthday</Button>
-            <Button variant="paper" shape="pill" iconStart={<Icon name="boost" size={14} />}>Boost</Button>
+            <Button variant="paper" shape="pill" hoverInvert iconStart={<Icon name="boost" size={16} />}>
+              Boost
+            </Button>
             <Button variant="text">Back to today</Button>
             <Button variant="ink" disabled>Pay &amp; claim</Button>
+          </div>
+          <div className={styles.row}>
+            <Chip>$2</Chip>
+            <Chip pressed>$5</Chip>
+            <Chip>$10</Chip>
+            <Chip>$20</Chip>
+            <Chip tone="accent">Take #1: +$16</Chip>
           </div>
           <div className={styles.row}>
             <IconButton icon="chevronLeft" label="Previous day" />
@@ -125,7 +135,7 @@ export function StyleGuide() {
                 <span className={styles.name}>Jess Moreno</span>
                 <span className={styles.bio}>&quot;30 and still can&apos;t cook. Pizza money appreciated.&quot;</span>
               </div>
-              <Button variant="paper" shape="pill" iconStart={<Icon name="boost" size={14} />}>Boost</Button>
+              <Button variant="paper" shape="pill" iconStart={<Icon name="boost" size={16} />}>Boost</Button>
             </div>
             <Surface tone="ground" radius="card" className={styles.stack}>
               <span className={styles.titleSm}>Send a birthday gift</span>
@@ -211,7 +221,7 @@ export function StyleGuide() {
           <div className={styles.row}>
             {ICONS.map((name) => (
               <span key={name} className={styles.iconCell} title={name}>
-                <Icon name={name} size={22} />
+                <Icon name={name} size={24} />
                 <code>{name}</code>
               </span>
             ))}

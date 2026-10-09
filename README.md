@@ -2,7 +2,7 @@
 
 **Read this first.** This folder holds the full brief for a client build (the `.md` files) and the app itself (`web/`).
 The foundation is built and runs locally: database schema, date rules with tests, the design system and seed data.
-Next up is building the pages, starting with the homepage.
+The homepage is built from live data. Next up is the date page ("Find your birthday").
 
 ## One-paragraph summary
 
@@ -70,16 +70,20 @@ Mailpit on :8030). Production plan: Vercel Pro + Neon Postgres + Vercel Blob + S
 |---|---|
 | 1. Local setup (Next.js, Docker Postgres + Mailpit, Drizzle, fake clock `DEV_NOW`) | ✅ Done |
 | 2. Database schema: board_types → boards → entries → payments, leader_log, alerts, reminders, emails, famous people | ✅ Done (`web/src/db/schema.ts`, migration `web/drizzle/0000_init.sql`) |
-| 3. Date rules: Eastern Time, leap years, which year's board is open, open/close times | ✅ Done, 16 tests (`web/src/lib/birthday.ts`) |
+| 3. Date rules: Eastern Time, leap years, which year's board is open, open/close times | ✅ Done (`web/src/lib/birthday.ts`) |
 | Design system: tokens + UI components, dev-only style guide at `/styleguide` | ✅ Done |
 | 4. Seed data: the mockup's demo people on today's real date | ✅ Done (`pnpm db:seed`) |
-| 5. Pages from seed data: homepage, date page, how it works, claim, success (desktop + mobile) | ⏭️ Next |
+| 5a. Homepage from live data (desktop + mobile, #1 card, nobody-yet state, Boost box, countdown, Coming up, reminder signup) | ✅ Done (`web/src/app/page.tsx`, `web/src/components/home/`) |
+| 5b. Date page, how it works, claim, success (desktop + mobile) | ⏭️ Next |
 | 6. Money path: claim → Stripe Checkout → webhook → live on board → homepage | ⬜ |
 | 7. Boosts, #1 log and outbid alerts | ⬜ |
 | 8. The 8 emails (checked in Mailpit) | ⬜ |
 | 9. SEO: month pages, About section data, OG images, sitemap | ⬜ |
 | 10. Admin | ⬜ |
 | 11. Deploy to Vercel + Neon, test live | ⬜ |
+
+**Tests:** every feature ships with tests (`pnpm test`, 46 so far): pure rules in `web/src/lib/*.test.ts` and
+database tests in `*.db.test.ts`, which run against the local Docker Postgres inside a rolled-back transaction.
 
 **Design decisions** (details in [04-design-system.md](04-design-system.md#implementation-decisions)): keep the client's look exactly
 (rounded pastel shapes, Bricolage Grotesque); upgrade the mockup's hand-drawn icons to Phosphor Bold; build
