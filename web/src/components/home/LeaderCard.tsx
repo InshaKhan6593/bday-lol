@@ -3,7 +3,7 @@ import { Avatar, Button, Icon, Kicker, Surface } from "@/components/ui";
 import type { BoardTypeSettings } from "@/config/board-types";
 import type { ThemeKey } from "@/config/themes";
 import { giftButtons } from "@/lib/gifts";
-import { firstName } from "@/lib/people";
+import { firstName, stripWrappingQuotes } from "@/lib/people";
 import { displayUrl } from "@/lib/routes";
 import { birthdayShareText } from "@/lib/share";
 import type { RankedEntry } from "@/server/leaderboard";
@@ -22,6 +22,7 @@ type Props = {
 /** Homepage #1 card: who owns today, their gift links and share buttons. */
 export function LeaderCard({ leader, shareUrl, dateLabel, theme, otherTotalsCents, settings }: Props) {
   const gifts = giftButtons(leader.giftLinks);
+  const bio = stripWrappingQuotes(leader.bio);
 
   return (
     <Surface as="section" radius="hero" elevation="hero" padding="hero" className={styles.heroCard}>
@@ -29,7 +30,8 @@ export function LeaderCard({ leader, shareUrl, dateLabel, theme, otherTotalsCent
         <Avatar name={leader.name} photoUrl={leader.photoUrl} size="lg" />
         <div className={styles.ownerText}>
           <h2 className={styles.ownerName}>{leader.name}</h2>
-          {leader.bio && <p className={styles.ownerBio}>&quot;{leader.bio}&quot;</p>}
+          {/* The mockup quotes the #1's bio. Strip any quotes already in it (older or admin-added entries) so there's one pair. */}
+          {bio && <p className={styles.ownerBio}>&quot;{bio}&quot;</p>}
         </div>
         <BoostButton
           target={leader}

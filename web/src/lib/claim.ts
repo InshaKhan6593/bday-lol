@@ -5,6 +5,7 @@ import { DAYS_IN_MONTH, parseSlug, type MonthDay } from "./birthday";
 import { parseAmountCents } from "./boost";
 import { parseGiftLink } from "./gifts";
 import { formatUsd, minToTakeTop } from "./money";
+import { stripWrappingQuotes } from "./people";
 
 /** Rules for the Claim page, worded exactly like the mockup (ClaimDesktop.dc.html / Claim.dc.html). */
 
@@ -128,7 +129,7 @@ export function validateClaim(input: ClaimInput, minCents: number, target: Claim
   if (!name) errors.name = "Add the birthday person’s name.";
   else if (name.length > rules.nameMaxLength) errors.name = `Names can be up to ${rules.nameMaxLength} characters.`;
 
-  const bio = tidy(input.bio);
+  const bio = stripWrappingQuotes(tidy(input.bio));
   if (bio.length > rules.bioMaxLength) errors.bio = `Bios can be up to ${rules.bioMaxLength} characters.`;
 
   const parsed = input.giftLinks.map(parseGiftLink);

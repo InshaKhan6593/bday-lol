@@ -13,6 +13,7 @@ import {
   type ClaimInput,
 } from "./claim";
 import { giftLinkHint, parseGiftLink } from "./gifts";
+import { stripWrappingQuotes } from "./people";
 
 const settings = BIRTHDAY_BOARD_TYPE.settings;
 const ranked = [
@@ -191,6 +192,41 @@ describe("claim form", () => {
       ok: false,
       errors: { name: "Names can be up to 40 characters.", giftLinks: "Add up to 3 links." },
     });
+  });
+});
+
+describe("bio quotes", () => {
+  it("strips double quotes typed around a bio, so the homepage shows one pair", () => {
+    expect(stripWrappingQuotes('"Turning 25 today"')).toBe("Turning 25 today");
+    expect(stripWrappingQuotes("“Turning 25 today”")).toBe("Turning 25 today");
+    expect(stripWrappingQuotes('""Hi!""')).toBe("Hi!");
+    expect(stripWrappingQuotes(' " Tacos over cake " ')).toBe("Tacos over cake");
+    expect(stripWrappingQuotes("«Bonjour»")).toBe("Bonjour");
+  });
+
+  it("keeps quotes inside the bio and apostrophes at the edges", () => {
+    expect(stripWrappingQuotes('My motto: "eat cake"!')).toBe('My motto: "eat cake"!');
+    expect(stripWrappingQuotes("'90s kid")).toBe("'90s kid");
+    expect(stripWrappingQuotes("Throwing the kids' party")).toBe("Throwing the kids' party");
+    expect(stripWrappingQuotes('"""')).toBe("");
+  });
+
+  it("is applied when a claim is checked", () => {
+    const result = validateClaim(
+      {
+        md: { month: 10, day: 7 },
+        bid: "$5",
+        name: "Sam",
+        bio: '  "Turning 25 today."  ',
+        giftLinks: [],
+        theme: "butter",
+        email: "sam@example.com",
+      },
+      500,
+      claimTarget([], 1),
+      settings,
+    );
+    expect(result.ok && result.claim.bio).toBe("Turning 25 today.");
   });
 });
 
