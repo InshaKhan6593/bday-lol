@@ -17,4 +17,11 @@
     white-space: nowrap;
     transition: background-color var(--duration-theme) var(--ease);
   }
+
+  /* Dashed means "empty / not yet" (design rule 8). */
+  .empty {
+    border: var(--border-dashed-thin);
+    background: transparent;
+    color: var(--color-text-secondary);
+  }
 }

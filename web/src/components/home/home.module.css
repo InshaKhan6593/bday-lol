@@ -298,6 +298,11 @@
   color: var(--color-text-tertiary);
 }
 
+/* "Unclaimed" is a status, not a name: a dashed tag in the owner's slot. */
+.dayTag {
+  align-self: flex-start;
+}
+
 .dayPrice {
   font-size: var(--text-body);
   font-weight: var(--weight-bold);

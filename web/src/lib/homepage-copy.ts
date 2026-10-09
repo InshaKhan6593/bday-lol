@@ -8,12 +8,15 @@ export function othersText(count: number, dateLabel: string): string {
     : `${count} other people are celebrating ${dateLabel}`;
 }
 
-/** Coming-up card copy: "Marcus T." / "Claimed for $85", or "Unclaimed" / "Claim for $5". */
+/**
+ * Coming-up card copy: "Marcus T." / "Claimed for $85", or "Unclaimed" / "Claim for $5".
+ * `claimed` lets the card show "Unclaimed" as a status tag instead of a name.
+ */
 export function comingUpCopy(
   day: { leaderName: string | null; topTotalCents: number | null },
   openBidCents: number,
-): { owner: string; price: string } {
+): { owner: string; price: string; claimed: boolean } {
   return day.leaderName && day.topTotalCents !== null
-    ? { owner: shortName(day.leaderName), price: `Claimed for ${formatUsd(day.topTotalCents)}` }
-    : { owner: "Unclaimed", price: `Claim for ${formatUsd(openBidCents)}` };
+    ? { owner: shortName(day.leaderName), price: `Claimed for ${formatUsd(day.topTotalCents)}`, claimed: true }
+    : { owner: "Unclaimed", price: `Claim for ${formatUsd(openBidCents)}`, claimed: false };
 }

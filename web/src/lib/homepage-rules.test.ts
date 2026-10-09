@@ -151,10 +151,12 @@ describe("homepage copy", () => {
     expect(comingUpCopy({ leaderName: "Marcus Thompson", topTotalCents: 8_500 }, 500)).toEqual({
       owner: "Marcus T.",
       price: "Claimed for $85",
+      claimed: true,
     });
     expect(comingUpCopy({ leaderName: null, topTotalCents: null }, 500)).toEqual({
       owner: "Unclaimed",
       price: "Claim for $5",
+      claimed: false,
     });
   });
 });

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Surface } from "@/components/ui";
+import { Badge, Surface } from "@/components/ui";
 import { formatShort, type MonthDay } from "@/lib/birthday";
 import { comingUpCopy } from "@/lib/homepage-copy";
 import { routes } from "@/lib/routes";
@@ -23,7 +23,13 @@ export function ComingUp({ days, today, openBidCents }: Props) {
           return (
             <Surface key={formatShort(day.md)} href={routes.date(day.md)} radius="tile" padding="none" className={styles.dayCard}>
               <span className={styles.dayDate}>{formatShort(day.md)}</span>
-              <span className={styles.dayOwner}>{copy.owner}</span>
+              {copy.claimed ? (
+                <span className={styles.dayOwner}>{copy.owner}</span>
+              ) : (
+                <Badge tone="empty" className={styles.dayTag}>
+                  {copy.owner}
+                </Badge>
+              )}
               <span className={styles.dayPrice}>{copy.price}</span>
             </Surface>
           );
