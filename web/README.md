@@ -73,6 +73,7 @@ at the top of `src/styles/tokens.css`. Components use **tokens and primitives, n
 - ink outlines (`--border`), hard shadows (`--shadow-hero/section/menu/lift`), radii by role (`--radius-hero/card/control…`)
 - type by role (`--text-body`, `--text-title`, `--text-display`…), Bricolage Grotesque 400/600/800
 - the `lift` class gives every clickable the hover lift and press (mouse devices only)
+- every `components/ui/*.module.css` wraps its rules in `@layer primitives { … }` (order set in `globals.css`). Page modules stay unlayered, so a `className` passed to a primitive always wins, whatever order the CSS loads in
 
 Decided (2026-10-09): keep the **client's look** exactly: rounded pastel shapes and Bricolage Grotesque.
 We compared it with neubrutalism.com's square style and its fonts (Syne is too wide for the giant homepage date).
