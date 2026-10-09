@@ -13,6 +13,9 @@ export const routes = {
     if (!md) return "/claim" as Route;
     return `/claim?date=${toSlug(md)}${rank && rank > 1 ? `&rank=${rank}` : ""}` as Route;
   },
+  /** Where Stripe Checkout returns after a claim: /claim/success?session_id=cs_… */
+  claimSuccess: (sessionId?: string) =>
+    (sessionId ? `/claim/success?session_id=${encodeURIComponent(sessionId)}` : "/claim/success") as Route,
   date: (md: MonthDay) => `/${toSlug(md)}` as Route,
   month: (month: number) => `/${monthSlug(month)}` as Route,
 };

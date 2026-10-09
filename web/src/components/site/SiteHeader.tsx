@@ -1,3 +1,4 @@
+import type { Route } from "next";
 import Link from "next/link";
 import { Button, IconButton } from "@/components/ui";
 import { BIRTHDAY_BOARD_TYPE } from "@/config/board-types";
@@ -18,6 +19,8 @@ type Props = {
    * back button and a centered logo (Claim and Success boards).
    */
   mobile?: "menu" | "back";
+  /** Where the mobile back button goes (default: the homepage, "Back to today"). */
+  back?: { href: Route; label: string };
 };
 
 /**
@@ -25,7 +28,7 @@ type Props = {
  * Mobile: logo + "Claim yours" pill + menu button. The logo always goes to the
  * top of the homepage.
  */
-export function SiteHeader({ omit = [], mobile = "menu" }: Props) {
+export function SiteHeader({ omit = [], mobile = "menu", back = { href: routes.home, label: "Back to today" } }: Props) {
   const today = zonedDate(now(), BIRTHDAY_BOARD_TYPE.settings.timezone);
   const findHref = routes.date(today);
   const links = [
@@ -37,7 +40,7 @@ export function SiteHeader({ omit = [], mobile = "menu" }: Props) {
   return (
     <header className={cx(styles.header, mobile === "back" && styles.backMode)}>
       {mobile === "back" && (
-        <IconButton href={routes.home} icon="chevronLeft" label="Back to today" size="md" iconSize={20} className={styles.back} />
+        <IconButton href={back.href} icon="chevronLeft" label={back.label} size="md" iconSize={20} className={styles.back} />
       )}
       <Link href={routes.home} className={styles.logo}>
         bday.lol

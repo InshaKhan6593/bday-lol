@@ -11,20 +11,23 @@ type Props = {
   url: string;
   /** Message that goes with the link, e.g. "It's Jess's birthday on bday.lol". */
   message: string;
+  /** Success page: taller buttons, Share and Facebook in ink. */
+  large?: boolean;
   className?: string;
 };
 
 /** The 2×2 share grid: phone share sheet, Facebook, text message, copy link. */
-export function ShareButtons({ url, message, className }: Props) {
+export function ShareButtons({ url, message, large, className }: Props) {
   const { copied, copy, share } = useShare();
+  const lead = large ? "ink" : "paper";
 
   return (
-    <div className={cx(styles.grid, className)}>
-      <Button variant="paper" onClick={() => share(url, message)} iconStart={<Icon name="share" size={20} />}>
+    <div className={cx(styles.grid, large && styles.large, className)}>
+      <Button variant={lead} onClick={() => share(url, message)} iconStart={<Icon name="share" size={20} />}>
         Share
       </Button>
       <Button
-        variant="paper"
+        variant={lead}
         external
         href={facebookShareUrl(url)}
         target="_blank"

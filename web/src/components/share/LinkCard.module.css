@@ -1,0 +1,115 @@
+/*
+ * The shared-link card. Its sizes only exist here (a scaled-down social
+ * preview), so they're named as card roles instead of site tokens.
+ */
+.card {
+  --card-avatar: 116px;
+  --card-avatar-text: 42px;
+  --card-date: 54px;
+  --card-name: 25px;
+  --card-gap: 22px;
+  --card-pad: var(--space-2xl) 30px;
+
+  overflow: hidden;
+  background: var(--color-paper);
+  border: var(--border);
+  border-radius: var(--radius-section);
+  box-shadow: var(--shadow-hero);
+}
+
+.image {
+  aspect-ratio: 1.91 / 1;
+  display: flex;
+  align-items: center;
+  gap: var(--card-gap);
+  padding: var(--card-pad);
+  background: var(--ground);
+  border-bottom: var(--border);
+}
+
+.card .avatar {
+  width: var(--card-avatar);
+  height: var(--card-avatar);
+  font-size: var(--card-avatar-text);
+}
+
+.text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.kicker {
+  font-size: var(--text-fine);
+}
+
+.date {
+  font-size: var(--card-date);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-tight);
+}
+
+.name {
+  font-size: var(--card-name);
+  font-weight: var(--weight-bold);
+  overflow-wrap: anywhere;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+  padding: 14px var(--space-xl);
+}
+
+.title {
+  font-size: var(--text-lead);
+  font-weight: var(--weight-bold);
+}
+
+.url {
+  font-size: var(--text-label);
+  color: var(--color-text-tertiary);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .card {
+    --card-avatar: 78px;
+    --card-avatar-text: 28px;
+    --card-date: 34px;
+    --card-name: var(--text-body-lg);
+    --card-gap: var(--space-lg);
+    --card-pad: var(--space-lg) 18px;
+
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-menu);
+  }
+
+  .text {
+    gap: var(--space-2xs);
+  }
+
+  .kicker {
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-caps);
+  }
+
+  .date {
+    letter-spacing: var(--tracking-heading);
+  }
+
+  .footer {
+    padding: 10px 14px;
+  }
+
+  .title {
+    font-size: var(--text-label);
+  }
+
+  .url {
+    font-size: var(--text-caption);
+  }
+}

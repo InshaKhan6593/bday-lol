@@ -1,0 +1,157 @@
+/* Claimed / share. Values map 1:1 to SuccessDesktop.dc.html / Success.dc.html through tokens. */
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--page-wide);
+  margin: 0 auto;
+  padding: var(--space-2xl) var(--gutter) var(--space-page-end);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4xl);
+}
+
+/* Left column: heading, share buttons, note, link. */
+.lead {
+  flex: 1 1 520px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.h1 {
+  font-size: clamp(40px, 3.9vw, 56px);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-display);
+  line-height: 0.98;
+}
+
+/* "October 7 is yours." stays on one line; "For now." drops below. */
+.firstLine {
+  white-space: nowrap;
+}
+
+.sub {
+  font-size: var(--text-action);
+  color: var(--color-text-secondary);
+}
+
+.share {
+  max-width: 480px;
+}
+
+.note {
+  max-width: 480px;
+  padding: var(--space-lg) 18px;
+  background: var(--color-paper);
+  border: var(--border);
+  border-radius: var(--radius-panel);
+  font-size: var(--text-body);
+  line-height: var(--leading-relaxed);
+}
+
+.seeLink {
+  align-self: flex-start;
+  padding: var(--space-sm) 0;
+  font-size: var(--text-body-lg);
+  font-weight: var(--weight-bold);
+}
+
+.retry {
+  align-self: flex-start;
+}
+
+/* Right column: "How your link looks when shared". */
+.preview {
+  flex: 1 1 480px;
+  max-width: 560px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.previewKicker {
+  letter-spacing: var(--tracking-caps);
+}
+
+/* ---------- Mobile board (390px): heading, preview, share, note, link ---------- */
+
+@media (max-width: 640px) {
+  .main {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 22px;
+    padding: 22px 18px 28px;
+  }
+
+  .lead {
+    display: contents;
+  }
+
+  .heading {
+    order: 1;
+    gap: var(--space-xs);
+  }
+
+  .preview {
+    order: 2;
+    flex: none;
+    gap: var(--space-sm);
+  }
+
+  .share {
+    order: 3;
+    max-width: none;
+  }
+
+  .note {
+    order: 4;
+    max-width: none;
+    padding: 14px var(--space-lg);
+    border-radius: var(--radius-button);
+    font-size: var(--text-label);
+    line-height: var(--leading-fine);
+  }
+
+  .seeLink,
+  .retry {
+    order: 5;
+  }
+
+  .seeLink {
+    align-self: center;
+    padding: 10px;
+    font-size: var(--text-body);
+    font-weight: var(--weight-medium);
+  }
+
+  .kicker,
+  .previewKicker {
+    font-size: var(--text-caption);
+    letter-spacing: 0.1em;
+  }
+
+  .h1 {
+    font-size: 34px;
+    letter-spacing: var(--tracking-heading-sm);
+    line-height: 1;
+  }
+
+  .firstLine {
+    white-space: normal;
+  }
+
+  .sub {
+    font-size: var(--text-label);
+  }
+}

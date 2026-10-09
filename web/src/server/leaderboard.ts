@@ -48,7 +48,11 @@ export async function getCurrentBoard(
     .where(and(eq(boards.boardTypeId, typeId), eq(boards.key, toKey(md)), eq(boards.period, String(year))))
     .limit(1);
   if (!board) return { md, year, boardId: null, entries: [] };
+  return { md, year, boardId: board.id, entries: await getRankedEntries(db, board.id) };
+}
 
+/** Live entries on a board, ranked: highest total first, ties to whoever got there first. */
+export async function getRankedEntries(db: Executor, boardId: string): Promise<RankedEntry[]> {
   const rows = await db
     .select({
       id: entries.id,
@@ -61,10 +65,9 @@ export async function getCurrentBoard(
       totalCents: entries.totalCents,
     })
     .from(entries)
-    .where(and(eq(entries.boardId, board.id), eq(entries.status, "live")))
+    .where(and(eq(entries.boardId, boardId), eq(entries.status, "live")))
     .orderBy(desc(entries.totalCents), asc(entries.totalReachedAt));
-
-  return { md, year, boardId: board.id, entries: rows.map((row, i) => ({ ...row, rank: i + 1 })) };
+  return rows.map((row, i) => ({ ...row, rank: i + 1 }));
 }
 
 /**
