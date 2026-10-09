@@ -1,123 +1,129 @@
-.button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-sm);
-  border: 0;
-  font-weight: var(--weight-bold);
-  line-height: 1.1;
-  text-decoration: none;
-  white-space: nowrap;
-  cursor: pointer;
-}
+/*
+ * Primitive defaults live in the "primitives" layer, so a className passed in
+ * from a page always wins, whatever order the stylesheets load in.
+ */
+@layer primitives {
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    border: 0;
+    font-weight: var(--weight-bold);
+    line-height: 1.1;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+  }
 
-.button:disabled,
-.button[aria-disabled="true"] {
-  cursor: not-allowed;
-  opacity: 0.45;
-  pointer-events: none;
-}
+  .button:disabled,
+  .button[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.45;
+    pointer-events: none;
+  }
 
-.label {
-  min-width: 0;
-}
+  .label {
+    min-width: 0;
+  }
 
-.block {
-  display: flex;
-  width: 100%;
-}
+  .block {
+    display: flex;
+    width: 100%;
+  }
 
-/* ---------- Variants ---------- */
+  /* ---------- Variants ---------- */
 
-.ink {
-  background: var(--color-ink);
-  color: var(--color-paper);
-}
+  .ink {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
 
-.ink:hover {
-  color: var(--color-paper);
-}
+  .ink:hover {
+    color: var(--color-paper);
+  }
 
-.paper {
-  background: var(--color-paper);
-  color: var(--color-ink);
-  border: var(--border);
-}
+  .paper {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    border: var(--border);
+  }
 
-.accent {
-  background: var(--accent);
-  color: var(--color-ink);
-  transition: background-color var(--duration-theme) var(--ease);
-}
+  .accent {
+    background: var(--accent);
+    color: var(--color-ink);
+    transition: background-color var(--duration-theme) var(--ease);
+  }
 
-.text {
-  background: transparent;
-  color: var(--color-ink);
-  text-decoration: underline;
-  padding-inline: var(--space-2xs) !important;
-}
+  .text {
+    background: transparent;
+    color: var(--color-ink);
+    text-decoration: underline;
+    padding-inline: var(--space-2xs) !important;
+  }
 
-.inverse,
-.inverse:hover {
-  color: var(--color-paper);
-}
+  .inverse,
+  .inverse:hover {
+    color: var(--color-paper);
+  }
 
-/* ▲ Boost controls: ink fill with white text on hover. */
-.hoverInvert {
-  transition:
-    transform var(--duration-press) var(--ease),
-    box-shadow var(--duration-press) var(--ease),
-    background-color var(--duration-quick) var(--ease),
-    color var(--duration-quick) var(--ease);
-}
+  /* ▲ Boost controls: ink fill with white text on hover. */
+  .hoverInvert {
+    transition:
+      transform var(--duration-press) var(--ease),
+      box-shadow var(--duration-press) var(--ease),
+      background-color var(--duration-quick) var(--ease),
+      color var(--duration-quick) var(--ease);
+  }
 
-.hoverInvert:hover {
-  background: var(--color-ink);
-  color: var(--color-paper);
-}
+  .hoverInvert:hover {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
 
-/* ---------- Sizes (height + type) ---------- */
+  /* ---------- Sizes (height + type) ---------- */
 
-.size-sm {
-  min-height: var(--control-sm);
-  padding: 0 var(--space-lg);
-  font-size: var(--text-body);
-}
+  .size-sm {
+    min-height: var(--control-sm);
+    padding: 0 var(--space-lg);
+    font-size: var(--text-body);
+  }
 
-.size-md {
-  min-height: var(--control-md);
-  padding: 0 18px;
-  font-size: var(--text-body);
-}
+  .size-md {
+    min-height: var(--control-md);
+    padding: 0 18px;
+    font-size: var(--text-body);
+  }
 
-.size-lg {
-  min-height: var(--control-lg);
-  padding: 0 var(--space-xl);
-  font-size: var(--text-body);
-}
+  .size-lg {
+    min-height: var(--control-lg);
+    padding: 0 var(--space-xl);
+    font-size: var(--text-body);
+  }
 
-.size-xl {
-  min-height: var(--control-xl);
-  padding: 0 var(--space-2xl);
-  font-size: var(--text-lead);
-}
+  .size-xl {
+    min-height: var(--control-xl);
+    padding: 0 var(--space-2xl);
+    font-size: var(--text-lead);
+  }
 
-.size-2xl {
-  min-height: var(--control-2xl);
-  padding: 0 28px;
-  font-size: var(--text-action);
-}
+  .size-2xl {
+    min-height: var(--control-2xl);
+    padding: 0 28px;
+    font-size: var(--text-action);
+  }
 
-/* ---------- Shapes ---------- */
+  /* ---------- Shapes ---------- */
 
-.shape-control {
-  border-radius: var(--radius-control);
-}
+  .shape-control {
+    border-radius: var(--radius-control);
+  }
 
-.shape-large {
-  border-radius: var(--radius-button);
-}
+  .shape-large {
+    border-radius: var(--radius-button);
+  }
 
-.shape-pill {
-  border-radius: var(--radius-pill);
+  .shape-pill {
+    border-radius: var(--radius-pill);
+  }
 }

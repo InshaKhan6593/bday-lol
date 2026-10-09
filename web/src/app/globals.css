@@ -1,60 +1,70 @@
+/*
+ * Cascade layers, lowest first: element defaults, the shared hover lift, then
+ * the components/ui primitives. Page and component modules stay unlayered, so
+ * their classes always override a primitive's defaults, whatever order the
+ * stylesheets happen to load in.
+ */
+@layer base, interaction, primitives;
+
 @import "../styles/tokens.css";
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-html {
-  -webkit-text-size-adjust: 100%;
-}
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: var(--ground);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  font-size: var(--text-body);
-  font-weight: var(--weight-regular);
-  line-height: var(--leading-normal);
-  -webkit-font-smoothing: antialiased;
-  transition: background-color var(--duration-theme) var(--ease);
-}
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--ground);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    font-weight: var(--weight-regular);
+    line-height: var(--leading-normal);
+    -webkit-font-smoothing: antialiased;
+    transition: background-color var(--duration-theme) var(--ease);
+  }
 
-h1,
-h2,
-h3,
-h4,
-p {
-  margin: 0;
-}
+  h1,
+  h2,
+  h3,
+  h4,
+  p {
+    margin: 0;
+  }
 
-a {
-  color: var(--color-ink);
-}
+  a {
+    color: var(--color-ink);
+  }
 
-a:hover {
-  color: #000;
-}
+  a:hover {
+    color: #000;
+  }
 
-button,
-input,
-select,
-textarea {
-  font: inherit;
-  color: inherit;
-}
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
 
-img,
-svg {
-  display: block;
-}
+  img,
+  svg {
+    display: block;
+  }
 
-:focus-visible {
-  outline: var(--stroke) solid var(--color-ink);
-  outline-offset: 3px;
+  :focus-visible {
+    outline: var(--stroke) solid var(--color-ink);
+    outline-offset: 3px;
+  }
 }
 
 /*
@@ -62,23 +72,25 @@ svg {
  * (mouse devices only) and presses flat on click. Colors don't change.
  * Components opt in with the "lift" class.
  */
-.lift {
-  transition:
-    transform var(--duration-press) var(--ease),
-    box-shadow var(--duration-press) var(--ease),
-    background-color var(--duration-fill) var(--ease);
-}
-
-@media (hover: hover) {
-  .lift:hover {
-    transform: var(--lift);
-    box-shadow: var(--shadow-lift);
+@layer interaction {
+  .lift {
+    transition:
+      transform var(--duration-press) var(--ease),
+      box-shadow var(--duration-press) var(--ease),
+      background-color var(--duration-fill) var(--ease);
   }
-}
 
-.lift:active {
-  transform: none;
-  box-shadow: none;
+  @media (hover: hover) {
+    .lift:hover {
+      transform: var(--lift);
+      box-shadow: var(--shadow-lift);
+    }
+  }
+
+  .lift:active {
+    transform: none;
+    box-shadow: none;
+  }
 }
 
 .visually-hidden {

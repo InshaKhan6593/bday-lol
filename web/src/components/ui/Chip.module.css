@@ -1,27 +1,33 @@
-.chip {
-  min-height: var(--control-lg);
-  padding: 0 10px;
-  border: var(--border);
-  border-radius: var(--radius-control);
-  font-size: var(--text-body-lg);
-  font-weight: var(--weight-bold);
-  color: var(--color-ink);
-  cursor: pointer;
-}
+/*
+ * Primitive defaults live in the "primitives" layer, so a className passed in
+ * from a page always wins, whatever order the stylesheets load in.
+ */
+@layer primitives {
+  .chip {
+    min-height: var(--control-lg);
+    padding: 0 10px;
+    border: var(--border);
+    border-radius: var(--radius-control);
+    font-size: var(--text-body-lg);
+    font-weight: var(--weight-bold);
+    color: var(--color-ink);
+    cursor: pointer;
+  }
 
-.paper {
-  background: var(--color-paper);
-}
+  .paper {
+    background: var(--color-paper);
+  }
 
-.accent {
-  background: var(--accent);
-}
+  .accent {
+    background: var(--accent);
+  }
 
-.pressed {
-  background: var(--color-ink);
-  color: var(--color-paper);
-}
+  .pressed {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
 
-.block {
-  width: 100%;
+  .block {
+    width: 100%;
+  }
 }

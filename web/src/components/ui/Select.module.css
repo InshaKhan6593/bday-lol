@@ -1,103 +1,109 @@
-/* ---------- Closed box: same as every other control ---------- */
+/*
+ * Primitive defaults live in the "primitives" layer, so a className passed in
+ * from a page always wins, whatever order the stylesheets load in.
+ */
+@layer primitives {
+  /* ---------- Closed box: same as every other control ---------- */
 
-.trigger {
-  width: 100%;
-  min-height: var(--control-lg);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-sm);
-  padding: 0 14px 0 var(--space-md);
-  border: var(--border);
-  border-radius: var(--radius-control);
-  background: var(--color-paper);
-  color: var(--color-ink);
-  font-size: var(--text-body);
-  font-weight: var(--weight-medium);
-  text-align: left;
-  cursor: pointer;
-}
+  .trigger {
+    width: 100%;
+    min-height: var(--control-lg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding: 0 14px 0 var(--space-md);
+    border: var(--border);
+    border-radius: var(--radius-control);
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-size: var(--text-body);
+    font-weight: var(--weight-medium);
+    text-align: left;
+    cursor: pointer;
+  }
 
-.trigger:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
+  .trigger:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
 
-.chevron {
-  display: flex;
-  flex-shrink: 0;
-  transition: transform var(--duration-quick) var(--ease);
-}
+  .chevron {
+    display: flex;
+    flex-shrink: 0;
+    transition: transform var(--duration-quick) var(--ease);
+  }
 
-.trigger[data-state="open"] .chevron {
-  transform: rotate(180deg);
-}
+  .trigger[data-state="open"] .chevron {
+    transform: rotate(180deg);
+  }
 
-/* ---------- Open list: the menu panel (like "Send a gift ▾") ---------- */
+  /* ---------- Open list: the menu panel (like "Send a gift ▾") ---------- */
 
-.menu {
-  z-index: 60;
-  min-width: var(--radix-select-trigger-width);
-  max-height: min(320px, var(--radix-select-content-available-height));
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  background: var(--color-paper);
-  border: var(--border);
-  border-radius: var(--radius-button);
-  box-shadow: var(--shadow-menu);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-}
+  .menu {
+    z-index: 60;
+    min-width: var(--radix-select-trigger-width);
+    max-height: min(320px, var(--radix-select-content-available-height));
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-paper);
+    border: var(--border);
+    border-radius: var(--radius-button);
+    box-shadow: var(--shadow-menu);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
 
-.viewport {
-  padding: var(--space-sm);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3xs);
-}
+  .viewport {
+    padding: var(--space-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+  }
 
-.item {
-  min-height: var(--control-sm);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-  padding: 0 var(--space-md);
-  border-radius: var(--radius-small);
-  font-size: var(--text-body);
-  font-weight: var(--weight-medium);
-  cursor: pointer;
-  outline: none;
-  user-select: none;
-}
+  .item {
+    min-height: var(--control-sm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: 0 var(--space-md);
+    border-radius: var(--radius-small);
+    font-size: var(--text-body);
+    font-weight: var(--weight-medium);
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+  }
 
-/* Hover / keyboard focus: ground fill with an ink outline. */
-.item[data-highlighted] {
-  background: var(--ground);
-  box-shadow: inset 0 0 0 var(--stroke-thin) var(--color-ink);
-}
+  /* Hover / keyboard focus: ground fill with an ink outline. */
+  .item[data-highlighted] {
+    background: var(--ground);
+    box-shadow: inset 0 0 0 var(--stroke-thin) var(--color-ink);
+  }
 
-/* Picked: black with white text, like the selected calendar date. */
-.item[data-state="checked"] {
-  background: var(--color-ink);
-  color: var(--color-paper);
-  font-weight: var(--weight-bold);
-}
+  /* Picked: black with white text, like the selected calendar date. */
+  .item[data-state="checked"] {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-weight: var(--weight-bold);
+  }
 
-.item[data-disabled] {
-  opacity: 0.4;
-  pointer-events: none;
-}
+  .item[data-disabled] {
+    opacity: 0.4;
+    pointer-events: none;
+  }
 
-.check {
-  display: flex;
-}
+  .check {
+    display: flex;
+  }
 
-.scroll {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 28px;
-  cursor: default;
+  .scroll {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    cursor: default;
+  }
 }

@@ -1,35 +1,41 @@
-.kicker {
-  font-weight: var(--weight-bold);
-  text-transform: uppercase;
-  line-height: 1.2;
-}
+/*
+ * Primitive defaults live in the "primitives" layer, so a className passed in
+ * from a page always wins, whatever order the stylesheets load in.
+ */
+@layer primitives {
+  .kicker {
+    font-weight: var(--weight-bold);
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
 
-.sm {
-  font-size: var(--text-caption);
-  letter-spacing: var(--tracking-caps-md);
-}
+  .sm {
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caps-md);
+  }
 
-.md {
-  font-size: var(--text-note);
-  letter-spacing: var(--tracking-caps-md);
-}
+  .md {
+    font-size: var(--text-note);
+    letter-spacing: var(--tracking-caps-md);
+  }
 
-.lg {
-  font-size: var(--text-label);
-  letter-spacing: var(--tracking-caps-lg);
-}
+  .lg {
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-caps-lg);
+  }
 
-.ink {
-  color: inherit;
-}
+  .ink {
+    color: inherit;
+  }
 
-.accent {
-  color: var(--accent);
-  transition: color var(--duration-theme) var(--ease);
-}
+  .accent {
+    color: var(--accent);
+    transition: color var(--duration-theme) var(--ease);
+  }
 
-.muted {
-  color: var(--color-on-ink-tertiary);
-  font-weight: var(--weight-medium);
-  letter-spacing: var(--tracking-caps);
+  .muted {
+    color: var(--color-on-ink-tertiary);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-caps);
+  }
 }

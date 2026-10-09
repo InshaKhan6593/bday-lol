@@ -1,45 +1,51 @@
-.iconButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  padding: 0;
-  cursor: pointer;
-  color: var(--color-ink);
-}
+/*
+ * Primitive defaults live in the "primitives" layer, so a className passed in
+ * from a page always wins, whatever order the stylesheets load in.
+ */
+@layer primitives {
+  .iconButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0;
+    cursor: pointer;
+    color: var(--color-ink);
+  }
 
-.paper {
-  background: var(--color-paper);
-  border: var(--border);
-}
+  .paper {
+    background: var(--color-paper);
+    border: var(--border);
+  }
 
-.muted {
-  background: var(--color-fill-muted);
-  border: 0;
-  border-radius: var(--radius-cell) !important;
-}
+  .muted {
+    background: var(--color-fill-muted);
+    border: 0;
+    border-radius: var(--radius-cell) !important;
+  }
 
-/* 40 close · 44 calendar months / mobile header · 48 date nav / row share · 52 remove gift link */
-.sm {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-small);
-}
+  /* 40 close · 44 calendar months / mobile header · 48 date nav / row share · 52 remove gift link */
+  .sm {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-small);
+  }
 
-.md {
-  width: var(--control-sm);
-  height: var(--control-sm);
-  border-radius: var(--radius-small);
-}
+  .md {
+    width: var(--control-sm);
+    height: var(--control-sm);
+    border-radius: var(--radius-small);
+  }
 
-.lg {
-  width: var(--control-md);
-  height: var(--control-md);
-  border-radius: var(--radius-control);
-}
+  .lg {
+    width: var(--control-md);
+    height: var(--control-md);
+    border-radius: var(--radius-control);
+  }
 
-.xl {
-  width: var(--control-lg);
-  height: var(--control-lg);
-  border-radius: var(--radius-control);
+  .xl {
+    width: var(--control-lg);
+    height: var(--control-lg);
+    border-radius: var(--radius-control);
+  }
 }

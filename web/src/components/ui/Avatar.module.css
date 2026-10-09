@@ -1,56 +1,62 @@
-.avatar {
-  --avatar-fill: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border-radius: var(--radius-pill);
-  border: var(--border);
-  background: var(--avatar-fill);
-  font-weight: var(--weight-bold);
-  line-height: 1;
-}
+/*
+ * Primitive defaults live in the "primitives" layer, so a className passed in
+ * from a page always wins, whatever order the stylesheets load in.
+ */
+@layer primitives {
+  .avatar {
+    --avatar-fill: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: var(--radius-pill);
+    border: var(--border);
+    background: var(--avatar-fill);
+    font-weight: var(--weight-bold);
+    line-height: 1;
+  }
 
-.photo {
-  object-fit: cover;
-}
+  .photo {
+    object-fit: cover;
+  }
 
-.placeholder {
-  border: var(--border-dashed);
-  background: var(--ground);
-}
+  .placeholder {
+    border: var(--border-dashed);
+    background: var(--ground);
+  }
 
-/* 44 others bar · 52 mobile list · 60 desktop list · 64 claim preview · 120 hero */
-.xs {
-  width: 44px;
-  height: 44px;
-  font-size: var(--text-note);
-}
+  /* 44 others bar · 52 mobile list · 60 desktop list · 64 claim preview · 120 hero */
+  .xs {
+    width: 44px;
+    height: 44px;
+    font-size: var(--text-note);
+  }
 
-.sm {
-  width: 52px;
-  height: 52px;
-  font-size: var(--text-body-lg);
-}
+  .sm {
+    width: 52px;
+    height: 52px;
+    font-size: var(--text-body-lg);
+  }
 
-.md {
-  width: 60px;
-  height: 60px;
-  font-size: var(--text-action);
-}
+  .md {
+    width: 60px;
+    height: 60px;
+    font-size: var(--text-action);
+  }
 
-.card {
-  width: 64px;
-  height: 64px;
-  font-size: var(--text-title);
-}
+  .card {
+    width: 64px;
+    height: 64px;
+    font-size: var(--text-title);
+  }
 
-.lg {
-  width: 120px;
-  height: 120px;
-  font-size: 46px;
-}
+  .lg {
+    width: 120px;
+    height: 120px;
+    font-size: 46px;
+  }
 
-.lg.placeholder {
-  font-size: 56px;
+  .lg.placeholder {
+    font-size: 56px;
+  }
 }
