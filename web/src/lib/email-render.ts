@@ -20,7 +20,8 @@ export type EmailBlock =
   /** Avatar circle + name + one line under it. */
   | { kind: "person"; name: string; line: string; photoUrl?: string | null }
   | { kind: "note"; text: string }
-  | { kind: "rows"; title?: string; rows: Array<[label: string, value: string]> }
+  /** Label/value rows. "strong" = standings and boost lists (bold labels, bigger amounts). */
+  | { kind: "rows"; title?: string; strong?: boolean; rows: Array<[label: string, value: string]> }
   | { kind: "fine"; text: string };
 
 export type EmailContent = {
@@ -95,9 +96,10 @@ function blockHtml(block: EmailBlock, accent: string): string {
           ? `<p style="margin:6px 0 8px;font-size:13px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:${INK}">${escapeHtml(block.title)}</p>`
           : ""
       }<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 16px;border-top:2px solid #efefef">${block.rows
-        .map(
-          ([label, value]) =>
-            `<tr><td style="padding:9px 14px 9px 0;border-bottom:2px solid #efefef;font-size:14px;color:#4a4a4a;white-space:nowrap;vertical-align:top">${escapeHtml(label)}</td><td style="padding:9px 0;border-bottom:2px solid #efefef;font-size:15px;font-weight:600;color:${INK};word-break:break-word">${escapeHtml(value)}</td></tr>`,
+        .map(([label, value]) =>
+          block.strong
+            ? `<tr><td style="padding:12px 14px 12px 0;border-bottom:2px solid #efefef;font-size:17px;font-weight:700;color:${INK}">${escapeHtml(label)}</td><td align="right" style="padding:12px 0;border-bottom:2px solid #efefef;font-size:20px;font-weight:800;color:${INK};white-space:nowrap">${escapeHtml(value)}</td></tr>`
+            : `<tr><td style="padding:9px 14px 9px 0;border-bottom:2px solid #efefef;font-size:14px;color:#4a4a4a;white-space:nowrap;vertical-align:top">${escapeHtml(label)}</td><td style="padding:9px 0;border-bottom:2px solid #efefef;font-size:15px;font-weight:600;color:${INK};word-break:break-word">${escapeHtml(value)}</td></tr>`,
         )
         .join("")}</table>`;
     case "fine":

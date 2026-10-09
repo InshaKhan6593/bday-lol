@@ -1,0 +1,51 @@
+# 08: Emails (content and design)
+
+The 8 emails from the spec (§8 in [02-product-spec.md](02-product-spec.md)), what each one says, and why.
+The wording lives in `web/src/lib/email-templates.ts`; the look in `web/src/lib/email-render.ts`.
+**Preview all of them** at http://localhost:3000/dev/emails (development only), at inbox and phone width.
+
+## What good emails like these do (research, 2026-10-09)
+
+| Rule | Source |
+|---|---|
+| The **subject tells the whole story** (what happened, with names, dates, amounts) so nobody has to open the email. Plain beats clever. **~50 characters or less** so phones don't cut it off | [Postmark](https://postmarkapp.com/guides/transactional-email-best-practices), [Zoho ZeptoMail](https://www.zoho.com/zeptomail/articles/transactional-email-subject-lines.html) |
+| The **preview line adds the next fact** (outcome or next step) and never repeats the subject | [Zoho ZeptoMail](https://www.zoho.com/zeptomail/articles/using-email-preheaders.html), [Spotler](https://spotler.com/blog/unfolding-the-email-sender-name-subject-line-and-pre-header) |
+| Transactional emails are **expected, timely, actionable and plain**: sent right after the event, **one call to action**, little decoration | [Postmark best-practice skills](https://www.skills.sh/activecampaign/postmark-skills/postmark-email-best-practices) |
+| Reminders are **short (2–3 sentences)** with one clear action and the date | [Grammarly](https://www.grammarly.com/blog/business-writing/reminder-email/), [Bluehost](https://www.bluehost.com/blog/reminder-email-guide/), [Constant Contact](https://www.constantcontact.com/blog/email-reminders/) |
+| **Outbid emails** show the current top bid and a "bid again" button **pre-filled with the amount that takes the lead**. Bidders complain when the top bid is missing | [RallyUp](https://rallyup.com/learn/how-to-increase-your-auction-bid/), [32auctions](https://www.32auctions.com/silent-auctions/silent-auction-marketing-templates), [DomainInvesting on GoDaddy](https://domaininvesting.com/godaddy-auctions-outbid-email-should-have-high-bid-amount) |
+| **Birthday emails** lead with warmth and the **first name**, are short, often use one emoji, and arrive **on the day** | [Email Love](https://emaillove.com/subject-lines/birthday), [MailCharts](https://www.mailcharts.com/email-examples/birthdays) |
+| Use **exact times** ("midnight ET") instead of "soon" | [Postmark](https://postmarkapp.com/guides/transactional-email-best-practices) |
+| **Digests** group activity per item and show the numbers; urgent alerts never wait for a digest | [SuprSend](https://docs.suprsend.com/docs/best-practises-for-batching-digest), [Novu](https://novu.co/blog/digest-notifications-best-practices-example/) |
+| **From name** is the product ("bday.lol"), and **replies reach a real inbox** (no "noreply") | [Postmark](https://postmarkapp.com/guides/transactional-email-best-practices) |
+| A **postal address** in the footer adds trust (required for marketing-style mail such as reminders) | [Autopilot / SendGrid](https://blog.autopilothq.com/transactional-email-best-practices/) |
+
+Plus our own voice, from the mockup: short and punchy ("One birthday. The whole internet." / "October 7 is yours. For now." / "Getting outbid is part of the game.").
+
+## Design
+
+Same design language as the app (and close to Gumroad's neo-brutalist emails): the person's **theme ground** as the background,
+a **kicker over a giant title** (the homepage hero), a **white card with ink outlines and a hard shadow** (a thick bottom-right
+border, because Gmail strips `box-shadow`), the **black claim bar with an accent button**, **avatar circles**, receipt rows.
+Bricolage Grotesque loads where inboxes allow web fonts (Apple Mail, iOS); others fall back to Helvetica.
+
+## The emails
+
+Every email: one button (or one claim bar), a receipt wherever money changed hands, a "why you're getting this" line.
+Unsubscribe links on 4, 5, 6 and 7 (spec §8). "Jess", "October 7" and amounts below are examples.
+
+| # | Email | When / to whom | Subject | Preview line | Body + button |
+|---|---|---|---|---|---|
+| 1 | **Claim confirmation** (is the receipt) | Right after payment, to the claimer | Today's #1: **October 7 is yours. For now.** · Later date: **October 12 is yours. For now.** · Passed while paying: **You're #3 on October 7** | "You're on the homepage with $241." / "$91 more takes #1. Friends can boost you from your page." | Avatar row ($241 · #1). One line: on the homepage until midnight ET, we'll email you if outbid (rank 2+: how much takes #1). **Share your link**. Receipt. "Bids are final. Questions? Just reply." |
+| 2 | **Boost receipt** | Right after payment, to the booster (Stripe's email) | **Your $16 boost for Tyler is in** | "Tyler is #1 on October 9 with $241." | Title "+$16". Standing, plus "We'll email you if Tyler gets passed" when ticked. **Share Tyler's day**. Receipt. "Paid to bday.lol, not to Tyler." |
+| 3 | **Outbid alert** | When someone loses #1 (max 1 per person per 15 min), to them and their alert list | **You got passed on October 7** / **Jess got passed on October 7** | "Tyler has $241. $2 takes #1 back." | Standings: "#1 Tyler Brooks $241 / #2 You $240". Claim bar **Take #1 back for $2** → **Boost $2** (opens the Boost box pre-filled). "October 7 ends at midnight ET." when it's today |
+| 4 | **Birthday reminder** | 7 days before, homepage signups | **October 7 is in a week** | "Claim it before someone else does. Nobody has claimed it yet." | One line. Claim bar **Own October 7 for $5** → **Claim October 7** |
+| 5 | **Your day is here** | 8:00 AM ET on the day, everyone on that day's list | **Happy birthday, Jess! 🎂** | "You're on the bday.lol homepage today. Your gift buttons are live." | Avatar row. Where they stand + gift buttons are live. **Share your link** |
+| 6 | **You got boosted** | About once an hour, bundled, to the birthday person | **3 people boosted you +$25** / **Someone boosted you +$5** | "You're #1 on October 7 with $265." | Title "+$25". Each boost with its time ("1:12 PM ET  +$5"); never who boosted. **Share your link** |
+| 7 | **Yearly re-claim** | 7 days before, last year's claimers (auto-added) | **Claim October 7 again** | "It's a week away and the board starts fresh. The top bid is $40." | "Last year you claimed October 7. Every year starts fresh…" Claim bar → **Claim October 7** |
+| 8 | **Admin alert** | Each new claim, to the client | **New claim: Sam Rivera, Oct 7, $241** | "#1 on October 7, 2026. Check the photo, name and bio." | Photo + name + bio, details table (paid, rank, email, color, gift links), **Open October 7's list** |
+
+## Still needed from the client (07 C1, C2)
+
+- The **reply-to inbox** for "Questions? Just reply" (a support email).
+- A **postal address** for the footer (env `EMAIL_FOOTER_ADDRESS`).
+- The sending domain verified in **Resend** (DNS records).

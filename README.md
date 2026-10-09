@@ -37,6 +37,7 @@ payments through Stripe Checkout (Adaptive Pricing, settled in USD) and a hidden
 | [05-business-logic.md](05-business-logic.md) | Exact rules and formulas: min bids, ranking, boost math, next-occurrence and leap years, Eastern Time, email throttling |
 | [06-seo.md](06-seo.md) | Date and month pages, metadata, OG images, the "About [date] birthdays" section and its data sources |
 | [07-open-questions.md](07-open-questions.md) | Gaps and conflicts, **with our decisions**. Section C + the draft message at the bottom are what still needs the client |
+| [08-emails.md](08-emails.md) | The 8 emails: research on what good ones say, the design, and each email's subject, preview line and content |
 | [web/](web/) | **The Next.js app.** Setup, commands and folder map in [web/README.md](web/README.md) |
 | `resources/` | *(local only)* Original material from the client (see below) |
 

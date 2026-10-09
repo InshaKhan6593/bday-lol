@@ -82,45 +82,75 @@ describe("email wording", () => {
   const receipt = { amountCents: 24_100, presentment: null, paidAt: new Date("2026-10-07T18:40:00Z"), reference: null, item: "Claim" };
   const person = { name: "Sam Rivera", bio: "", photoUrl: null, theme: "sky" as const };
 
+  it("keeps every subject short enough for a phone inbox (~50 characters)", () => {
+    for (const { content } of sampleEmails(ORIGIN)) {
+      expect(content.subject.length, content.subject).toBeLessThanOrEqual(50);
+      // The preview line adds something; it never just repeats the subject.
+      expect(content.preheader).not.toBe(content.subject);
+    }
+  });
+
   it("claim confirmation: today's #1, a later date's #1, and a lower rank (07 B1, B6)", () => {
     const base = { ...person, md, year: 2026, currentYear: 2026, totalCents: 24_100, shareUrl: `${ORIGIN}/october-7`, receipt, timeZone: "America/New_York" };
     const today = claimConfirmationEmail({ ...base, rank: 1, toTopCents: null, isToday: true });
-    expect(today.subject).toBe("You're on the homepage: October 7 is yours");
+    expect(today.subject).toBe("October 7 is yours. For now.");
+    expect(today.preheader).toBe("You're on the homepage with $241.");
     expect(today.kicker).toBe("You're on the homepage");
 
     const later = claimConfirmationEmail({ ...base, md: { month: 10, day: 1 }, year: 2027, rank: 1, toTopCents: null, isToday: false });
-    expect(later.subject).toBe("October 1, 2027 is yours (for now)");
+    expect(later.subject).toBe("October 1, 2027 is yours. For now.");
 
     const third = claimConfirmationEmail({ ...base, rank: 3, toTopCents: 9_100, isToday: true });
     expect(third.subject).toBe("You're #3 on October 7");
-    expect(third.preheader).toBe(
-      "Someone got there first, so you're #3. $91 more takes #1, and friends can boost you from your date's page.",
-    );
+    expect(third.preheader).toBe("$91 more takes #1. Friends can boost you from your page.");
     // Lower ranks don't get the outbid promise (alerts only fire on losing #1).
     expect(JSON.stringify(third.blocks)).not.toContain("we'll email you right away");
+    // One button per email.
+    expect(third.blocks.filter((b) => b.kind === "button" || b.kind === "bar")).toHaveLength(1);
   });
 
-  it("outbid alert speaks to the person passed, or to a fan", () => {
-    const base = { ...person, name: "Jess Moreno", md, newTopName: "Tyler Brooks", amountCents: 200, totalCents: 24_000, rank: 2, boostUrl: `${ORIGIN}/october-7?boost=x&amount=2` };
-    expect(outbidAlertEmail({ ...base, isOwner: true }).subject).toBe("You just got passed on October 7");
-    const fan = outbidAlertEmail({ ...base, isOwner: false });
-    expect(fan.subject).toBe("Jess just got passed on October 7");
-    expect(fan.reason).toBe("You're getting this because you asked us to email you if Jess gets passed.");
-    expect(fan.blocks).toContainEqual({
+  it("outbid alert shows who's #1, what you have, and the amount that wins it back", () => {
+    const base = {
+      ...person,
+      name: "Jess Moreno",
+      md,
+      newTop: { name: "Tyler Brooks", totalCents: 24_100 },
+      amountCents: 200,
+      totalCents: 24_000,
+      rank: 2,
+      isToday: true,
+      boostUrl: `${ORIGIN}/october-7?boost=x&amount=2`,
+    };
+    const owner = outbidAlertEmail({ ...base, isOwner: true });
+    expect(owner.subject).toBe("You got passed on October 7");
+    expect(owner.preheader).toBe("Tyler has $241. $2 takes #1 back.");
+    expect(owner.blocks).toContainEqual({
+      kind: "rows",
+      strong: true,
+      rows: [
+        ["#1 Tyler Brooks", "$241"],
+        ["#2 You", "$240"],
+      ],
+    });
+    expect(owner.blocks).toContainEqual({
       kind: "bar",
       title: "Take #1 back for $2",
-      sub: "Boosts add to the total and are final.",
+      sub: "October 7 ends at midnight ET.",
       label: "Boost $2",
       url: base.boostUrl,
     });
+
+    const fan = outbidAlertEmail({ ...base, isOwner: false });
+    expect(fan.subject).toBe("Jess got passed on October 7");
+    expect(fan.reason).toBe("You're getting this because you asked us to email you if Jess gets passed.");
   });
 
   it("reminder vs. yearly re-claim", () => {
     const signup = reminderEmail({ md, source: "signup", topTotalCents: null, minCents: 500, claimUrl: `${ORIGIN}/claim?date=october-7` });
-    expect(signup.subject).toBe("Your birthday is a week away: claim October 7 first");
-    expect(signup.preheader).toBe("Nobody has claimed it yet. Bids start at $5.");
+    expect(signup.subject).toBe("October 7 is in a week");
+    expect(signup.preheader).toBe("Claim it before someone else does. Nobody has claimed it yet.");
     const again = reminderEmail({ md, source: "claim", topTotalCents: 4_000, minCents: 4_100, claimUrl: `${ORIGIN}/claim?date=october-7` });
-    expect(again.subject).toBe("Claim October 7 again: it's a week away");
-    expect(again.preheader).toBe("The top bid is $40 right now.");
+    expect(again.subject).toBe("Claim October 7 again");
+    expect(again.preheader).toBe("It's a week away and the board starts fresh. The top bid is $40.");
   });
 });

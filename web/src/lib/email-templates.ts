@@ -1,6 +1,6 @@
 import { getTheme, type ThemeKey } from "@/config/themes";
 import type { GiftLink } from "@/db/schema";
-import { formatLong, MONTHS, type MonthDay } from "./birthday";
+import { formatLong, formatShort, MONTHS, type MonthDay } from "./birthday";
 import type { EmailBlock, EmailContent } from "./email-render";
 import { formatMinorUnits } from "./email-render";
 import { GIFT_SERVICES } from "./gifts";
@@ -9,8 +9,13 @@ import { firstName } from "./people";
 
 /**
  * The 8 emails (spec §8). Pure: data in, wording out. Sending, dedupe and
- * unsubscribe links live in server/email. Each one opens like the homepage:
- * a kicker over a giant title, in the person's colors.
+ * unsubscribe links live in server/email.
+ *
+ * Writing rules (researched, see 08-emails.md):
+ * - The subject says what happened, with names, dates and amounts, in ~50 characters or less.
+ * - The preview line adds the next fact; it never repeats the subject.
+ * - One or two short sentences in the brand's voice, then ONE button.
+ * - Exact times ("midnight ET"), and a receipt wherever money changed hands.
  */
 
 /** "October 7's" */
@@ -79,35 +84,42 @@ export type ClaimConfirmationInput = Person & {
 export function claimConfirmationEmail(i: ClaimConfirmationInput): EmailContent {
   const day = formatLong(i.md);
   const label = dateWithYear(i.md, i.year, i.currentYear);
-  const top = i.rank === 1;
-  const subject = top
-    ? i.isToday
-      ? `You're on the homepage: ${day} is yours`
-      : `${label} is yours (for now)`
-    : `You're #${i.rank} on ${label}`;
-  const lead = top
-    ? i.isToday
-      ? "You own today's bday.lol homepage. Share it so everyone knows it's your day."
-      : `You're #1 for ${label}. Share it so friends know it's coming.`
-    : `Someone got there first, so you're #${i.rank}.${i.toTopCents ? ` ${formatUsd(i.toTopCents)} more takes #1, and friends can boost you from your date's page.` : ""}`;
+  const total = formatUsd(i.totalCents);
+
+  if (i.rank > 1) {
+    const toTop = i.toTopCents ? `${formatUsd(i.toTopCents)} more takes #1. ` : "";
+    return {
+      subject: `You're #${i.rank} on ${label}`,
+      preheader: `${toTop}Friends can boost you from your page.`,
+      kicker: `You're #${i.rank} on`,
+      title: label,
+      ...colors(i.theme),
+      blocks: [
+        { kind: "person", name: i.name, line: `${total} · #${i.rank} on ${day}`, photoUrl: i.photoUrl },
+        { kind: "p", text: `Someone bid more while you were paying. ${toTop}Share your link and friends can boost you there.` },
+        { kind: "button", label: "Share your link", url: i.shareUrl },
+        receiptRows(i.receipt, i.timeZone),
+        { kind: "fine", text: "Bids are final. Questions? Just reply to this email." },
+      ],
+      reason: `You're getting this because you claimed ${day} on bday.lol.`,
+    };
+  }
+
+  const lead = i.isToday
+    ? "You're on the bday.lol homepage until midnight ET, unless someone outbids you. If they do, we'll email you right away."
+    : `Stay on top and the bday.lol homepage is yours all day on ${day}. If someone outbids you, we'll email you right away.`;
   return {
-    subject,
-    preheader: lead,
-    kicker: top ? (i.isToday ? "You're on the homepage" : "You're #1 for") : `You're #${i.rank} on`,
+    subject: `${label} is yours. For now.`,
+    preheader: i.isToday ? `You're on the homepage with ${total}.` : `You're #1 with ${total}. Share it so friends know it's coming.`,
+    kicker: i.isToday ? "You're on the homepage" : "You're #1 for",
     title: label,
     ...colors(i.theme),
     blocks: [
-      { kind: "person", name: i.name, line: `${formatUsd(i.totalCents)} · #${i.rank} on ${day}`, photoUrl: i.photoUrl },
+      { kind: "person", name: i.name, line: `${total} · #1 on ${day}`, photoUrl: i.photoUrl },
       { kind: "p", text: lead },
-      { kind: "button", label: "Share your date", url: i.shareUrl },
-      {
-        kind: "note",
-        text: top
-          ? `If someone outbids you, we'll email you right away so you can bid back. Either way, you stay on ${possessive(i.md)} birthday list.`
-          : `You stay on ${possessive(i.md)} birthday list, where friends can find you, boost you and send gifts.`,
-      },
+      { kind: "button", label: "Share your link", url: i.shareUrl },
       receiptRows(i.receipt, i.timeZone),
-      { kind: "fine", text: "Bids are final. Questions about this payment? Reply to this email." },
+      { kind: "fine", text: "Bids are final. Questions? Just reply to this email." },
     ],
     reason: `You're getting this because you claimed ${day} on bday.lol.`,
   };
@@ -131,23 +143,19 @@ export function boostReceiptEmail(i: BoostReceiptInput): EmailContent {
   const first = firstName(i.name);
   const day = formatLong(i.md);
   const amount = formatUsd(i.receipt.amountCents);
-  const standing = i.rank === 1 ? `That puts ${first} at #1 on ${day}.` : `${first} is #${i.rank} on ${day}.`;
+  const standing = `${first} is #${i.rank} on ${day} with ${formatUsd(i.totalCents)}.`;
   return {
     subject: `Your ${amount} boost for ${first} is in`,
-    preheader: `${first} now has ${formatUsd(i.totalCents)}. ${standing}`,
+    preheader: standing,
     kicker: `You boosted ${first}`,
     title: `+${amount}`,
     ...colors(i.theme),
     blocks: [
       { kind: "person", name: i.name, line: `${formatUsd(i.totalCents)} · #${i.rank} on ${day}`, photoUrl: i.photoUrl },
-      { kind: "p", text: `Thanks! ${standing}` },
-      { kind: "button", label: `See ${possessive(i.md)} list`, url: i.dateUrl },
-      ...(i.alertOptIn ? [{ kind: "note" as const, text: `We'll email you if ${first} gets passed.` }] : []),
+      { kind: "p", text: `Nice one. ${standing}${i.alertOptIn ? ` We'll email you if ${first} gets passed.` : ""}` },
+      { kind: "button", label: `Share ${first}'s day`, url: i.dateUrl },
       receiptRows(i.receipt, i.timeZone),
-      {
-        kind: "fine",
-        text: `Boosts are final and add to ${first}'s total. They're paid to bday.lol, not to ${first}. Gifts still go straight to them.`,
-      },
+      { kind: "fine", text: `Boosts are final and paid to bday.lol, not to ${first}. Gifts still go straight to them.` },
     ],
     reason: `You're getting this because you boosted ${i.name} on bday.lol.`,
   };
@@ -161,12 +169,14 @@ export type OutbidAlertInput = Person & {
   md: MonthDay;
   /** The email goes to the person who got passed (vs. a fan on their alert list). */
   isOwner: boolean;
-  newTopName: string;
+  newTop: { name: string; totalCents: number };
   /** The latest amount needed to take #1 back. */
   amountCents: number;
   /** Their total and rank right now (the email can go out up to 15 min after they were passed). */
   totalCents: number;
   rank: number;
+  /** The day being fought over is today: it ends at midnight ET. */
+  isToday: boolean;
   boostUrl: string;
 };
 
@@ -174,19 +184,31 @@ export function outbidAlertEmail(i: OutbidAlertInput): EmailContent {
   const first = firstName(i.name);
   const day = formatLong(i.md);
   const amount = formatUsd(i.amountCents);
+  const who = i.isOwner ? "You" : first;
+  const newTop = firstName(i.newTop.name);
   return {
-    subject: i.isOwner ? `You just got passed on ${day}` : `${first} just got passed on ${day}`,
-    preheader: `${amount} takes #1 back.`,
-    kicker: i.isOwner ? "You just got passed on" : `${first} just got passed on`,
+    subject: `${i.isOwner ? "You" : first} got passed on ${day}`,
+    preheader: `${newTop} has ${formatUsd(i.newTop.totalCents)}. ${amount} takes #1 back.`,
+    kicker: `${who} got passed on`,
     title: day,
     ...colors(i.theme),
     blocks: [
-      { kind: "person", name: i.name, line: `${formatUsd(i.totalCents)} · now #${i.rank} on ${day}`, photoUrl: i.photoUrl },
-      { kind: "p", text: `${firstName(i.newTopName)} is #1 now. ${i.isOwner ? "You can" : `You can boost ${first} and`} take it back.` },
-      { kind: "bar", title: `Take #1 back for ${amount}`, sub: "Boosts add to the total and are final.", label: `Boost ${amount}`, url: i.boostUrl },
-      ...(i.isOwner
-        ? [{ kind: "note" as const, text: `You're still on ${possessive(i.md)} birthday list, and gifts still reach you.` }]
-        : []),
+      {
+        kind: "rows",
+        strong: true,
+        rows: [
+          [`#1 ${i.newTop.name}`, formatUsd(i.newTop.totalCents)],
+          [`#${i.rank} ${i.isOwner ? "You" : i.name}`, formatUsd(i.totalCents)],
+        ],
+      },
+      {
+        kind: "bar",
+        title: `Take #1 back for ${amount}`,
+        sub: i.isToday ? `${day} ends at midnight ET.` : undefined,
+        label: `Boost ${amount}`,
+        url: i.boostUrl,
+      },
+      { kind: "fine", text: "Getting outbid is part of the game. Boosts add to the total and are final." },
     ],
     reason: i.isOwner
       ? `You're getting this because you claimed ${day} on bday.lol.`
@@ -212,23 +234,23 @@ export type ReminderInput = {
 export function reminderEmail(i: ReminderInput): EmailContent {
   const day = formatLong(i.md);
   const again = i.source === "claim";
-  const price =
-    i.topTotalCents === null
-      ? `Nobody has claimed it yet. Bids start at ${formatUsd(i.minCents)}.`
-      : `The top bid is ${formatUsd(i.topTotalCents)} right now.`;
+  const open = i.topTotalCents === null;
+  const state = open ? `Nobody has claimed it yet.` : `The top bid is ${formatUsd(i.topTotalCents!)}.`;
   return {
-    subject: again ? `Claim ${day} again: it's a week away` : `Your birthday is a week away: claim ${day} first`,
-    preheader: price,
-    kicker: again ? "It's back in a week" : "A week to go",
+    subject: again ? `Claim ${day} again` : `${day} is in a week`,
+    preheader: again
+      ? `It's a week away and the board starts fresh. ${state}`
+      : `Claim it before someone else does. ${state}`,
+    kicker: again ? "It's back in a week" : "One week to go",
     title: day,
     blocks: [
       {
         kind: "p",
         text: again
-          ? `Last year you claimed ${day}. It's back in a week, and the board starts fresh. Claim it again before someone else does.`
-          : "Claim it before someone else does. The highest bid gets the bday.lol homepage for the whole day.",
+          ? `Last year you claimed ${day}. Every year starts fresh, so it's up for grabs again.`
+          : "Claim your birthday before someone else does. The highest bid gets the bday.lol homepage all day.",
       },
-      { kind: "bar", title: `Own ${day} for ${formatUsd(i.minCents)}`, sub: price, label: `Claim ${day}`, url: i.claimUrl },
+      { kind: "bar", title: `Own ${day} for ${formatUsd(i.minCents)}`, sub: state, label: `Claim ${day}`, url: i.claimUrl },
     ],
     reason: again
       ? `You're getting this because you claimed ${day} on bday.lol last year. One email a year.`
@@ -251,26 +273,20 @@ export type YourDayInput = Person & {
 export function yourDayEmail(i: YourDayInput): EmailContent {
   const first = firstName(i.name);
   const day = formatLong(i.md);
-  const standing =
-    i.rank === 1
-      ? "You're #1 today, so you're on the bday.lol homepage until midnight ET, unless someone outbids you."
-      : `You're #${i.rank} on today's list.`;
+  const where = i.rank === 1 ? "You're on the bday.lol homepage today." : `You're #${i.rank} on today's list.`;
+  const gifts = i.hasGiftLinks
+    ? "Your gift buttons are live, so share your link and let people celebrate you."
+    : "Share your link so everyone knows it's your day.";
   return {
-    subject: `Happy birthday, ${first}! ${day} is here`,
-    preheader: standing,
+    subject: `Happy birthday, ${first}! 🎂`,
+    preheader: `${where} ${i.hasGiftLinks ? "Your gift buttons are live." : ""}`.trim(),
     kicker: `Happy birthday, ${first}`,
     title: day,
     ...colors(i.theme),
     blocks: [
       { kind: "person", name: i.name, line: `${formatUsd(i.totalCents)} · #${i.rank} today`, photoUrl: i.photoUrl },
-      { kind: "p", text: standing },
-      {
-        kind: "p",
-        text: i.hasGiftLinks
-          ? "Your gift buttons are live today. Share your link so friends can send something."
-          : "Share your link so friends know it's your day.",
-      },
-      { kind: "button", label: "Share your day", url: i.dateUrl },
+      { kind: "p", text: `${where} ${gifts}` },
+      { kind: "button", label: "Share your link", url: i.dateUrl },
     ],
     reason: `You're getting this because you're on ${possessive(i.md)} birthday list on bday.lol.`,
   };
@@ -282,26 +298,30 @@ export function yourDayEmail(i: YourDayInput): EmailContent {
 
 export type BoostDigestInput = Person & {
   md: MonthDay;
-  count: number;
-  addedCents: number;
+  /** Each boost since the last digest, oldest first. Who boosted is never shown. */
+  boosts: Array<{ amountCents: number; at: Date }>;
   totalCents: number;
   rank: number;
   dateUrl: string;
+  timeZone: string;
 };
 
 export function boostDigestEmail(i: BoostDigestInput): EmailContent {
   const day = formatLong(i.md);
-  const added = formatUsd(i.addedCents);
+  const added = i.boosts.reduce((sum, b) => sum + b.amountCents, 0);
+  const count = i.boosts.length;
+  const time = (d: Date) => d.toLocaleTimeString("en-US", { timeZone: i.timeZone, hour: "numeric", minute: "2-digit" });
   return {
-    subject: `You got boosted: +${added} on ${day}`,
-    preheader: `Your total is now ${formatUsd(i.totalCents)}.`,
-    kicker: i.count === 1 ? "Someone boosted you" : `${i.count} boosts for you`,
-    title: `+${added}`,
+    subject:
+      count === 1 ? `Someone boosted you +${formatUsd(added)}` : `${count} people boosted you +${formatUsd(added)}`,
+    preheader: `You're #${i.rank} on ${day} with ${formatUsd(i.totalCents)}.`,
+    kicker: count === 1 ? "Someone boosted you" : `${count} boosts for you`,
+    title: `+${formatUsd(added)}`,
     ...colors(i.theme),
     blocks: [
       { kind: "person", name: i.name, line: `${formatUsd(i.totalCents)} · #${i.rank} on ${day}`, photoUrl: i.photoUrl },
-      { kind: "p", text: `Your total is now ${formatUsd(i.totalCents)}, and you're #${i.rank} on ${day}.` },
-      { kind: "button", label: `See ${possessive(i.md)} list`, url: i.dateUrl },
+      { kind: "rows", strong: true, rows: i.boosts.map((b) => [`${time(b.at)} ET`, `+${formatUsd(b.amountCents)}`] as [string, string]) },
+      { kind: "button", label: "Share your link", url: i.dateUrl },
     ],
     reason: `You're getting this because you're on ${possessive(i.md)} birthday list on bday.lol.`,
   };
@@ -324,8 +344,8 @@ export type AdminClaimInput = Person & {
 export function adminClaimEmail(i: AdminClaimInput): EmailContent {
   const day = formatLong(i.md);
   return {
-    subject: `New claim: ${i.name} on ${day} (${formatUsd(i.amountCents)})`,
-    preheader: `#${i.rank} on ${day}, ${i.year}.`,
+    subject: `New claim: ${i.name}, ${formatShort(i.md)}, ${formatUsd(i.amountCents)}`,
+    preheader: `#${i.rank} on ${day}, ${i.year}. Check the photo, name and bio.`,
     kicker: "New claim",
     title: day,
     ...colors(i.theme),
@@ -344,7 +364,7 @@ export function adminClaimEmail(i: AdminClaimInput): EmailContent {
         ],
       },
       { kind: "button", label: `Open ${possessive(i.md)} list`, url: i.dateUrl },
-      { kind: "fine", text: "If the photo, name or bio is offensive, remove it from the admin view." },
+      { kind: "fine", text: "Offensive photo, name or bio? Remove it from the admin view." },
     ],
     reason: "You're getting this because you're the bday.lol admin.",
   };
