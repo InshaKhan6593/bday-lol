@@ -1,6 +1,6 @@
 import type { BoardTypeSettings } from "@/config/board-types";
 import type { Executor } from "@/db";
-import { currentBoardYear, zonedDate, type MonthDay } from "@/lib/birthday";
+import { boardClosesAt, currentBoardYear, zonedDate, type MonthDay } from "@/lib/birthday";
 import { claimMinCents, claimTarget, type ClaimTarget } from "@/lib/claim";
 import { getBirthdaySettings, getCurrentBoard } from "./leaderboard";
 
@@ -14,6 +14,10 @@ export type ClaimPageData = {
   target: ClaimTarget;
   /** Smallest bid that passes the target. */
   minCents: number;
+  /** Today's date and when it ends: the form warns "Today ends in 12 min…" when claiming today. */
+  today: MonthDay;
+  dayEndsAt: string;
+  serverNow: string;
 };
 
 /** Data for /claim?date=october-7&rank=2. No date → today's date. */
@@ -34,5 +38,8 @@ export async function getClaimPageData(
     year: currentBoardYear(date, instant, settings.timezone),
     target,
     minCents: claimMinCents(target, settings),
+    today: { month: today.month, day: today.day },
+    dayEndsAt: boardClosesAt(today, today.year, settings.timezone).toISOString(),
+    serverNow: instant.toISOString(),
   };
 }

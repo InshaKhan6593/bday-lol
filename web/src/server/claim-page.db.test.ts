@@ -24,6 +24,10 @@ describe("claim page data", () => {
       expect(page.year).toBe(2026);
       expect(page.target).toEqual({ rank: 1, name: "Jess Moreno", totalCents: 24_000 });
       expect(page.minCents).toBe(24_100);
+      // For the "Today ends in 12 min" warning: today ends at midnight ET.
+      expect(page.today).toEqual(oct7);
+      expect(page.dayEndsAt).toBe(new Date("2026-10-08T00:00:00-04:00").toISOString());
+      expect(page.serverNow).toBe(NOON_OCT_7.toISOString());
     });
   });
 

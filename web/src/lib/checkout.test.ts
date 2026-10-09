@@ -56,9 +56,10 @@ describe("claim checkout session", () => {
     expect(p.cancel_url).toBe("https://bday.lol/claim?date=october-1&rank=2");
   });
 
-  it("reads our metadata back and ignores sessions that aren't claims", () => {
+  it("reads our metadata back and ignores sessions this app didn't create", () => {
     expect(readCheckoutMetadata({ ...metadata })).toEqual(metadata);
-    expect(readCheckoutMetadata({ ...metadata, kind: "boost" })).toBeNull();
+    expect(readCheckoutMetadata({ ...metadata, kind: "boost" })).toEqual({ ...metadata, kind: "boost" });
+    expect(readCheckoutMetadata({ ...metadata, kind: "donation" })).toBeNull();
     expect(readCheckoutMetadata({ kind: "claim", paymentId: "pay-1" })).toBeNull();
     expect(readCheckoutMetadata(null)).toBeNull();
   });

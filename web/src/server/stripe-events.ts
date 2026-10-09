@@ -1,7 +1,7 @@
 import type Stripe from "stripe";
 import type { Executor } from "@/db";
 import { readCheckoutMetadata } from "@/lib/checkout";
-import { expireCheckout, fulfillCheckout, type FulfillResult } from "./claims";
+import { expireCheckout, fulfillCheckout, type FulfillResult } from "./payments";
 
 export type EventOutcome =
   | { handled: false; reason: string }
@@ -9,14 +9,11 @@ export type EventOutcome =
   | { handled: true; action: "expired"; changed: boolean }
   | { handled: true; action: "waiting" };
 
-/**
- * Applies one verified Stripe event to the database. Only Checkout Sessions
- * this app created for a claim are touched; boosts arrive in step 7.
- */
+/** Applies one verified Stripe event to the database. Only Checkout Sessions this app created are touched. */
 export async function handleStripeEvent(db: Executor, event: Stripe.Event, instant: Date): Promise<EventOutcome> {
   if (!event.type.startsWith("checkout.session.")) return { handled: false, reason: `ignored ${event.type}` };
   const session = event.data.object as Stripe.Checkout.Session;
-  if (!readCheckoutMetadata(session.metadata)) return { handled: false, reason: "not a claim session" };
+  if (!readCheckoutMetadata(session.metadata)) return { handled: false, reason: "not our session" };
 
   switch (event.type) {
     case "checkout.session.completed":
@@ -40,5 +37,6 @@ function paidSession(session: Stripe.Checkout.Session) {
     sessionId: session.id,
     presentment: p && p.presentment_currency.toLowerCase() !== "usd" ? { currency: p.presentment_currency, amount: p.presentment_amount } : null,
     paymentIntentId: typeof intent === "string" ? intent : (intent?.id ?? null),
+    customerEmail: session.customer_details?.email ?? null,
   };
 }

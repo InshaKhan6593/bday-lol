@@ -25,7 +25,8 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
 
 Pay with Stripe's test card `4242 4242 4242 4242`, any future expiry, any CVC. A claim stays hidden
-(`pending`) until the webhook marks it paid; the Success page shows "Finishing up…" until then.
+(`pending`) until the webhook marks it paid; the Success page shows "Finishing up…" until then. Boosts
+return to the page they started on with `?boosted=…` and a short "Your boost is in" note.
 
 | URL | What |
 |---|---|
@@ -70,7 +71,7 @@ src/
   db/                  schema.ts (board → entries → payments model), client
   lib/                 pure rules: birthday.ts (ET, leap years, board years), date-page, claim, checkout, success, facts, money, boost math, gifts, routes, clock, ids
   test/                database test helpers (rolled-back transactions)
-  server/              server logic: leaderboard queries, page data, claims (pending → paid), Stripe client + events, photo storage, reminders; actions/ = form actions
+  server/              server logic: leaderboard queries, page data, payments (claims + boosts, pending → paid), outbid alert queue, Stripe client + events, photo storage, reminders; actions/ = form actions
   styles/tokens.css    design tokens: color, type roles, shape, shadows, spacing, motion
 scripts/               seed, reset
 drizzle/               generated SQL migrations

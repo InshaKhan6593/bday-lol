@@ -17,10 +17,11 @@ type Props = {
   theme: ThemeKey;
   otherTotalsCents: number[];
   settings: BoardTypeSettings;
+  dayEnd: { endsAt: string; serverNow: string };
 };
 
 /** Homepage #1 card: who owns today, their gift links and share buttons. */
-export function LeaderCard({ leader, shareUrl, dateLabel, theme, otherTotalsCents, settings }: Props) {
+export function LeaderCard({ leader, shareUrl, dateLabel, theme, otherTotalsCents, settings, dayEnd }: Props) {
   const gifts = giftButtons(leader.giftLinks);
   const bio = stripWrappingQuotes(leader.bio);
 
@@ -34,7 +35,9 @@ export function LeaderCard({ leader, shareUrl, dateLabel, theme, otherTotalsCent
           {bio && <p className={styles.ownerBio}>&quot;{bio}&quot;</p>}
         </div>
         <BoostButton
-          target={leader}
+          // Only public fields cross to the browser (no internal ids).
+          target={{ publicId: leader.publicId, name: leader.name, rank: leader.rank, totalCents: leader.totalCents }}
+          dayEnd={dayEnd}
           otherTotalsCents={otherTotalsCents}
           dateLabel={dateLabel}
           theme={theme}

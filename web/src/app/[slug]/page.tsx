@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { connection } from "next/server";
+import { BoostNotice } from "@/components/boost/BoostNotice";
 import { About } from "@/components/date/About";
 import { DateBoard } from "@/components/date/DateBoard";
 import { DateNav } from "@/components/date/DateNav";
@@ -10,12 +11,17 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 import { ThemeScope } from "@/components/ui";
 import { db } from "@/db";
 import { formatLong, formatLongNb, parseShortSlug, parseSlug, type MonthDay } from "@/lib/birthday";
+import { parseBoostLink } from "@/lib/boost";
 import { now } from "@/lib/clock";
 import { giftsOpenText, statusText } from "@/lib/date-page";
 import { absoluteUrl, routes } from "@/lib/routes";
 import { getDatePageData } from "@/server/date-page";
 
-type Props = { params: Promise<{ slug: string }> };
+type Props = {
+  params: Promise<{ slug: string }>;
+  /** boost + amount: an outbid email's "Boost to take #1 back" link. boosted: back from a boost checkout. */
+  searchParams: Promise<{ boost?: string | string[]; amount?: string | string[]; boosted?: string | string[] }>;
+};
 
 /**
  * "/october-7" is a date page; "/oct-7" (the mockup's share links) redirects
@@ -41,10 +47,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /** Find your birthday: one date's leaderboard. Rendered per request (bids and midnight ET change it). */
-export default async function DatePage({ params }: Props) {
+export default async function DatePage({ params, searchParams }: Props) {
   const md = await dateFromParams(params);
   await connection();
   const page = await getDatePageData(db, md, now());
+  const query = await searchParams;
   const { status } = page;
   const isToday = status.kind === "today";
   const shareUrl = absoluteUrl(routes.date(md));
@@ -53,6 +60,7 @@ export default async function DatePage({ params }: Props) {
     <ThemeScope theme={page.theme} paint>
       <SiteHeader omit={["find"]} />
       <main className={styles.main}>
+        <BoostNotice sessionId={query.boosted} path={routes.date(md)} />
         <div className={styles.top}>
           <DateNav md={md} today={page.today} todayTheme={page.todayTheme} calendarTops={page.calendarTops} />
           <h1 className={styles.h1}>Everyone celebrating {formatLongNb(md)}</h1>
@@ -82,6 +90,8 @@ export default async function DatePage({ params }: Props) {
           theme={page.theme}
           shareUrl={shareUrl}
           settings={page.settings}
+          dayEnd={isToday ? { endsAt: page.dayEndsAt, serverNow: page.serverNow } : null}
+          initialBoost={parseBoostLink(query, page.settings.minBoostCents)}
         />
 
         <About md={md} famous={page.famous} />

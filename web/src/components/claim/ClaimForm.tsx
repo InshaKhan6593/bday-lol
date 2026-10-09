@@ -20,6 +20,7 @@ import { cx } from "@/lib/cx";
 import { formatUsd } from "@/lib/money";
 import { routes } from "@/lib/routes";
 import { startClaimCheckout } from "@/server/actions/claim";
+import { EndingSoon } from "@/components/site/EndingSoon";
 import { ColorSwatches } from "./ColorSwatches";
 import { GiftLinkInputs } from "./GiftLinkInputs";
 import { PhotoPicker, type Photo } from "./PhotoPicker";
@@ -39,6 +40,8 @@ type Props = {
   md: MonthDay;
   target: ClaimTarget;
   minCents: number;
+  /** Today and when it ends: claiming today shows "Today ends in 12 min…" near midnight (07 B5). */
+  dayEnd: { today: MonthDay; endsAt: string; serverNow: string };
 };
 
 /**
@@ -46,7 +49,7 @@ type Props = {
  * another month or day replaces the URL, the server sends that date's leader
  * and minimum, and everything else typed so far stays put.
  */
-export function ClaimForm({ header, settings, md: serverMd, target, minCents }: Props) {
+export function ClaimForm({ header, settings, md: serverMd, target, minCents, dayEnd }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [md, setMd] = useState(serverMd);
@@ -271,6 +274,9 @@ export function ClaimForm({ header, settings, md: serverMd, target, minCents }: 
               >
                 {sending ? "Opening checkout…" : "Pay & claim"}
               </Button>
+              {toKey(md) === toKey(dayEnd.today) && (
+                <EndingSoon endsAt={dayEnd.endsAt} serverNow={dayEnd.serverNow} className={styles.formError} />
+              )}
               {server.errors?.form && (
                 <p role="alert" className={styles.notice}>
                   {server.errors.form}

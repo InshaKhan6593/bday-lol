@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { payments } from "@/db/schema";
 import { addBirthdayType, inRollback, type Tx } from "@/test/db";
 import { ensureBoard } from "./boards";
-import { createPendingClaim } from "./claims";
+import { createPendingClaim } from "./payments";
 import { handleStripeEvent } from "./stripe-events";
 import { verifyStripeEvent } from "./stripe";
 
@@ -103,7 +103,7 @@ describe("stripe events", () => {
       await setup(tx);
       expect(await handleStripeEvent(tx, sessionEvent("payment_intent.succeeded", {}), NOON)).toMatchObject({ handled: false });
       const foreign = sessionEvent("checkout.session.completed", { id: "cs_test_hook", payment_status: "paid", metadata: {} });
-      expect(await handleStripeEvent(tx, foreign, NOON)).toEqual({ handled: false, reason: "not a claim session" });
+      expect(await handleStripeEvent(tx, foreign, NOON)).toEqual({ handled: false, reason: "not our session" });
       expect(await paymentStatus(tx)).toBe("pending");
     });
   });

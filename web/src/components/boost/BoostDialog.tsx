@@ -1,13 +1,15 @@
 "use client";
 
 import { Dialog } from "radix-ui";
-import { useState } from "react";
+import { startTransition, useActionState, useState } from "react";
+import { EndingSoon } from "@/components/site/EndingSoon";
 import { Button, Chip, IconButton, Input, ThemeScope } from "@/components/ui";
 import type { BoardTypeSettings } from "@/config/board-types";
 import type { ThemeKey } from "@/config/themes";
 import { boostResultLine, parseAmountCents, takeTopBoost } from "@/lib/boost";
 import { formatUsd } from "@/lib/money";
 import { firstName } from "@/lib/people";
+import { startBoostCheckout } from "@/server/actions/boost";
 import styles from "./BoostDialog.module.css";
 
 export type BoostTarget = {
@@ -30,11 +32,18 @@ type Props = {
   /** The page's theme, so the portalled box keeps its colors. */
   theme: ThemeKey;
   settings: Pick<BoardTypeSettings, "boostChipsCents" | "defaultBoostCents" | "minBoostCents">;
+  /** The page the box is on ("/" or "/october-7"): Stripe sends the booster back there. */
+  returnPath: string;
+  /** Today's end, when the person is on today's board: shows "Today ends in 12 min…" near midnight. */
+  dayEnd?: { endsAt: string; serverNow: string } | null;
+  /** "Boost to take #1 back" email links open the box with this amount filled in. */
+  initialAmountCents?: number;
 };
 
 /**
  * The Boost box (shared by the homepage and the date page). Anyone can add to
- * anyone's total. Payment goes through Stripe Checkout (connected in the money step).
+ * anyone's total; payment goes through Stripe Checkout and counts once the
+ * webhook confirms it.
  */
 export function BoostDialog({ target, onClose, ...rest }: Props) {
   return (
@@ -53,11 +62,14 @@ function BoostBox({
   dateLabel,
   theme,
   settings,
+  returnPath,
+  dayEnd,
+  initialAmountCents,
 }: Props & { target: BoostTarget }) {
   const [chipCents, setChipCents] = useState(settings.defaultBoostCents);
-  const [custom, setCustom] = useState("");
+  const [custom, setCustom] = useState(initialAmountCents ? String(Math.round(initialAmountCents / 100)) : "");
   const [alertMe, setAlertMe] = useState(true);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [server, sendBoost, sending] = useActionState(startBoostCheckout, {});
 
   const first = firstName(target.name);
   const customCents = parseAmountCents(custom);
@@ -67,9 +79,13 @@ function BoostBox({
   const canPay = amountCents >= settings.minBoostCents;
 
   function pay() {
-    if (!canPay) return;
-    // Stripe Checkout is wired up in build step 6 (money path).
-    setNotice("Payments aren't connected yet. Checkout comes in the next build step.");
+    if (!canPay || sending) return;
+    const data = new FormData();
+    data.set("entry", target.publicId);
+    data.set("amount", String(amountCents / 100));
+    if (alertMe) data.set("alert", "on");
+    data.set("returnPath", returnPath);
+    startTransition(() => sendBoost(data));
   }
 
   return (
@@ -137,14 +153,15 @@ function BoostBox({
           </label>
 
           {/* Under the minimum, the result line already says "Boosts start at $2." (mockup: no-op). */}
-          <Button size="xl" shape="large" block onClick={pay}>
-            Boost {formatUsd(amountCents)}
+          <Button size="xl" shape="large" block onClick={pay} disabled={sending}>
+            {sending ? "Opening checkout…" : `Boost ${formatUsd(amountCents)}`}
           </Button>
-          {notice && (
-            <p className={styles.notice} role="status">
-              {notice}
+          {server.error && (
+            <p className={styles.notice} role="alert">
+              {server.error}
             </p>
           )}
+          {dayEnd && <EndingSoon endsAt={dayEnd.endsAt} serverNow={dayEnd.serverNow} className={styles.notice} />}
 
           <p className={styles.fine}>
             Boosts are final and add to {first}’s total. They’re paid to bday.lol, not to {first}. Gifts still go

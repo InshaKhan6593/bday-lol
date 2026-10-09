@@ -28,6 +28,7 @@ export default async function ClaimPage({ searchParams }: Props) {
       md={page.md}
       target={page.target}
       minCents={page.minCents}
+      dayEnd={{ today: page.today, endsAt: page.dayEndsAt, serverNow: page.serverNow }}
     />
   );
 }

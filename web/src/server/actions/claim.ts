@@ -11,7 +11,7 @@ import { now } from "@/lib/clock";
 import { routes, siteOrigin } from "@/lib/routes";
 import { ensureCurrentBoard } from "../boards";
 import { getClaimPageData } from "../claim-page";
-import { createPendingClaim } from "../claims";
+import { createPendingClaim } from "../payments";
 import { getBirthdaySettings } from "../leaderboard";
 import { PhotoError, savePhoto } from "../storage";
 import { getStripe } from "../stripe";

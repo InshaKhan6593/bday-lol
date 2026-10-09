@@ -14,11 +14,13 @@ type Props = {
   dateLabel: string;
   theme: ThemeKey;
   settings: Pick<BoardTypeSettings, "boostChipsCents" | "defaultBoostCents" | "minBoostCents">;
+  /** Today's end, for the "Today ends in 12 min…" warning. */
+  dayEnd: { endsAt: string; serverNow: string };
   className?: string;
 };
 
 /** The white "▲ Boost" pill on the homepage #1 card. Opens the Boost box next to itself. */
-export function BoostButton({ target, otherTotalsCents, dateLabel, theme, settings, className }: Props) {
+export function BoostButton({ target, otherTotalsCents, dateLabel, theme, settings, dayEnd, className }: Props) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [top, setTop] = useState<number | null>(null);
 
@@ -50,6 +52,8 @@ export function BoostButton({ target, otherTotalsCents, dateLabel, theme, settin
         dateLabel={dateLabel}
         theme={theme}
         settings={settings}
+        returnPath="/"
+        dayEnd={dayEnd}
       />
     </>
   );

@@ -1,10 +1,11 @@
 import type Stripe from "stripe";
 import { formatLong, type MonthDay } from "./birthday";
+import { firstName } from "./people";
 import { routes } from "./routes";
 
 /**
- * Stripe Checkout settings for claims. Pure, so the exact request we send to
- * Stripe is covered by tests.
+ * Stripe Checkout settings for claims and boosts. Pure, so the exact request
+ * we send to Stripe is covered by tests.
  */
 
 /** Checkout Sessions expire after 30 min, Stripe's minimum (decided, 07 B5). */
@@ -12,7 +13,7 @@ export const CHECKOUT_TTL_SECONDS = 30 * 60;
 
 /** Metadata on every Checkout Session we create. The webhook reads it back. */
 export type CheckoutMetadata = {
-  kind: "claim";
+  kind: "claim" | "boost";
   paymentId: string;
   entryId: string;
   boardId: string;
@@ -62,12 +63,55 @@ export function claimCheckoutParams(input: ClaimCheckoutInput): Stripe.Checkout.
   };
 }
 
-/** Reads our metadata back off a Checkout Session. Null for sessions this app didn't create for a claim. */
+type BoostCheckoutInput = {
+  /** The person being boosted. */
+  name: string;
+  amountCents: number;
+  metadata: CheckoutMetadata & { kind: "boost" };
+  origin: string;
+  /** The page the Boost box was opened on ("/" or "/october-7"); Stripe returns there. */
+  returnPath: string;
+  now: Date;
+};
+
+/**
+ * A boost: one-time USD payment with Adaptive Pricing. No email is prefilled:
+ * Stripe asks for it, and that email gets the receipt and, if ticked, the
+ * outbid alerts (decided, 07 B8).
+ */
+export function boostCheckoutParams(input: BoostCheckoutInput): Stripe.Checkout.SessionCreateParams {
+  const first = firstName(input.name);
+  return {
+    mode: "payment",
+    line_items: [
+      {
+        quantity: 1,
+        price_data: {
+          currency: "usd",
+          unit_amount: input.amountCents,
+          product_data: {
+            name: `Boost ${input.name} on bday.lol`,
+            description: `Boosts are final and add to ${first}'s total. They're paid to bday.lol, not to ${first}.`,
+          },
+        },
+      },
+    ],
+    adaptive_pricing: { enabled: true },
+    client_reference_id: input.metadata.paymentId,
+    metadata: input.metadata,
+    payment_intent_data: { metadata: input.metadata },
+    expires_at: Math.floor(input.now.getTime() / 1000) + CHECKOUT_TTL_SECONDS,
+    success_url: `${input.origin}${input.returnPath}?boosted={CHECKOUT_SESSION_ID}`,
+    cancel_url: input.origin + input.returnPath,
+  };
+}
+
+/** Reads our metadata back off a Checkout Session. Null for sessions this app didn't create. */
 export function readCheckoutMetadata(metadata: Record<string, string> | null | undefined): CheckoutMetadata | null {
-  if (!metadata || metadata.kind !== "claim") return null;
+  if (!metadata || (metadata.kind !== "claim" && metadata.kind !== "boost")) return null;
   const { paymentId, entryId, boardId } = metadata;
   if (!paymentId || !entryId || !boardId) return null;
-  return { kind: "claim", paymentId, entryId, boardId };
+  return { kind: metadata.kind, paymentId, entryId, boardId };
 }
 
 // ---------------------------------------------------------------------------

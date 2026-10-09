@@ -26,6 +26,10 @@ type Props = {
     BoardTypeSettings,
     "minOpenBidCents" | "minStepCents" | "minBoostCents" | "boostChipsCents" | "defaultBoostCents"
   >;
+  /** Today's end, when this is today's board: the Boost box warns near midnight. */
+  dayEnd: { endsAt: string; serverNow: string } | null;
+  /** From an outbid email's "Boost to take #1 back" link: open the Boost box for this person with the amount filled in. */
+  initialBoost?: { publicId: string; amountCents: number } | null;
 };
 
 /**
@@ -33,10 +37,24 @@ type Props = {
  * ranked list. Tapping a card switches the bar to "Claim #N"; the ▲ pill opens
  * the Boost box. Keyed by date, so search and picks reset when the date changes.
  */
-export function DateBoard({ md, isToday, giftsOpenLabel, entries, theme, shareUrl, settings }: Props) {
+export function DateBoard({
+  md,
+  isToday,
+  giftsOpenLabel,
+  entries,
+  theme,
+  shareUrl,
+  settings,
+  dayEnd,
+  initialBoost,
+}: Props) {
   const [pickedRank, setPickedRank] = useState<number | null>(null);
   const [query, setQuery] = useState("");
-  const [boosting, setBoosting] = useState<{ entry: DateEntry; top: number } | null>(null);
+  // Opened from an email link ("Boost to take #1 back"): the Boost box starts open, at the top edge of the screen.
+  const [boosting, setBoosting] = useState<{ entry: DateEntry; top: number } | null>(() => {
+    const entry = initialBoost && entries.find((e) => e.publicId === initialBoost.publicId);
+    return entry ? { entry, top: boostBoxTop(0, 0) } : null;
+  });
   const opener = useRef<HTMLButtonElement | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -174,6 +192,11 @@ export function DateBoard({ md, isToday, giftsOpenLabel, entries, theme, shareUr
         dateLabel={formatLong(md)}
         theme={theme}
         settings={settings}
+        returnPath={routes.date(md)}
+        dayEnd={dayEnd}
+        initialAmountCents={
+          initialBoost && boosting?.entry.publicId === initialBoost.publicId ? initialBoost.amountCents : undefined
+        }
       />
     </>
   );

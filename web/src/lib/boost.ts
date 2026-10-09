@@ -1,4 +1,6 @@
+import { parseSlug } from "./birthday";
 import { formatUsd } from "./money";
+import { firstName } from "./people";
 
 /**
  * Boost box math. Totals are cents. Ties go to whoever reached the total
@@ -61,4 +63,33 @@ const EDGE = 16;
  */
 export function boostBoxTop(buttonTop: number, viewportHeight: number): number {
   return Math.round(Math.max(EDGE, Math.min(buttonTop - 300, viewportHeight - BOOST_BOX_HEIGHT)));
+}
+
+/**
+ * Where Stripe sends a booster back: the homepage or a date page. Anything
+ * else (other sites, other paths) falls back to the homepage, so the Boost
+ * form can't be used as an open redirect.
+ */
+export function boostReturnPath(raw: unknown): string {
+  if (raw === "/") return "/";
+  if (typeof raw !== "string" || !/^\/[a-z]+-\d{1,2}$/.test(raw)) return "/";
+  return parseSlug(raw.slice(1))?.kind === "date" ? raw : "/";
+}
+
+/** The note after a boost lands: "Thanks! Your $5 boost is in. Jess is #1 with $245." */
+export function boostedText(p: { name: string; amountCents: number; rank: number; totalCents: number }): string {
+  const first = firstName(p.name);
+  const standing = p.rank === 1 ? `${first} is #1` : `${first} is now #${p.rank}`;
+  return `Thanks! Your ${formatUsd(p.amountCents)} boost is in. ${standing} with ${formatUsd(p.totalCents)}.`;
+}
+
+/** Reads "?boost=<publicId>&amount=16" from an outbid email link. Null when it isn't a usable link. */
+export function parseBoostLink(
+  params: { boost?: string | string[]; amount?: string | string[] },
+  minBoostCents: number,
+): { publicId: string; amountCents: number } | null {
+  const { boost, amount } = params;
+  if (typeof boost !== "string" || !/^[A-Za-z0-9_-]{6,16}$/.test(boost)) return null;
+  const dollars = typeof amount === "string" && /^\d{1,6}$/.test(amount) ? Number(amount) : 0;
+  return { publicId: boost, amountCents: Math.max(minBoostCents, dollars * 100) };
 }

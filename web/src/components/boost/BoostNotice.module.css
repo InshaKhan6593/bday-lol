@@ -1,0 +1,15 @@
+/* The "Thanks! Your $5 boost is in." note above a page's content (not in the mockup; same card language). */
+
+.notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-md) var(--space-md) var(--space-xl);
+  box-shadow: var(--shadow-menu);
+}
+
+.text {
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+}

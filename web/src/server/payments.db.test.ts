@@ -5,7 +5,7 @@ import { entries, leaderLog, payments } from "@/db/schema";
 import type { ValidClaim } from "@/lib/claim";
 import { addBirthdayType, addPeople, inRollback, type Tx } from "@/test/db";
 import { ensureBoard } from "./boards";
-import { createPendingClaim, expireCheckout, fulfillCheckout } from "./claims";
+import { createPendingClaim, expireCheckout, fulfillCheckout } from "./payments";
 import { getRankedEntries } from "./leaderboard";
 
 const oct7 = { month: 10, day: 7 };
@@ -30,7 +30,7 @@ async function pending(tx: Tx, boardId: string, sessionId: string, c: ValidClaim
   return ids;
 }
 
-const paid = (sessionId: string) => ({ sessionId, presentment: null, paymentIntentId: "pi_123" });
+const paid = (sessionId: string) => ({ sessionId, presentment: null, paymentIntentId: "pi_123", customerEmail: null });
 
 async function openLog(tx: Tx, boardId: string) {
   return (await tx.select().from(leaderLog).where(eq(leaderLog.boardId, boardId))).filter((r) => r.endedAt === null);
@@ -59,16 +59,18 @@ describe("claim money path", () => {
 
       const result = await fulfillCheckout(
         tx,
-        { sessionId: "cs_test_a", presentment: { currency: "gbp", amount: 19_000 }, paymentIntentId: "pi_1" },
+        { sessionId: "cs_test_a", presentment: { currency: "gbp", amount: 19_000 }, paymentIntentId: "pi_1", customerEmail: null },
         NOON,
       );
       expect(result).toEqual({
         status: "fulfilled",
+        kind: "claim",
         boardId: board.id,
         entryId: ids.entryId,
         previousTopEntryId: null,
         topEntryId: ids.entryId,
         boardClosed: false,
+        alerted: [],
       });
       const [entry] = await tx.select().from(entries).where(eq(entries.id, ids.entryId));
       expect(entry).toMatchObject({ status: "live", totalCents: 24_100, totalReachedAt: NOON, liveAt: NOON });
