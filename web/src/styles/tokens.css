@@ -49,6 +49,7 @@
   --text-body: 17px;      /* default body + most buttons */
   --text-body-lg: 18px;   /* inputs, large buttons */
   --text-lead: 19px;      /* bios, status lines */
+  --text-lead-lg: 21px;   /* page intro under a hero heading */
   --text-action: 20px;    /* primary call-to-action */
   --text-title-sm: 22px;  /* panel and bar titles */
   --text-title: 24px;     /* dialog and card titles */
@@ -65,6 +66,8 @@
   --leading-tight: 0.95;
   --leading-snug: 1.05;
   --leading-normal: 1.35;
+  --leading-relaxed: 1.45; /* step card bodies */
+  --leading-loose: 1.5;    /* FAQ answers */
 
   --tracking-display: -0.045em;
   --tracking-heading: -0.04em;
@@ -88,6 +91,7 @@
   --radius-section: 24px; /* sections, dark bars, dialogs */
   --radius-card: 22px;    /* list cards, panels, popovers */
   --radius-tile: 20px;    /* small linked cards */
+  --radius-panel: 18px;   /* FAQ accordion items */
   --radius-button: 16px;  /* large CTA buttons, search */
   --radius-control: 14px; /* buttons, inputs, chips, tooltips */
   --radius-small: 12px;   /* icon buttons */
@@ -113,6 +117,8 @@
   --space-3xl: 32px;
   --space-4xl: 40px;
   --space-5xl: 64px;
+  --space-section: 44px;  /* gap between How it works sections */
+  --space-page-end: 72px; /* How it works bottom padding */
 
   /* ---------- Control heights (touch targets 44–64px) ---------- */
   --control-sm: 44px;
@@ -120,6 +126,7 @@
   --control-lg: 52px;
   --control-xl: 56px;
   --control-2xl: 60px;
+  --control-3xl: 64px;    /* FAQ question rows */
 
   /* ---------- Layout ---------- */
   --gutter: clamp(16px, 4vw, 56px);

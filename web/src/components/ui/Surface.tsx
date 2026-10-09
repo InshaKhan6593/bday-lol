@@ -20,7 +20,7 @@ type StyleProps = {
 };
 
 type AsBlock = StyleProps &
-  HTMLAttributes<HTMLElement> & { as?: "div" | "section" | "article" | "aside"; href?: undefined };
+  HTMLAttributes<HTMLElement> & { as?: "div" | "section" | "article" | "aside" | "li"; href?: undefined };
 type AsLink = StyleProps & Omit<ComponentProps<typeof Link>, "className" | "children">;
 
 /**

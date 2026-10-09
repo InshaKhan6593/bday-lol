@@ -49,6 +49,7 @@ src/
   components/site/     shared by every page: header, menu, countdown
   components/home/     homepage sections
   components/date/     date page ("Find your birthday"): date picker, ranked list, gift menu, About
+  components/how/      How it works page styles
   components/boost/    the Boost box (homepage + date page)
   components/share/    share and copy-link buttons
   config/              themes (12), board type settings (min bid, min boost, time zone…)
