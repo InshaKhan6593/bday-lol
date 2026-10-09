@@ -1,0 +1,35 @@
+.kicker {
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.sm {
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-caps-md);
+}
+
+.md {
+  font-size: var(--text-note);
+  letter-spacing: var(--tracking-caps-md);
+}
+
+.lg {
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-caps-lg);
+}
+
+.ink {
+  color: inherit;
+}
+
+.accent {
+  color: var(--accent);
+  transition: color var(--duration-theme) var(--ease);
+}
+
+.muted {
+  color: var(--color-on-ink-tertiary);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-caps);
+}

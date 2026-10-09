@@ -1,0 +1,18 @@
+# OS / editor junk
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+
+# Dependencies and secrets anywhere in the repo (web/ has its own .gitignore too)
+node_modules/
+.env*
+!.env.example
+
+# Local Claude Code settings (launch.json is shared on purpose)
+.claude/settings.local.json
+
+# Client-confidential material: kept local only (this repo is public)
+/private/
+/resources/
+/01-client-and-deal.md

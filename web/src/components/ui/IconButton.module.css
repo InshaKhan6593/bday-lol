@@ -1,0 +1,39 @@
+.iconButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-ink);
+}
+
+.paper {
+  background: var(--color-paper);
+  border: var(--border);
+}
+
+.muted {
+  background: var(--color-fill-muted);
+  border: 0;
+  border-radius: var(--radius-cell) !important;
+}
+
+/* 40 close · 44 calendar months / mobile header · 48 date nav / row share */
+.sm {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-small);
+}
+
+.md {
+  width: var(--control-sm);
+  height: var(--control-sm);
+  border-radius: var(--radius-small);
+}
+
+.lg {
+  width: var(--control-md);
+  height: var(--control-md);
+  border-radius: var(--radius-control);
+}

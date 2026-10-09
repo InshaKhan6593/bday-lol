@@ -1,0 +1,93 @@
+.surface {
+  min-width: 0;
+}
+
+.link {
+  display: block;
+  text-decoration: none;
+  color: var(--color-ink);
+}
+
+/* ---------- Tone ---------- */
+
+.tone-paper {
+  background: var(--color-paper);
+}
+
+.tone-ground {
+  background: var(--ground);
+  transition: background-color var(--duration-theme) var(--ease);
+}
+
+.tone-ink {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+.tone-none {
+  background: transparent;
+}
+
+/* ---------- Radius ---------- */
+
+.radius-hero {
+  border-radius: var(--radius-hero);
+}
+
+.radius-section {
+  border-radius: var(--radius-section);
+}
+
+.radius-card {
+  border-radius: var(--radius-card);
+}
+
+.radius-tile {
+  border-radius: var(--radius-tile);
+}
+
+/* ---------- Elevation (hard shadows) ---------- */
+
+.elevation-lift {
+  box-shadow: var(--shadow-lift);
+}
+
+.elevation-menu {
+  box-shadow: var(--shadow-menu);
+}
+
+.elevation-section {
+  box-shadow: var(--shadow-section);
+}
+
+.elevation-hero {
+  box-shadow: var(--shadow-hero);
+}
+
+/* ---------- Outline ---------- */
+
+.outline-solid {
+  border: var(--border);
+}
+
+.outline-dashed {
+  border: var(--border-dashed);
+}
+
+/* ---------- Padding ---------- */
+
+.padding-sm {
+  padding: var(--space-lg);
+}
+
+.padding-md {
+  padding: 18px var(--space-xl);
+}
+
+.padding-lg {
+  padding: clamp(20px, 3vw, 28px);
+}
+
+.padding-hero {
+  padding: clamp(20px, 3.5vw, 36px);
+}

@@ -1,0 +1,7 @@
+.paint {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ground);
+  transition: background-color var(--duration-theme) var(--ease);
+}

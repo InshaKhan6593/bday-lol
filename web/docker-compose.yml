@@ -1,0 +1,33 @@
+# Local development services for bday.lol
+# Postgres runs on 5440 and Mailpit on 8030/1030 so they don't clash with
+# anything else on this machine (5432 is already taken by a local Postgres).
+name: bday-lol
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bday
+      POSTGRES_PASSWORD: bday
+      POSTGRES_DB: bday
+    ports:
+      - "127.0.0.1:5440:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bday -d bday"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Catches every email the app sends. Inbox UI: http://localhost:8030
+  mail:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8030:8025"
+      - "127.0.0.1:1030:1025"
+
+volumes:
+  db-data:

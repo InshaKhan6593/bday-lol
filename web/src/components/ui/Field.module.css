@@ -1,0 +1,71 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+  font-size: var(--text-note);
+  font-weight: var(--weight-medium);
+}
+
+.aside {
+  font-weight: var(--weight-regular);
+  color: var(--color-text-secondary);
+}
+
+.hint {
+  font-size: var(--text-caption);
+  line-height: var(--leading-normal);
+}
+
+.hint-muted {
+  font-weight: var(--weight-regular);
+  color: var(--color-text-tertiary);
+}
+
+.hint-strong {
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.hint-error {
+  font-weight: var(--weight-regular);
+  color: var(--color-error);
+}
+
+/* ---------- Controls ---------- */
+
+.control {
+  width: 100%;
+  border: var(--border);
+  border-radius: var(--radius-control);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: var(--text-body-lg);
+}
+
+.control::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.size-lg {
+  min-height: var(--control-lg);
+  padding: 0 14px;
+}
+
+.size-2xl {
+  min-height: var(--control-2xl);
+  padding: 0 var(--space-lg);
+}
+
+/* Big bold value, e.g. the bid amount. */
+.emphasis {
+  font-size: 28px;
+  font-weight: var(--weight-bold);
+}
+
+.textarea {
+  padding: var(--space-md) 14px;
+  line-height: var(--leading-normal);
+  resize: none;
+}
+

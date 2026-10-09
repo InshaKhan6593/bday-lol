@@ -1,0 +1,106 @@
+@import "../styles/tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--ground);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color var(--duration-theme) var(--ease);
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--color-ink);
+}
+
+a:hover {
+  color: #000;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+img,
+svg {
+  display: block;
+}
+
+:focus-visible {
+  outline: var(--stroke) solid var(--color-ink);
+  outline-offset: 3px;
+}
+
+/*
+ * Design rule 7: every clickable lifts up-left with a hard shadow on hover
+ * (mouse devices only) and presses flat on click. Colors don't change.
+ * Components opt in with the "lift" class.
+ */
+.lift {
+  transition:
+    transform var(--duration-press) var(--ease),
+    box-shadow var(--duration-press) var(--ease),
+    background-color var(--duration-fill) var(--ease);
+}
+
+@media (hover: hover) {
+  .lift:hover {
+    transform: var(--lift);
+    box-shadow: var(--shadow-lift);
+  }
+}
+
+.lift:active {
+  transform: none;
+  box-shadow: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}

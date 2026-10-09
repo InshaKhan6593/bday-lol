@@ -1,0 +1,50 @@
+.avatar {
+  --avatar-fill: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  border: var(--border);
+  background: var(--avatar-fill);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+}
+
+.photo {
+  object-fit: cover;
+}
+
+.placeholder {
+  border: var(--border-dashed);
+  background: var(--ground);
+}
+
+/* 44 others bar · 52 mobile list · 60 desktop list · 120 hero */
+.xs {
+  width: 44px;
+  height: 44px;
+  font-size: var(--text-note);
+}
+
+.sm {
+  width: 52px;
+  height: 52px;
+  font-size: var(--text-body-lg);
+}
+
+.md {
+  width: 60px;
+  height: 60px;
+  font-size: var(--text-action);
+}
+
+.lg {
+  width: 120px;
+  height: 120px;
+  font-size: 46px;
+}
+
+.lg.placeholder {
+  font-size: 56px;
+}

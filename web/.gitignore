@@ -1,0 +1,25 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# local uploads (STORAGE_DRIVER=local)
+/public/uploads/
+
+# env files (keep the example)
+.env*
+!.env.example
+
+# logs and misc
+*.log
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
+/coverage

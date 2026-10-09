@@ -1,0 +1,134 @@
+/*
+ * bday.lol design language — neo-brutalist.
+ *
+ * Rules the whole UI follows (taken from the client's "Birthday Bid Mockup"):
+ *  1. One ink color (#141414) for all text, borders, shadows and dark surfaces.
+ *  2. Thick ink outlines on everything interactive or contained.
+ *  3. Hard offset shadows with no blur, so elements look like stickers.
+ *  4. Color comes only from the active theme: --ground (page) + --accent (actions).
+ *  5. One typeface (Bricolage Grotesque) in three weights: 400, 600, 800.
+ *  6. Generous rounding: pills for nav and toggles, soft squares for controls.
+ *  7. Clickables lift up-left on hover (mouse only) and press flat on click.
+ *  8. Dashed outlines mean "empty / placeholder / not yet".
+ *
+ * Components must use these tokens, never raw values.
+ */
+
+:root {
+  /* ---------- Color: neutrals ---------- */
+  --color-ink: #141414;
+  --color-paper: #ffffff;
+  --color-text-secondary: #333333;
+  --color-text-tertiary: #4a4a4a;
+  --color-on-ink-secondary: #d6d6d6;
+  --color-on-ink-tertiary: #bdbdbd;
+  --color-divider: #efefef;
+  --color-fill-muted: #f0f0f0;
+  --color-error: #b3132b;
+  --color-overlay: rgb(20 20 20 / 0.55);
+
+  /* ---------- Color: theme (overridden by <ThemeScope>) ---------- */
+  --ground: #ffec94; /* Butter */
+  --accent: #a88bff;
+
+  /* ---------- Typography ---------- */
+  --font-sans: var(--font-bricolage), system-ui, sans-serif;
+  --weight-regular: 400;
+  --weight-medium: 600;
+  --weight-bold: 800;
+
+  /* Type roles */
+  --text-micro: 11px;     /* calendar cell sub-label */
+  --text-fine: 13px;      /* fine print */
+  --text-caption: 14px;   /* field labels, kickers on bars, footnotes */
+  --text-note: 15px;      /* secondary info */
+  --text-label: 16px;     /* small kickers, small buttons */
+  --text-body: 17px;      /* default body + most buttons */
+  --text-body-lg: 18px;   /* inputs, large buttons */
+  --text-lead: 19px;      /* bios, status lines */
+  --text-action: 20px;    /* primary call-to-action */
+  --text-title-sm: 22px;  /* panel and bar titles */
+  --text-title: 24px;     /* dialog and card titles */
+  --text-title-lg: 26px;  /* section card titles */
+  --text-stat: 30px;      /* prices, countdown */
+  --text-h2: 32px;
+  --text-h2-lg: 36px;
+  --text-number: 44px;    /* step numbers, rank stat */
+  --text-name: clamp(32px, 4vw, 52px);
+  --text-h1: clamp(40px, 6vw, 72px);
+  --text-hero: clamp(48px, 8vw, 104px);
+  --text-display: clamp(52px, 11vw, 160px);
+
+  --leading-tight: 0.95;
+  --leading-snug: 1.05;
+  --leading-normal: 1.35;
+
+  --tracking-display: -0.045em;
+  --tracking-heading: -0.04em;
+  --tracking-title: -0.02em;
+  --tracking-snug: -0.01em;
+  --tracking-caps-sm: 0.08em;
+  --tracking-caps: 0.12em;
+  --tracking-caps-md: 0.14em;
+  --tracking-caps-lg: 0.18em;
+
+  /* ---------- Shape ---------- */
+  --stroke: 3px;
+  --stroke-thin: 2px;
+  --border: var(--stroke) solid var(--color-ink);
+  --border-thin: var(--stroke-thin) solid var(--color-ink);
+  --border-dashed: var(--stroke) dashed var(--color-ink);
+
+  --radius-pill: 999px;
+  --radius-hero: 28px;    /* homepage #1 card, claim form */
+  --radius-section: 24px; /* sections, dark bars, dialogs */
+  --radius-card: 22px;    /* list cards, panels, popovers */
+  --radius-tile: 20px;    /* small linked cards */
+  --radius-button: 16px;  /* large CTA buttons, search */
+  --radius-control: 14px; /* buttons, inputs, chips, tooltips */
+  --radius-small: 12px;   /* icon buttons */
+  --radius-cell: 10px;    /* calendar cells */
+
+  /* ---------- Hard shadows (no blur) ---------- */
+  --shadow-hero: 10px 10px 0 var(--color-ink);
+  --shadow-section: 8px 8px 0 var(--color-ink);
+  --shadow-menu: 6px 6px 0 var(--color-ink);
+  --shadow-lift: 4px 4px 0 var(--color-ink);
+  /* Selected color swatch: white gap, then an ink ring. */
+  --ring-selected: 0 0 0 3px var(--color-paper), 0 0 0 6px var(--color-ink);
+
+  /* ---------- Spacing ---------- */
+  --space-3xs: 2px;
+  --space-2xs: 4px;
+  --space-xs: 6px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+  --space-4xl: 40px;
+  --space-5xl: 64px;
+
+  /* ---------- Control heights (touch targets 44–64px) ---------- */
+  --control-sm: 44px;
+  --control-md: 48px;
+  --control-lg: 52px;
+  --control-xl: 56px;
+  --control-2xl: 60px;
+
+  /* ---------- Layout ---------- */
+  --gutter: clamp(16px, 4vw, 56px);
+  --page-wide: 1240px;  /* success */
+  --page: 1180px;       /* home, claim */
+  --page-narrow: 980px; /* find, how it works */
+  --dialog: 440px;
+
+  /* ---------- Motion ---------- */
+  --ease: ease;
+  --duration-press: 0.12s;
+  --duration-quick: 0.15s;
+  --duration-fill: 0.25s;
+  --duration-theme: 0.3s;
+  --lift: translate(-2px, -2px);
+}
