@@ -33,10 +33,12 @@ async function toSquareJpeg(file: File): Promise<Blob> {
 type Props = {
   photo: Photo | null;
   onChange: (photo: Photo | null) => void;
+  /** The server's verdict on the uploaded file, if it refused it. */
+  error?: string;
 };
 
 /** The dashed "Add photo" circle. Shows the photo once picked: tap it to change, or × to remove. */
-export function PhotoPicker({ photo, onChange }: Props) {
+export function PhotoPicker({ photo, onChange, error: serverError }: Props) {
   const input = useRef<HTMLInputElement>(null);
   const [error, setError] = useState(false);
 
@@ -94,9 +96,9 @@ export function PhotoPicker({ photo, onChange }: Props) {
         hidden
         onChange={(event) => void pick(event.target.files?.[0])}
       />
-      {error && (
+      {(error || serverError) && (
         <Hint tone="error" className={styles.photoError}>
-          That photo didn’t work. Try a JPG or PNG.
+          {error ? "That photo didn’t work. Try a JPG or PNG." : serverError}
         </Hint>
       )}
     </div>

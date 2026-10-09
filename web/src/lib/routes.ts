@@ -16,9 +16,16 @@ export const routes = {
   /** Where Stripe Checkout returns after a claim: /claim/success?session_id=cs_… */
   claimSuccess: (sessionId?: string) =>
     (sessionId ? `/claim/success?session_id=${encodeURIComponent(sessionId)}` : "/claim/success") as Route,
+  /** The same page as Stripe's success_url: Stripe swaps in the real id ({CHECKOUT_SESSION_ID} must stay unencoded). */
+  claimSuccessTemplate: "/claim/success?session_id={CHECKOUT_SESSION_ID}",
   date: (md: MonthDay) => `/${toSlug(md)}` as Route,
   month: (month: number) => `/${monthSlug(month)}` as Route,
 };
+
+/** The site's origin, e.g. https://bday.lol (no trailing slash). */
+export function siteOrigin(): string {
+  return new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").origin;
+}
 
 /** Absolute URL for sharing, e.g. https://bday.lol/october-7. */
 export function absoluteUrl(path: string): string {

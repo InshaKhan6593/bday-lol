@@ -2,7 +2,7 @@
 
 **Read this first.** This folder holds the full brief for a client build (the `.md` files) and the app itself (`web/`).
 The foundation is built and runs locally: database schema, date rules with tests, the design system and seed data.
-Every page in the mockup is built: homepage, date page ("Find your birthday"), How it works, Claim and Success. Next up is the money path (Stripe Checkout).
+Every page in the mockup is built, and claims are paid for through Stripe Checkout (test mode locally). Next up is boosts, the #1 log and outbid alerts.
 
 ## One-paragraph summary
 
@@ -78,14 +78,14 @@ Mailpit on :8030). Production plan: Vercel Pro + Neon Postgres + Vercel Blob + S
 | 5c. How it works (`/how-it-works`: 3 steps, FAQ accordion with FAQPage structured data, "Find your date" bar) | ✅ Done (`web/src/app/how-it-works/page.tsx`, copy in `web/src/lib/how-it-works.ts`) |
 | 5c. Claim (`/claim?date=october-7&rank=2`: date + bid with the leader box, B23 low-bid error, photo cropped to 512px in the browser, gift-link detection by real host, 12 color swatches that recolor the page, preview card; "Pay & claim" waits for step 6) | ✅ Done (`web/src/app/claim/page.tsx`, `web/src/components/claim/`, rules in `web/src/lib/claim.ts`) |
 | 5c. Success (`/claim/success?session_id=cs_…`: reads the real result from the DB, copy variants for today's #1 / a later date's #1 / rank 2+ (07 B1, B6), "Finishing up…" polling until the webhook lands, shared-link card) | ✅ Done (`web/src/app/claim/success/page.tsx`, `web/src/components/success/`, `web/src/lib/success.ts`, `web/src/server/claim-result.ts`) |
-| 6. Money path: claim → Stripe Checkout → webhook → live on board → homepage | ⏭️ Next |
-| 7. Boosts, #1 log and outbid alerts | ⬜ |
+| 6. Money path: claim → Stripe Checkout (USD + Adaptive Pricing, 30-min sessions) → signed webhook → entry live in a board-locked transaction (idempotent, #1 log updated) → Success page | ✅ Done for claims (`web/src/server/actions/claim.ts`, `web/src/server/claims.ts`, `web/src/app/api/stripe/webhook/route.ts`). Boost payments come with step 7 |
+| 7. Boosts, #1 log and outbid alerts | ⏭️ Next |
 | 8. The 8 emails (checked in Mailpit) | ⬜ |
 | 9. SEO: month pages, About section data, OG images, sitemap | ⬜ |
 | 10. Admin | ⬜ |
 | 11. Deploy to Vercel + Neon, test live | ⬜ |
 
-**Tests:** every feature ships with tests (`pnpm test`, 116 so far): pure rules in `web/src/lib/*.test.ts` and
+**Tests:** every feature ships with tests (`pnpm test`, 136 so far): pure rules in `web/src/lib/*.test.ts` and
 database tests in `*.db.test.ts`, which run against the local Docker Postgres inside a rolled-back transaction.
 
 **Design decisions** (details in [04-design-system.md](04-design-system.md#implementation-decisions)): keep the client's look exactly

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type FormEvent, type ReactNode } from "react";
+import { useActionState, useEffect, useState, useTransition, type FormEvent, type ReactNode } from "react";
 import { Avatar, Button, Field, Hint, Input, Kicker, Select, Surface, Textarea, ThemeScope } from "@/components/ui";
 import type { BoardTypeSettings } from "@/config/board-types";
 import { THEMES, type ThemeKey } from "@/config/themes";
@@ -19,6 +19,7 @@ import {
 import { cx } from "@/lib/cx";
 import { formatUsd } from "@/lib/money";
 import { routes } from "@/lib/routes";
+import { startClaimCheckout } from "@/server/actions/claim";
 import { ColorSwatches } from "./ColorSwatches";
 import { GiftLinkInputs } from "./GiftLinkInputs";
 import { PhotoPicker, type Photo } from "./PhotoPicker";
@@ -60,31 +61,44 @@ export function ClaimForm({ header, settings, md: serverMd, target, minCents }: 
   const [theme, setTheme] = useState<ThemeKey>(settings.defaultTheme);
   const [email, setEmail] = useState("");
   const [tried, setTried] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [server, sendClaim, sending] = useActionState(startClaimCheckout, {});
 
   const loading = pending || toKey(md) !== toKey(serverMd);
   const amountCents = parseAmountCents(bid);
-  const tooLow = loading ? null : bidError(amountCents, minCents, target);
+  // The server re-checks the bid; if someone outbid the leader meanwhile, its message shows until the page catches up.
+  const tooLow = loading ? null : (bidError(amountCents, minCents, target) ?? server.errors?.bid ?? null);
   const box = targetBox(target);
   const hint = bidHint(target, minCents);
   const result = validateClaim({ md, bid, name, bio, giftLinks: links, theme, email }, minCents, target, settings);
   const errors: Partial<Record<ClaimField, string>> = tried && !result.ok ? result.errors : {};
 
+  // A bid error from the server means the leader changed: reload the black box and the minimum.
+  useEffect(() => {
+    if (server.errors?.bid) router.refresh();
+  }, [server, router]);
+
   function pickDate(next: MonthDay) {
     setMd(next);
-    setNotice(null);
     startTransition(() => router.replace(routes.claim(next), { scroll: false }));
   }
 
+  /** Sends the claim to the server, which opens Stripe Checkout (or returns errors). */
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setTried(true);
-    if (!result.ok || loading) {
-      setNotice(null);
-      return;
-    }
-    // Step 6 sends the claim (and the photo) to Stripe Checkout from here.
-    setNotice("Payments aren't connected yet. Checkout comes in the next build step.");
+    if (!result.ok || loading || sending) return;
+    const data = new FormData();
+    data.set("month", String(md.month));
+    data.set("day", String(md.day));
+    data.set("rank", String(target.rank));
+    data.set("bid", bid);
+    data.set("name", name);
+    data.set("bio", bio);
+    for (const link of links) data.append("giftLink", link);
+    data.set("theme", theme);
+    data.set("email", email);
+    if (photo) data.set("photo", new File([photo.blob], "photo.jpg", { type: photo.blob.type || "image/jpeg" }));
+    startTransition(() => sendClaim(data));
   }
 
   const preview = {
@@ -165,7 +179,7 @@ export function ClaimForm({ header, settings, md: serverMd, target, minCents }: 
             <section className={styles.section} aria-label="About the birthday person">
               <Kicker className={styles.sectionTitle}>About the birthday person</Kicker>
               <div className={styles.personRow}>
-                <PhotoPicker photo={photo} onChange={setPhoto} />
+                <PhotoPicker photo={photo} onChange={setPhoto} error={server.errors?.photo} />
                 <Field label="Name" hint={errors.name} hintTone="error" className={styles.nameField}>
                   <Input
                     name="name"
@@ -247,15 +261,22 @@ export function ClaimForm({ header, settings, md: serverMd, target, minCents }: 
                 <span className={styles.totalLabel}>Total</span>
                 <span className={styles.totalAmount}>{formatUsd(amountCents)}</span>
               </div>
-              <Button type="submit" form="claim-form" size="2xl" shape="large" block disabled={Boolean(tooLow) || loading}>
-                Pay &amp; claim
+              <Button
+                type="submit"
+                form="claim-form"
+                size="2xl"
+                shape="large"
+                block
+                disabled={Boolean(tooLow) || loading || sending}
+              >
+                {sending ? "Opening checkout…" : "Pay & claim"}
               </Button>
-              {notice && (
-                <p role="status" className={styles.notice}>
-                  {notice}
+              {server.errors?.form && (
+                <p role="alert" className={styles.notice}>
+                  {server.errors.form}
                 </p>
               )}
-              {tried && !result.ok && !notice && (
+              {tried && !result.ok && (
                 <Hint tone="error" className={styles.formError}>
                   Check the fields marked in red above.
                 </Hint>

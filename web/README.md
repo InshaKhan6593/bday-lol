@@ -15,6 +15,18 @@ pnpm db:seed                    # mockup demo data on today's date (ET)
 pnpm dev                        # http://localhost:3000
 ```
 
+### Payments (Stripe test mode)
+
+Put your Stripe **test** keys in `.env.local` (`STRIPE_SECRET_KEY=sk_test_…`). Then, in a second terminal,
+forward Stripe's webhooks to the app (the CLI prints the `whsec_…` value for `STRIPE_WEBHOOK_SECRET`):
+
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+Pay with Stripe's test card `4242 4242 4242 4242`, any future expiry, any CVC. A claim stays hidden
+(`pending`) until the webhook marks it paid; the Success page shows "Finishing up…" until then.
+
 | URL | What |
 |---|---|
 | http://localhost:3000 | The app |
@@ -44,7 +56,7 @@ DEV_NOW=2028-02-27T12:00:00-05:00 pnpm db:reset   # Feb 29, 2028 is "coming up"
 
 ```
 src/
-  app/                 routes (pages, API, cron)
+  app/                 routes (pages, API: api/stripe/webhook, cron)
   components/ui/       design-language primitives: Button, Chip, Surface, Avatar, Badge, Kicker, Field, Select, Menu, Icon…
   components/site/     shared by every page: header, menu, countdown
   components/home/     homepage sections
@@ -56,9 +68,9 @@ src/
   components/share/    share and copy-link buttons, shared-link card
   config/              themes (12), board type settings (min bid, min boost, time zone…)
   db/                  schema.ts (board → entries → payments model), client
-  lib/                 pure rules: birthday.ts (ET, leap years, board years), date-page, claim, success, facts, money, boost math, gifts, routes, clock, ids
+  lib/                 pure rules: birthday.ts (ET, leap years, board years), date-page, claim, checkout, success, facts, money, boost math, gifts, routes, clock, ids
   test/                database test helpers (rolled-back transactions)
-  server/              server logic: leaderboard queries, homepage + date page data, famous people, reminders; actions/ = form actions
+  server/              server logic: leaderboard queries, page data, claims (pending → paid), Stripe client + events, photo storage, reminders; actions/ = form actions
   styles/tokens.css    design tokens: color, type roles, shape, shadows, spacing, motion
 scripts/               seed, reset
 drizzle/               generated SQL migrations

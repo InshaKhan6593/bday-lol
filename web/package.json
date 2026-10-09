@@ -26,7 +26,8 @@
     "pg": "^8.23.1",
     "radix-ui": "^1.7.0",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "stripe": "^23.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

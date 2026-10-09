@@ -15,5 +15,5 @@ if (process.env.NODE_ENV !== "production") globalForDb.pgPool = pool;
 export const db = drizzle(pool, { schema });
 export type Db = typeof db;
 /** The db client or an open transaction: queries take this so tests can roll back. */
-export type Executor = Pick<Db, "select" | "insert">;
+export type Executor = Pick<Db, "select" | "insert" | "update" | "delete" | "transaction">;
 export { schema };
