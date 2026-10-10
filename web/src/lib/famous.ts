@@ -30,8 +30,10 @@ export const ENTERTAINMENT_ROOTS: Record<string, string> = {
 /** Anyone who is also a politician is left out, even if they once acted (07 A4: entertainment only). */
 export const EXCLUDED_ROOTS: Record<string, string> = { Q82955: "politician" };
 
-/** How many we keep per date: 10 are shown, the rest move up when the admin hides someone. */
-export const FAMOUS_KEEP = 15;
+/** Listed in full under "Famous people born on…" (06-seo.md: top 10); the rest of the stored ones go in an "Also born on…" line. */
+export const FAMOUS_LISTED = 10;
+/** How many we keep per date: 10 listed, 5 more named, and 5 spares that move up when the admin hides someone. */
+export const FAMOUS_KEEP = 20;
 /** How many of the most-linked candidates per date get a pageviews lookup. */
 export const PAGEVIEW_CANDIDATES = 30;
 

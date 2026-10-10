@@ -47,3 +47,24 @@ The visual design is in `Day.dc.html` (see 03-pages-and-ui.md §2.8).
 
 ### 3. Facts
 Zodiac sign, birthstone and birth flower. The tables are in 05-business-logic.md. Card subtitles: "Star sign for October 7", "October birthstone", "October birth flower".
+
+---
+
+## Built (step 9, 2026-10-10)
+
+Checked with [claude-seo](https://github.com/AgriciDaniel/claude-seo)'s rules before and after: see
+[seo-audit/](seo-audit/) (the audit script and both reports).
+
+| Piece | How it's built | Where |
+|---|---|---|
+| Date pages | Title `October 7 Birthday: Famous People, Facts & Who's #1` (≤ 60 characters for every date, no brand suffix). Description from the day's real data (who was born that day, how common it is, who leads or "Bids start at $5"), always 120–160 characters | `web/src/lib/seo.ts`, `web/src/app/[slug]/page.tsx` |
+| Month pages | `/october`: H1, an intro unique to the month, a calendar with every date's top bid (plain links, so crawlers follow them), every date with its #1, commonness rank, sign and two famous names, stone/flower/signs cards, previous/next month | `web/src/components/month/`, `web/src/server/month-page.ts` |
+| About section | A paragraph of facts that differ for every date (day of the year, weekday, commonness vs an average day, sign/stone/flower, three famous names, who leads), the rank card, then the mockup's 3 fact cards plus Half birthday / Next one / Day of the year | `web/src/components/date/About.tsx`, `web/src/lib/about.ts` |
+| Commonness | FiveThirtyEight births 1994–2014 (CDC/NCHS for 1994–1999, SSA for 2000–2014), average births per date, ranked 1–365, Feb 29 always #366. Rounded to the nearest 100 on the page. Regenerate with `pnpm data:commonness` | `web/src/lib/commonness*.ts`, `web/scripts/build-commonness.ts` |
+| Famous people | Wikidata: living humans with a day-precise, best-ranked birth date, 15+ Wikipedia language editions, an English article and an entertainment occupation (actors, musicians, athletes, presenters, YouTubers, streamers, comedians, models, dancers, directors, rappers, DJs, including every subclass). Anyone who is also a politician is left out (07 A4), as are under-10s. The 30 most-linked per date are ranked by English Wikipedia pageviews over the last two full months; 15 are stored and 10 shown, so a hidden person is replaced. "Known for" is the Wikidata description, shortened ("English musician"), "soccer" for association football | `web/src/server/famous-source.ts`, `web/src/lib/famous.ts` |
+| Monthly refresh | Vercel Cron calls `/api/cron/famous` at 06:17 UTC on days 1–12; day N refreshes month N (about 2–5 minutes each). One query per date because a month-wide query times out on Wikidata. A date that fails keeps last month's list. Locally: `pnpm famous:refresh` (all) or `pnpm famous:refresh 10` | `web/src/app/api/cron/famous/route.ts`, `web/vercel.json` |
+| Structured data | Home: Organization + WebSite. Date: BreadcrumbList (Home › October › October 7) + WebPage whose main entity is the famous list, each Person linked to Wikidata (`sameAs`). Month: BreadcrumbList + CollectionPage listing its dates. How it works keeps FAQPage (no rich result since May 2026, harmless) | `web/src/lib/seo.ts` |
+| Share images | 1200×630, drawn like the Success page's link card: the #1's colors, photo or initials, "TODAY'S BIRTHDAY", the date and name. Empty dates: "UP FOR GRABS · Claim it from $5". Months, personal links (their own card) and How it works have their own | `web/src/server/og-card.tsx`, `opengraph-image.tsx` files |
+| Indexing | `sitemap.xml`: home, How it works, Terms, Privacy, 12 months, 366 dates; `lastmod` = last claim/boost on the board, last famous refresh, or the date the page text changed (`CONTENT_UPDATED`). `robots.txt` allows everything public (AI search crawlers too), blocks `/api/`, `/admin`, `/dev/`, `/styleguide`, and points to the sitemap. Claim, Success and Unsubscribe are noindex but crawlable (so the noindex is seen). Personal links canonicalize to their date page | `web/src/app/sitemap.ts`, `web/src/app/robots.ts` |
+| Crawl depth | The footer links all 12 months on every page; each month links all its dates, so every date page is 3 clicks from anywhere (it was up to 180) | `web/src/components/site/SiteFooter.tsx` |
+| Other | Site icon (placeholder "b" until there's a logo), security headers, `GOOGLE_SITE_VERIFICATION` env for Search Console's HTML-tag method | `web/src/app/icon.tsx`, `web/next.config.ts`, `web/src/app/layout.tsx` |

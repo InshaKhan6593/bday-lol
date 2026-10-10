@@ -4,8 +4,8 @@ import { famousHidden, famousPeople } from "@/db/schema";
 import { toKey, type MonthDay } from "@/lib/birthday";
 import type { FamousBirthdaysProvider } from "./famous-source";
 
-/** How many famous people the "About" section lists (06-seo.md). */
-const FAMOUS_LIMIT = 10;
+/** Read up to 15: the About section lists 10 in full (FAMOUS_LISTED) and names the rest in one line. */
+const FAMOUS_LIMIT = 15;
 
 export type FamousPerson = {
   /** Wikidata id ("Q12345"): links the person to their Wikidata entry in structured data. */

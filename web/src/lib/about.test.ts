@@ -36,7 +36,8 @@ describe("the About paragraph", () => {
     const text = aboutIntro(base).join(" ");
     expect(text).toContain("October 7 is the 280th day of the year (281st in leap years). In 2026 it falls on a Wednesday.");
     expect(text).toMatch(/It's the \d+(st|nd|rd|th) most common birthday in the US, with about [\d,]+ babies born on it each year, /);
-    expect(text).toContain("Libra as their star sign, opal as their birthstone and the marigold as their October birth flower.");
+    // Sign, stone and flower are on the cards below, not repeated here.
+    expect(text).not.toContain("Libra");
   });
 
   it("leaves out the leap-year note in January and February", () => {

@@ -66,6 +66,12 @@ item below **keeps what was already built**.
 | D6 | Emails | Lists 4 kinds (receipt, outbid, alert to followers, reminder) | — | All 8 from the original doc |
 | D7 | Postal address | Not given | — | `EMAIL_FOOTER_ADDRESS` stays empty (reminder emails should have one) |
 | D8 | Success note for rank 2+ | "If someone passes you, we'll email you right away" | Same note for every rank | Outbid emails only go when someone loses #1, so rank 2+ gets "You stay on October 7's birthday board…" instead of a promise we don't keep |
+| D9 | Date page "About" section (step 9) | — | Rank card, 3 fact cards, famous list | **Added** a short paragraph of the date's own facts under the heading, and 3 more fact cards (Half birthday, Next one, Day of the year) in the same style. Without them the 366 date pages are only ~20% different from each other, which search engines treat as thin, templated pages (claude-seo's check wants 40%+). Easy to remove if he prefers the mockup exactly |
+| D10 | Footer (step 9) | Footer "© 2026 mybday.lol · FAQ · Terms · Privacy" | Same | **Added** a "Birthdays by month: Jan … Dec" row above it. It's what puts every date page within 3 clicks of the homepage (they were up to 180 clicks deep, reachable only day by day) |
+| D11 | Month pages (step 9) | — | Not designed | Built from the date page's parts (B13): intro, calendar with top bids, every date with its #1 and famous names, facts |
+| D12 | Famous people (step 9) | — | Sample list | Entertainment only (actors, musicians, athletes, presenters, creators…), anyone who is also a politician left out, nobody under 10. Ranked by Wikipedia pageviews, so the order moves month to month. Ages are the age they turn on the board's date (next October 7 is 2027, so Simon Cowell shows 68) |
+| D13 | Site icon (step 9) | — | — | A bold "b" on Butter until he has a logo. Google shows it next to search results |
+| D14 | AI crawlers (step 9) | — | — | All allowed (ChatGPT, Claude, Perplexity search and the training crawlers). He can block training crawlers (GPTBot, ClaudeBot, Google-Extended…) without affecting AI search; one line in `robots.ts` |
 
 Settled by the handoff: C2 (Terms, Privacy, support email mybdaylol@gmail.com, footer design), C3 (social boards out
 of scope), most of C1 (domain mybday.lol on Cloudflare, Resend from hello@mybday.lol, Vercel, sole-proprietor Stripe).

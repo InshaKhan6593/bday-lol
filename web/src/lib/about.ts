@@ -1,6 +1,6 @@
 import { DAYS_IN_MONTH, formatLong, isLeapDay, MONTHS, type MonthDay } from "./birthday";
 import { AVERAGE_DAY_BIRTHS, commonness, monthExtremes, roundTo100 } from "./commonness";
-import { birthFlower, birthstone, ordinal, signsInMonth, zodiacSign } from "./facts";
+import { birthFlower, birthstone, ordinal, signsInMonth } from "./facts";
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const CUMULATIVE = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
@@ -36,8 +36,9 @@ type IntroInput = {
 /**
  * The paragraph under "About [date] birthdays". Every sentence carries a fact
  * that is different for each date (day of the year, weekday, how common it is,
- * sign, stone, flower, who's famous, who leads), so the 366 pages read as 366
- * pages and not one template with the date swapped (claude-seo seo-programmatic).
+ * who's famous, who leads), so the 366 pages read as 366 pages and not one
+ * template with the date swapped (claude-seo seo-programmatic). Sign, stone and
+ * flower are left to the cards right below it.
  */
 export function aboutIntro({ md, year, famous, leader, openBid }: IntroInput): string[] {
   const label = formatLong(md);
@@ -61,9 +62,6 @@ export function aboutIntro({ md, year, famous, leader, openBid }: IntroInput): s
     );
   }
 
-  sentences.push(
-    `People born on ${label} have ${zodiacSign(md)} as their star sign, ${birthstone(md.month).toLowerCase()} as their birthstone and the ${birthFlower(md.month).toLowerCase()} as their ${MONTHS[md.month - 1]} birth flower.`,
-  );
   if (famous.length > 0) sentences.push(`Famous ${label} birthdays include ${listNames(famous.slice(0, 3))}.`);
   sentences.push(
     leader

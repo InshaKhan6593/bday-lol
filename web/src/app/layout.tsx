@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   // Defaults for pages without their own (Claim, Success…); public pages set theirs through pageMetadata.
   openGraph: { siteName: "mybday.lol", type: "website", locale: "en_US" },
   twitter: { card: "summary_large_image" },
+  // Google Search Console's "HTML tag" verification (06-seo.md): paste the code into the env, no deploy of code needed.
+  ...(process.env.GOOGLE_SITE_VERIFICATION && { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }),
 };
 
 export const viewport: Viewport = {

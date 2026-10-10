@@ -74,13 +74,13 @@ describe("famous people refresh", () => {
     });
   });
 
-  it("shows at most 10", async () => {
+  it("reads at most 15 (10 listed, 5 named in a line), best known first", async () => {
     await inRollback(async (tx) => {
-      const many = Array.from({ length: 15 }, (_, i) => person(`Q${i + 1}`, `Person ${i + 1}`, i + 1));
+      const many = Array.from({ length: 20 }, (_, i) => person(`Q${i + 1}`, `Person ${i + 1}`, i + 1));
       await refreshFamousMonth(tx, fake({ "10-07": many }), 10, NOON);
       const shown = await getFamousPeople(tx, oct7, 2026);
-      expect(shown).toHaveLength(10);
-      expect(shown[9]!.name).toBe("Person 10");
+      expect(shown).toHaveLength(15);
+      expect(shown[14]!.name).toBe("Person 15");
     });
   });
 });

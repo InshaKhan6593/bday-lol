@@ -12,6 +12,7 @@ cp .env.example .env.local      # local defaults already work
 pnpm db:up                      # Postgres on :5440, Mailpit on :8030
 pnpm db:migrate                 # create tables
 pnpm db:seed                    # mockup demo data on today's date (ET)
+pnpm famous:refresh 10          # optional: famous October birthdays from Wikidata (all months: no argument, ~1 h)
 pnpm dev                        # http://localhost:3000
 ```
 
@@ -73,6 +74,8 @@ return to the page they started on with `?boosted=…` and a short "Your boost i
 | `pnpm db:generate` | New migration from `src/db/schema.ts` changes |
 | `pnpm db:reset` | Wipe the local DB, migrate, seed (refuses non-local databases) |
 | `pnpm emails:tick` | Send every scheduled email that is due now (what the production cron does every minute). Respects `DEV_NOW` |
+| `pnpm famous:refresh [month]` | Fill "Famous people born on…" from Wikidata + Wikipedia pageviews: all 12 months (about an hour) or one (`pnpm famous:refresh 10`). What `/api/cron/famous` does on days 1–12 of each month |
+| `pnpm data:commonness` | Rebuild `src/lib/commonness-data.ts` from FiveThirtyEight's births data (only if the source changes) |
 
 ## Fake clock
 
@@ -103,6 +106,7 @@ src/
   components/how/      How it works page styles
   components/claim/    Claim form: photo picker, gift links, color swatches
   components/success/  Success page styles + "Finishing up…" poller
+  components/month/    month pages (/october): the hub that links every date
   components/boost/    the Boost box (homepage + date page)
   components/share/    share and copy-link buttons, shared-link card
   config/              themes (12), board type settings (min bid, min boost, time zone…)
@@ -111,6 +115,8 @@ src/
   test/                database test helpers (rolled-back transactions)
   server/              server logic: leaderboard queries, page data, payments (claims + boosts, pending → paid), outbid alert queue, Stripe client + events, photo storage, reminders; actions/ = form actions
   server/email/        sending: mailer (Mailpit / Resend SMTP), sendEmail (dedupe + unsubscribe), payment emails, scheduled emails, suppressions
+  server/famous*.ts    famous people: Wikidata provider (famous-source.ts), monthly refresh and reads (famous.ts)
+  server/og-card.tsx   share images (Open Graph) drawn with next/og; fonts in src/assets/fonts
   styles/tokens.css    design tokens: color, type roles, shape, shadows, spacing, motion
 scripts/               seed, reset
 drizzle/               generated SQL migrations

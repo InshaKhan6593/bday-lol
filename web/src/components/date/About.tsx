@@ -7,6 +7,7 @@ import { adjacentDay } from "@/lib/date-page";
 import { birthFlower, birthstone, zodiacSign } from "@/lib/facts";
 import { formatUsd } from "@/lib/money";
 import { routes } from "@/lib/routes";
+import { FAMOUS_LISTED } from "@/lib/famous";
 import type { FamousPerson } from "@/server/famous";
 import styles from "./date.module.css";
 
@@ -79,7 +80,7 @@ export function About({ md, year, famous, leader, openBidCents }: Props) {
         <Surface className={styles.famous}>
           <h3 className={styles.famousTitle}>Famous people born on {label}</h3>
           <ul className={styles.famousList}>
-            {famous.map((person) => (
+            {famous.slice(0, FAMOUS_LISTED).map((person) => (
               <li key={person.name} className={styles.famousRow}>
                 <span>
                   <span className={styles.famousName}>{person.name}</span>
@@ -89,6 +90,11 @@ export function About({ md, year, famous, leader, openBidCents }: Props) {
               </li>
             ))}
           </ul>
+          {famous.length > FAMOUS_LISTED && (
+            <p className={styles.famousMore}>
+              Also born on {label}: {famous.slice(FAMOUS_LISTED).map((p) => `${p.name} (${p.knownFor})`).join(", ")}.
+            </p>
+          )}
         </Surface>
       )}
 

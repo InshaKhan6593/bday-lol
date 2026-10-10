@@ -792,6 +792,13 @@
   color: var(--color-text-tertiary);
 }
 
+.famousMore {
+  padding-top: var(--space-sm);
+  border-top: var(--stroke-thin) solid var(--color-divider);
+  font-size: var(--text-note);
+  color: var(--color-text-tertiary);
+}
+
 .dayLinks {
   display: flex;
   flex-wrap: wrap;
