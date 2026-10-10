@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { connection } from "next/server";
+import { cache } from "react";
 import { BoostNotice } from "@/components/boost/BoostNotice";
 import { ClaimBar } from "@/components/home/ClaimBar";
 import { ComingUp } from "@/components/home/ComingUp";
@@ -15,21 +17,36 @@ import { db } from "@/db";
 import { formatLong } from "@/lib/birthday";
 import { now } from "@/lib/clock";
 import { minToTakeTop } from "@/lib/money";
+import { jsonLdScript } from "@/lib/how-it-works";
 import { absoluteUrl, routes } from "@/lib/routes";
+import { HOME_TITLE, homeDescription, homeJsonLd, pageMetadata } from "@/lib/seo";
 import { getHomepageData } from "@/server/homepage";
 
 /** Today's date and whoever owns it. Rendered per request: it changes with every bid and at midnight ET. */
 type Props = { searchParams: Promise<{ boosted?: string | string[] }> };
 
+// generateMetadata and the page read the same data: fetch it once per request.
+const homeData = cache(async () => getHomepageData(db, now()));
+
+export async function generateMetadata(): Promise<Metadata> {
+  await connection();
+  const home = await homeData();
+  return pageMetadata({ title: HOME_TITLE, description: homeDescription(home.today, home.leader), path: routes.home });
+}
+
 export default async function HomePage({ searchParams }: Props) {
   await connection();
-  const home = await getHomepageData(db, now());
+  const home = await homeData();
   const { leader, settings, today } = home;
   const dateLabel = formatLong(today);
   const shareUrl = absoluteUrl(routes.date(today));
 
   return (
     <ThemeScope theme={home.theme} paint>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(homeJsonLd(homeDescription(today, leader))) }}
+      />
       <SiteHeader current="home" />
       <main className={styles.main}>
         <BoostNotice sessionId={(await searchParams).boosted} path={routes.home} />

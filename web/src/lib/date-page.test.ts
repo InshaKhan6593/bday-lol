@@ -245,3 +245,14 @@ describe("about facts", () => {
     ]);
   });
 });
+
+describe("star signs in a month", () => {
+  it("splits a month at the sign change", async () => {
+    const { signsInMonth } = await import("./facts");
+    expect(signsInMonth(10, 31)).toEqual([
+      { sign: "Libra", from: 1, to: 22 },
+      { sign: "Scorpio", from: 23, to: 31 },
+    ]);
+    expect(signsInMonth(12, 31).at(-1)).toEqual({ sign: "Capricorn", from: 22, to: 31 });
+  });
+});

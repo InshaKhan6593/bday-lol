@@ -121,7 +121,7 @@ describe("date page data", () => {
       await tx.insert(famousHidden).values({ sourceId: "Q3", name: "Hidden Star" });
 
       const page = await getDatePageData(tx, oct7, NOON_OCT_7);
-      expect(page.famous).toEqual([
+      expect(page.famous.map(({ name, knownFor, age }) => ({ name, knownFor, age }))).toEqual([
         { name: "Simon Cowell", knownFor: "singer", age: 67 },
         { name: "Toni Braxton", knownFor: "singer", age: 59 },
       ]);

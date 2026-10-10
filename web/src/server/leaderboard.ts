@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, lte, max } from "drizzle-orm";
+import { and, asc, desc, eq, gt, like, lte, max } from "drizzle-orm";
 import type { BoardTypeSettings } from "@/config/board-types";
 import type { Executor } from "@/db";
 import { boards, entries, leaderLog } from "@/db/schema";
@@ -106,4 +106,50 @@ export async function getLeaderLog(
     .from(leaderLog)
     .where(eq(leaderLog.boardId, boardId))
     .orderBy(asc(leaderLog.startedAt));
+}
+
+export type BoardLeader = {
+  name: string;
+  totalCents: number;
+  theme: RankedEntry["theme"];
+  /** People on the board, #1 included. */
+  count: number;
+};
+
+/**
+ * #1 of every open board, keyed by month-day ("10-07"), optionally for one
+ * month only. Same order as the boards themselves: highest total, then whoever
+ * got there first. Powers the month pages.
+ */
+export async function getCurrentLeaders(
+  db: Executor,
+  typeId: number,
+  instant: Date,
+  month?: number,
+): Promise<Record<string, BoardLeader>> {
+  const open = and(eq(boards.boardTypeId, typeId), lte(boards.opensAt, instant), gt(boards.closesAt, instant));
+  const rows = await db
+    .select({ key: boards.key, name: entries.name, totalCents: entries.totalCents, theme: entries.theme })
+    .from(boards)
+    .innerJoin(entries, and(eq(entries.boardId, boards.id), eq(entries.status, "live")))
+    .where(month ? and(open, like(boards.key, `${String(month).padStart(2, "0")}-%`)) : open)
+    .orderBy(asc(boards.key), desc(entries.totalCents), asc(entries.totalReachedAt));
+  const out: Record<string, BoardLeader> = {};
+  for (const row of rows) {
+    const seen = out[row.key];
+    if (seen) seen.count++;
+    else out[row.key] = { name: row.name, totalCents: row.totalCents, theme: row.theme, count: 1 };
+  }
+  return out;
+}
+
+/** When each open board last changed (a claim, a boost or an edit), keyed "10-07". The sitemap's lastmod. */
+export async function getBoardActivity(db: Executor, typeId: number, instant: Date): Promise<Record<string, Date>> {
+  const rows = await db
+    .select({ key: boards.key, at: max(entries.updatedAt) })
+    .from(boards)
+    .innerJoin(entries, and(eq(entries.boardId, boards.id), eq(entries.status, "live")))
+    .where(and(eq(boards.boardTypeId, typeId), lte(boards.opensAt, instant), gt(boards.closesAt, instant)))
+    .groupBy(boards.key);
+  return Object.fromEntries(rows.flatMap((r) => (r.at ? [[r.key, r.at]] : [])));
 }

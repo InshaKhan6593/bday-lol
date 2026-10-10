@@ -48,3 +48,15 @@ export function ordinal(n: number): string {
   const v = n % 100;
   return n + (suffixes[(v - 20) % 10] ?? suffixes[v] ?? suffixes[0]!);
 }
+
+/** The star signs a month spans, with the days each covers: October → Libra 1–22, Scorpio 23–31. */
+export function signsInMonth(month: number, daysInMonth: number): Array<{ sign: string; from: number; to: number }> {
+  const out: Array<{ sign: string; from: number; to: number }> = [];
+  for (let day = 1; day <= daysInMonth; day++) {
+    const sign = zodiacSign({ month, day });
+    const last = out[out.length - 1];
+    if (last?.sign === sign) last.to = day;
+    else out.push({ sign, from: day, to: day });
+  }
+  return out;
+}

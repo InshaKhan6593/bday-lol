@@ -1,0 +1,145 @@
+/* Month page (/october). Not in the mockup (07 B13): built from the date page's and How it works' parts and tokens. */
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--page-narrow);
+  margin: 0 auto;
+  padding: var(--space-sm) var(--gutter) var(--space-5xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.h1 {
+  font-size: var(--text-h1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-tight);
+}
+
+.intro {
+  max-width: 68ch;
+  font-size: var(--text-lead);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.h2 {
+  font-size: var(--text-title-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-title);
+}
+
+.calendarCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-xl);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dates {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.dateRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: 14px 18px;
+  background: var(--color-paper);
+  border: var(--border-thin);
+  border-radius: var(--radius-tile);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.dateMain {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.dateName {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--text-body-lg);
+  font-weight: var(--weight-bold);
+}
+
+.todayTag {
+  padding: 2px var(--space-sm);
+  border: var(--border-thin);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  font-size: var(--text-tiny);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.dateMeta {
+  font-size: var(--text-caption);
+  color: var(--color-text-tertiary);
+}
+
+.dateLeader {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+
+.leaderName {
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+}
+
+.leaderTotal {
+  font-size: var(--text-body-lg);
+  font-weight: var(--weight-bold);
+}
+
+.open {
+  padding: var(--space-2xs) var(--space-md);
+  border: var(--stroke-thin) dashed var(--color-ink);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
+}
+
+@media (max-width: 640px) {
+  .h1 {
+    font-size: var(--text-h2-lg);
+  }
+
+  .calendarCard {
+    padding: var(--space-lg);
+  }
+
+  .dateRow {
+    padding: var(--space-md) 14px;
+  }
+}

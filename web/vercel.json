@@ -1,3 +1,6 @@
 {
-  "crons": [{ "path": "/api/cron/emails", "schedule": "* * * * *" }]
+  "crons": [
+    { "path": "/api/cron/emails", "schedule": "* * * * *" },
+    { "path": "/api/cron/famous", "schedule": "17 6 1-12 * *" }
+  ]
 }

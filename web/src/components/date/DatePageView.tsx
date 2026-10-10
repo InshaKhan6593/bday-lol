@@ -69,7 +69,13 @@ export function DatePageView({ md, page, query, focusPublicId = null }: Props) {
           focusPublicId={focusPublicId}
         />
 
-        <About md={md} famous={page.famous} />
+        <About
+          md={md}
+          year={page.year}
+          famous={page.famous}
+          leader={page.entries[0] ?? null}
+          openBidCents={page.settings.minOpenBidCents}
+        />
       </main>
       <SiteFooter />
     </ThemeScope>

@@ -670,6 +670,50 @@
   line-height: 1.1;
 }
 
+.aboutIntro {
+  max-width: 68ch;
+  font-size: var(--text-body);
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+}
+
+.rankCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-lg) 22px;
+}
+
+.rankNumber {
+  flex-shrink: 0;
+  font-size: var(--text-number);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-title);
+  line-height: 1;
+}
+
+.rankText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.rankLine {
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+}
+
+.rankSub {
+  font-size: var(--text-note);
+  color: var(--color-text-tertiary);
+}
+
+.source {
+  margin-top: -6px;
+  font-size: var(--text-fine);
+  color: var(--color-text-tertiary);
+}
+
 .factGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

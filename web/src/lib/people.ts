@@ -61,3 +61,11 @@ export function uniqueSlug(base: string, taken: Iterable<string>): string {
     if (!used.has(`${base}-${n}`)) return `${base}-${n}`;
   }
 }
+
+/** "Jess Moreno" → "JM", "Maya" → "M": the avatar fallback (site and share images). */
+export function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const first = parts[0]?.[0] ?? "";
+  const last = parts.length > 1 ? (parts.at(-1)?.[0] ?? "") : "";
+  return (first + last).toUpperCase();
+}

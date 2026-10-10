@@ -9,13 +9,9 @@ import { zonedDate } from "@/lib/birthday";
 import { now } from "@/lib/clock";
 import { faqJsonLd, howItWorksFaq, howItWorksSteps, jsonLdScript } from "@/lib/how-it-works";
 import { routes } from "@/lib/routes";
+import { HOW_DESCRIPTION, HOW_TITLE, pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "How it works",
-  description:
-    "Every day, mybday.lol shows one person on its homepage. Whoever bids the most on that date gets the spot, until someone outbids them.",
-  alternates: { canonical: routes.howItWorks },
-};
+export const metadata: Metadata = pageMetadata({ title: HOW_TITLE, description: HOW_DESCRIPTION, path: routes.howItWorks });
 
 /** How it works: 3 steps, the FAQ and a "Find your date" bar. Always Butter. */
 export default async function HowItWorksPage() {

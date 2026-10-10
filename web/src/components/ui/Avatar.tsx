@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { cx } from "@/lib/cx";
+import { initials } from "@/lib/people";
 import styles from "./Avatar.module.css";
 
 export type AvatarSize = "xs" | "sm" | "md" | "card" | "lg";
@@ -15,12 +16,7 @@ type Props = {
   className?: string;
 };
 
-export function initials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? (parts.at(-1)?.[0] ?? "") : "";
-  return (first + last).toUpperCase();
-}
+export { initials } from "@/lib/people";
 
 /** Round photo with an ink outline. Falls back to initials, or "?" when empty. */
 export function Avatar({ name = "", photoUrl, color, size = "md", placeholder, className }: Props) {

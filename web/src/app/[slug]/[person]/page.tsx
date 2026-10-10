@@ -7,6 +7,7 @@ import { formatLong } from "@/lib/birthday";
 import { now } from "@/lib/clock";
 import { firstName } from "@/lib/people";
 import { routes } from "@/lib/routes";
+import { dateTitle, pageMetadata } from "@/lib/seo";
 import { getDatePageData } from "@/server/date-page";
 import { getPersonOnBoard } from "@/server/people";
 import { dateFromSlug } from "../date-from-slug";
@@ -21,12 +22,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const md = dateFromSlug(slug);
   const found = await getPersonOnBoard(db, md, person, now());
   const label = formatLong(md);
-  if (!found) return { title: `${label} Birthday`, alternates: { canonical: routes.date(md) } };
+  if (!found) return { title: { absolute: dateTitle(md) }, alternates: { canonical: routes.date(md) } };
   const first = firstName(found.name);
+  const title = `It’s ${first}’s birthday on ${label}`;
+  const description = `${found.name} is #${found.rank} on ${label}. Send a birthday gift or boost ${first} to the top.`;
   return {
-    title: `It’s ${first}’s birthday on ${label}`,
-    description: `${found.name} is #${found.rank} on ${label}. Send a birthday gift or boost ${first} to the top.`,
-    // The board itself is the page search engines should index.
+    ...pageMetadata({ title, description, path: routes.person(md, person) }),
+    // The board itself is the page search engines should index; the personal link is for sharing.
     alternates: { canonical: routes.date(md) },
   };
 }

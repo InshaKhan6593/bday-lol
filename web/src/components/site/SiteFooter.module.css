@@ -10,6 +10,25 @@
   font-size: var(--text-note);
 }
 
+.months {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2xs) var(--space-lg);
+  font-weight: var(--weight-medium);
+}
+
+.monthsLabel {
+  margin-right: var(--space-xs);
+  font-weight: var(--weight-bold);
+}
+
+.months a {
+  padding: var(--space-2xs) 0;
+  text-decoration: none;
+}
+
 .copy {
   display: flex;
   flex-wrap: wrap;

@@ -26,3 +26,9 @@ export async function saveSitePage(db: Executor, slug: LegalPageSlug, body: stri
     .values({ slug, body, updatedAt: instant })
     .onConflictDoUpdate({ target: sitePages.slug, set: { body, updatedAt: instant } });
 }
+
+/** When the admin last saved each editable page (missing: still the original text). Sitemap lastmod. */
+export async function getSitePagesUpdatedAt(db: Executor): Promise<Partial<Record<LegalPageSlug, Date>>> {
+  const rows = await db.select({ slug: sitePages.slug, updatedAt: sitePages.updatedAt }).from(sitePages);
+  return Object.fromEntries(rows.filter((r) => r.slug in LEGAL_PAGES).map((r) => [r.slug, r.updatedAt]));
+}

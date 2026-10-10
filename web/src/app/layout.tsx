@@ -14,6 +14,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: { default: "mybday.lol", template: "%s | mybday.lol" },
   description: "Bid on your birthday. The highest bid owns the homepage.",
+  applicationName: "mybday.lol",
+  // Defaults for pages without their own (Claim, Success…); public pages set theirs through pageMetadata.
+  openGraph: { siteName: "mybday.lol", type: "website", locale: "en_US" },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {
