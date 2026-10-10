@@ -12,7 +12,14 @@ import {
   withMonth,
   type ClaimInput,
 } from "./claim";
-import { giftLinkHint, parseGiftLink } from "./gifts";
+import {
+  giftEntryHint,
+  nextUnusedService,
+  parseGiftEntry,
+  parseGiftLink,
+  switchGiftApp,
+  typeInGiftRow,
+} from "./gifts";
 import { stripWrappingQuotes } from "./people";
 
 const settings = BIRTHDAY_BOARD_TYPE.settings;
@@ -111,17 +118,74 @@ describe("gift links", () => {
     expect(parseGiftLink("   ")).toEqual({ kind: "empty" });
   });
 
-  it("words the hint under each link like the mockup", () => {
-    expect(giftLinkHint(parseGiftLink("venmo.com/u/sam"))).toEqual({
-      text: "Your page will show a “Send on Venmo” button",
+});
+
+describe("gift rows: app + username (handoff v2)", () => {
+  it("builds the button link from the username", () => {
+    expect(parseGiftEntry({ service: "venmo", value: "sam-rivera" })).toEqual({
+      kind: "ok",
+      link: { service: "venmo", url: "https://venmo.com/u/sam-rivera" },
+    });
+    expect(parseGiftEntry({ service: "cashapp", value: "samr" })).toEqual({
+      kind: "ok",
+      link: { service: "cashapp", url: "https://cash.app/$samr" },
+    });
+    expect(parseGiftEntry({ service: "throne", value: "@samr" })).toEqual({
+      kind: "ok",
+      link: { service: "throne", url: "https://throne.com/samr" },
+    });
+  });
+
+  it("takes Amazon only as a wishlist link, and full links for any app", () => {
+    expect(parseGiftEntry({ service: "amazon", value: "samr" })).toEqual({ kind: "bad" });
+    expect(parseGiftEntry({ service: "amazon", value: "amazon.com/hz/wishlist/ls/ABC" })).toEqual({
+      kind: "ok",
+      link: { service: "amazon", url: "https://amazon.com/hz/wishlist/ls/ABC" },
+    });
+    expect(parseGiftEntry({ service: "venmo", value: "https://venmo.com/u/sam" }).kind).toBe("ok");
+    // A Cash App link in the Venmo row is wrong.
+    expect(parseGiftEntry({ service: "venmo", value: "cash.app/$sam" })).toEqual({ kind: "bad" });
+  });
+
+  it("checks usernames per app", () => {
+    expect(parseGiftEntry({ service: "venmo", value: "a" }).kind).toBe("bad");
+    expect(parseGiftEntry({ service: "cashapp", value: "1sam" }).kind).toBe("bad");
+    expect(parseGiftEntry({ service: "throne", value: "sam rivera" }).kind).toBe("bad");
+    expect(parseGiftEntry({ service: "venmo", value: "   " })).toEqual({ kind: "empty" });
+  });
+
+  it("drops a typed @ or $, and switches the app when a full link is pasted", () => {
+    expect(typeInGiftRow({ service: "venmo", value: "" }, "@sam", [])).toEqual({ service: "venmo", value: "sam" });
+    expect(typeInGiftRow({ service: "cashapp", value: "" }, "$$sam", [])).toEqual({ service: "cashapp", value: "sam" });
+    expect(typeInGiftRow({ service: "venmo", value: "" }, "cash.app/$sam", [])).toEqual({
+      service: "cashapp",
+      value: "cash.app/$sam",
+    });
+    // Cash App is already used in another row: the row keeps its app.
+    expect(typeInGiftRow({ service: "venmo", value: "" }, "cash.app/$sam", ["cashapp"]).service).toBe("venmo");
+    expect(switchGiftApp({ service: "amazon", value: "@sam" }, "venmo")).toEqual({ service: "venmo", value: "sam" });
+  });
+
+  it("adds the next unused app, and none once all four are in", () => {
+    expect(nextUnusedService([{ service: "venmo", value: "" }])).toBe("cashapp");
+    expect(nextUnusedService([{ service: "cashapp", value: "" }, { service: "venmo", value: "" }])).toBe("amazon");
+    const all = (["venmo", "cashapp", "amazon", "throne"] as const).map((service) => ({ service, value: "" }));
+    expect(nextUnusedService(all)).toBeNull();
+  });
+
+  it("words the hint under each row like the mockup", () => {
+    expect(giftEntryHint({ service: "venmo", value: "sam" })).toEqual({
+      text: "Your spot will show a “Send on Venmo” button",
       tone: "strong",
     });
-    expect(giftLinkHint(parseGiftLink("throne.com/sam"))?.text).toBe("Your page will show a “Gift me on Throne” button");
-    expect(giftLinkHint(parseGiftLink("paypal.me/sam"))).toEqual({
-      text: "We can only use Venmo, Cash App, Amazon, or Throne links",
-      tone: "error",
-    });
-    expect(giftLinkHint(parseGiftLink(""))).toBeNull();
+    expect(giftEntryHint({ service: "amazon", value: "amazon.com/hz/wishlist/ls/A" })?.text).toBe(
+      "Your spot will show a “Shop my Amazon wishlist” button",
+    );
+    expect(giftEntryHint({ service: "venmo", value: "x" })).toEqual({ text: "Please enter a correct @username", tone: "error" });
+    expect(giftEntryHint({ service: "cashapp", value: "9" })?.text).toBe("Please enter a correct $cashtag");
+    expect(giftEntryHint({ service: "amazon", value: "nope" })?.text).toBe("Please enter a correct wishlist link");
+    expect(giftEntryHint({ service: "throne", value: "a b" })?.text).toBe("Please enter a correct username");
+    expect(giftEntryHint({ service: "throne", value: "" })).toBeNull();
   });
 });
 
@@ -132,7 +196,10 @@ describe("claim form", () => {
     bid: "$241",
     name: "  Sam   Rivera ",
     bio: "Turning 25 today. Tacos over cake, always and forever.",
-    giftLinks: ["venmo.com/u/sam", ""],
+    giftLinks: [
+      { service: "venmo", value: "sam" },
+      { service: "cashapp", value: "" },
+    ],
     theme: "butter",
     email: " Sam@Example.com ",
   };
@@ -154,7 +221,8 @@ describe("claim form", () => {
   });
 
   it("allows no bio and no gift links", () => {
-    expect(validateClaim({ ...good, bio: "", giftLinks: [""] }, 24_100, target, settings).ok).toBe(true);
+    const noLinks = { ...good, bio: "", giftLinks: [{ service: "venmo" as const, value: "" }] };
+    expect(validateClaim(noLinks, 24_100, target, settings).ok).toBe(true);
   });
 
   it("reports every problem at once", () => {
@@ -164,7 +232,7 @@ describe("claim form", () => {
         bid: "$240",
         name: "   ",
         bio: "x".repeat(81),
-        giftLinks: ["paypal.me/sam"],
+        giftLinks: [{ service: "venmo", value: "paypal.me/sam" }],
         theme: "neon",
         email: "sam@",
       },
@@ -176,21 +244,35 @@ describe("claim form", () => {
       ok: false,
       errors: {
         bid: "Bid at least $241 to take the homepage.",
-        name: "Add the birthday person’s name.",
+        name: "Add a name to continue.",
         bio: "Bios can be up to 80 characters.",
-        giftLinks: "We can only use Venmo, Cash App, Amazon, or Throne links",
+        giftLinks: "Please enter a correct @username",
         theme: "Pick a color.",
         email: "Enter your email for the receipt.",
       },
     });
   });
 
-  it("enforces the length and link limits on the server too", () => {
-    const tooMany = ["venmo.com/u/a", "cash.app/$b", "throne.com/c", "a.co/d/e"];
-    const result = validateClaim({ ...good, name: "N".repeat(41), giftLinks: tooMany }, 24_100, target, settings);
+  it("allows one link for each of the four apps", () => {
+    const four = [
+      { service: "venmo", value: "aa" },
+      { service: "cashapp", value: "bb" },
+      { service: "throne", value: "cc" },
+      { service: "amazon", value: "a.co/d/e" },
+    ] as const;
+    const result = validateClaim({ ...good, giftLinks: [...four] }, 24_100, target, settings);
+    expect(result.ok && result.claim.giftLinks.map((l) => l.service)).toEqual(["venmo", "cashapp", "throne", "amazon"]);
+  });
+
+  it("enforces the length limit and one link per app on the server too", () => {
+    const twice = [
+      { service: "venmo", value: "aa" },
+      { service: "venmo", value: "bb" },
+    ] as const;
+    const result = validateClaim({ ...good, name: "N".repeat(41), giftLinks: [...twice] }, 24_100, target, settings);
     expect(result).toEqual({
       ok: false,
-      errors: { name: "Names can be up to 40 characters.", giftLinks: "Add up to 3 links." },
+      errors: { name: "Names can be up to 40 characters.", giftLinks: "Add one link per app." },
     });
   });
 });

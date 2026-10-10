@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CHECKOUT_TTL_SECONDS, claimCheckoutParams, readCheckoutMetadata, sniffImage } from "./checkout";
+import { boostCheckoutParams, CHECKOUT_TTL_SECONDS, claimCheckoutParams, readCheckoutMetadata, sniffImage } from "./checkout";
 
 const metadata = { kind: "claim" as const, paymentId: "pay-1", entryId: "ent-1", boardId: "brd-1" };
 const NOW = new Date("2026-10-07T12:00:00-04:00");
@@ -54,6 +54,28 @@ describe("claim checkout session", () => {
     const p = params();
     expect(p.success_url).toBe("https://mybday.lol/claim/success?session_id={CHECKOUT_SESSION_ID}");
     expect(p.cancel_url).toBe("https://mybday.lol/claim?date=october-1&rank=2");
+  });
+
+  it("requires the 18+ terms checkbox on claims and boosts (handoff v2)", () => {
+    const consent = {
+      consent_collection: { terms_of_service: "required" },
+      custom_text: {
+        terms_of_service_acceptance: {
+          message:
+            "I'm 18 or older and agree to the [Terms of Service](https://mybday.lol/terms) and [Privacy Policy](https://mybday.lol/privacy)",
+        },
+      },
+    };
+    expect(params()).toMatchObject(consent);
+    const boost = boostCheckoutParams({
+      name: "Jess Moreno",
+      amountCents: 500,
+      metadata: { ...metadata, kind: "boost" },
+      origin: "https://mybday.lol",
+      returnPath: "/october-7",
+      now: NOW,
+    });
+    expect(boost).toMatchObject(consent);
   });
 
   it("reads our metadata back and ignores sessions this app didn't create", () => {

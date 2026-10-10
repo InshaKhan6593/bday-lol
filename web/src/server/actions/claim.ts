@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { isValidMonthDay } from "@/lib/birthday";
 import { claimCheckoutParams } from "@/lib/checkout";
 import { validateClaim, type ClaimField } from "@/lib/claim";
+import { isGiftService, type GiftEntry } from "@/lib/gifts";
 import { now } from "@/lib/clock";
 import { routes, siteOrigin } from "@/lib/routes";
 import { ensureCurrentBoard } from "../boards";
@@ -23,6 +24,16 @@ export type ClaimActionState = {
 function text(form: FormData, name: string): string {
   const value = form.get(name);
   return typeof value === "string" ? value : "";
+}
+
+/** The gift rows, sent as giftService / giftValue pairs in order. Unknown apps are dropped. */
+function giftRows(form: FormData): GiftEntry[] {
+  const services = form.getAll("giftService");
+  const values = form.getAll("giftValue");
+  return services.flatMap((service, i) => {
+    const value = values[i];
+    return isGiftService(service) && typeof value === "string" ? [{ service, value }] : [];
+  });
 }
 
 /**
@@ -45,7 +56,7 @@ export async function startClaimCheckout(_prev: ClaimActionState, form: FormData
       bid: text(form, "bid"),
       name: text(form, "name"),
       bio: text(form, "bio"),
-      giftLinks: form.getAll("giftLink").filter((v): v is string => typeof v === "string"),
+      giftLinks: giftRows(form),
       theme: text(form, "theme"),
       email: text(form, "email"),
     },
@@ -75,7 +86,7 @@ export async function startClaimCheckout(_prev: ClaimActionState, form: FormData
     const session = await getStripe().checkout.sessions.create(
       claimCheckoutParams({
         md,
-        year: page.year,
+        year: page.year!,
         amountCents: result.claim.amountCents,
         email: result.claim.email,
         metadata: { kind: "claim", paymentId: ids.paymentId, entryId: ids.entryId, boardId: board.id },

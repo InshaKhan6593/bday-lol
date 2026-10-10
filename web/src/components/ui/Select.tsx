@@ -5,7 +5,8 @@ import { cx } from "@/lib/cx";
 import { Icon } from "./Icon";
 import styles from "./Select.module.css";
 
-export type SelectOption = { value: string; label: string };
+/** `disabled` greys a row out, e.g. a gift app already used in another row. */
+export type SelectOption = { value: string; label: string; disabled?: boolean };
 
 type Props = {
   options: SelectOption[];
@@ -48,7 +49,7 @@ export function Select({ options, placeholder, className, "aria-label": ariaLabe
         </RadixSelect.ScrollUpButton>
         <RadixSelect.Viewport className={styles.viewport}>
           {options.map((option) => (
-            <RadixSelect.Item key={option.value} value={option.value} className={styles.item}>
+            <RadixSelect.Item key={option.value} value={option.value} disabled={option.disabled} className={styles.item}>
               <RadixSelect.ItemText>{option.label}</RadixSelect.ItemText>
               <RadixSelect.ItemIndicator className={styles.check}>
                 <Icon name="check" size={16} />

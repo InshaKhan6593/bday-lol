@@ -6,10 +6,10 @@ import { getBirthdaySettings, getCurrentBoard } from "./leaderboard";
 
 export type ClaimPageData = {
   settings: BoardTypeSettings;
-  /** The date being claimed: from ?date=, or today. */
-  md: MonthDay;
-  /** Year of the board the claim lands on (next year for a date that has passed). */
-  year: number;
+  /** The date being claimed, from ?date=. Null until one is picked (the form starts blank, handoff v2). */
+  md: MonthDay | null;
+  /** Year of the board the claim lands on (next year for a date that has passed). Null without a date. */
+  year: number | null;
   /** Who you're trying to pass. Only a name and a total: this goes to the browser. */
   target: ClaimTarget;
   /** Smallest bid that passes the target. */
@@ -20,7 +20,7 @@ export type ClaimPageData = {
   serverNow: string;
 };
 
-/** Data for /claim?date=october-7&rank=2. No date → today's date. */
+/** Data for /claim?date=october-7&rank=2. No date → nobody to pass yet, and the opening bid. */
 export async function getClaimPageData(
   db: Executor,
   md: MonthDay | null,
@@ -29,13 +29,12 @@ export async function getClaimPageData(
 ): Promise<ClaimPageData> {
   const { typeId, settings } = await getBirthdaySettings(db);
   const today = zonedDate(instant, settings.timezone);
-  const date = md ?? { month: today.month, day: today.day };
-  const board = await getCurrentBoard(db, typeId, settings, date, instant);
-  const target = claimTarget(board.entries, rank);
+  const board = md ? await getCurrentBoard(db, typeId, settings, md, instant) : null;
+  const target = claimTarget(board?.entries ?? [], rank);
   return {
     settings,
-    md: date,
-    year: currentBoardYear(date, instant, settings.timezone),
+    md,
+    year: md ? currentBoardYear(md, instant, settings.timezone) : null,
     target,
     minCents: claimMinCents(target, settings),
     today: { month: today.month, day: today.day },

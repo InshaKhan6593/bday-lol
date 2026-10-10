@@ -8,6 +8,13 @@
       "when": 1791547909908,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791606883218,
+      "tag": "0001_handoff_v2_gift_links",
+      "breakpoints": true
     }
   ]
 }

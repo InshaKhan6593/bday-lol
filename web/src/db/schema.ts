@@ -133,7 +133,7 @@ export const entries = pgTable(
     index("entries_owner_email_idx").on(t.ownerEmail),
     check("entries_total_whole_dollars_chk", sql`${t.totalCents} >= 0 AND ${t.totalCents} % 100 = 0`),
     check("entries_name_len_chk", sql`char_length(${t.name}) BETWEEN 1 AND 40`),
-    check("entries_gift_links_max_chk", sql`jsonb_array_length(${t.giftLinks}) <= 3`),
+    check("entries_gift_links_max_chk", sql`jsonb_array_length(${t.giftLinks}) <= 4`),
     check("entries_live_has_total_chk", sql`${t.status} <> 'live' OR ${t.totalReachedAt} IS NOT NULL`),
   ],
 );

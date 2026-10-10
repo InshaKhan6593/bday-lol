@@ -15,15 +15,15 @@ const board = [
 ];
 
 describe("claim page data", () => {
-  it("targets today's #1 when no date is given", async () => {
+  it("starts blank when no date is given (handoff v2)", async () => {
     await inRollback(async (tx) => {
       const type = await addBirthdayType(tx);
       await addPeople(tx, type, oct7, 2026, board);
       const page = await getClaimPageData(tx, null, 1, NOON_OCT_7);
-      expect(page.md).toEqual(oct7);
-      expect(page.year).toBe(2026);
-      expect(page.target).toEqual({ rank: 1, name: "Jess Moreno", totalCents: 24_000 });
-      expect(page.minCents).toBe(24_100);
+      expect(page.md).toBeNull();
+      expect(page.year).toBeNull();
+      expect(page.target).toEqual({ rank: 1, name: null, totalCents: null });
+      expect(page.minCents).toBe(500);
       // For the "Today ends in 12 min" warning: today ends at midnight ET.
       expect(page.today).toEqual(oct7);
       expect(page.dayEndsAt).toBe(new Date("2026-10-08T00:00:00-04:00").toISOString());

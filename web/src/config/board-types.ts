@@ -27,6 +27,8 @@ export type BoardTypeSettings = {
   defaultTheme: ThemeKey;
   /** Theme for a board with no entries on the Find page. */
   emptyTheme: ThemeKey;
+  /** Theme the Claim page starts on before a color is picked (handoff v2: Sky). */
+  claimTheme: ThemeKey;
 };
 
 export type BoardSettings = Partial<BoardTypeSettings>;
@@ -42,10 +44,12 @@ export const BIRTHDAY_BOARD_TYPE = {
     minBoostCents: 200,
     boostChipsCents: [200, 500, 1000, 2000],
     defaultBoostCents: 500,
-    maxGiftLinks: 3,
+    // One per app: Venmo, Cash App, Amazon, Throne (handoff v2).
+    maxGiftLinks: 4,
     nameMaxLength: 40,
     bioMaxLength: 80,
     defaultTheme: "butter",
     emptyTheme: "cloud",
+    claimTheme: "sky",
   },
 } as const satisfies { slug: string; name: string; settings: BoardTypeSettings };

@@ -3,9 +3,9 @@ import { isThemeKey, type ThemeKey } from "@/config/themes";
 import type { GiftLink } from "@/db/schema";
 import { DAYS_IN_MONTH, parseSlug, type MonthDay } from "./birthday";
 import { parseAmountCents } from "./boost";
-import { parseGiftLink } from "./gifts";
+import { GIFT_ENTRY, parseGiftEntry, type GiftEntry } from "./gifts";
 import { formatUsd, minToTakeTop } from "./money";
-import { stripWrappingQuotes } from "./people";
+import { cleanName, stripWrappingQuotes } from "./people";
 
 /** Rules for the Claim page, worded exactly like the mockup (ClaimDesktop.dc.html / Claim.dc.html). */
 
@@ -86,7 +86,8 @@ export type ClaimInput = {
   bid: string;
   name: string;
   bio: string;
-  giftLinks: string[];
+  /** The gift rows: an app + a username or wishlist link each. */
+  giftLinks: GiftEntry[];
   theme: string;
   email: string;
 };
@@ -125,16 +126,22 @@ export function validateClaim(input: ClaimInput, minCents: number, target: Claim
   const tooLow = bidError(amountCents, minCents, target);
   if (tooLow) errors.bid = tooLow;
 
-  const name = tidy(input.name);
-  if (!name) errors.name = "Add the birthday person’s name.";
+  const name = cleanName(input.name);
+  if (!name) errors.name = "Add a name to continue.";
   else if (name.length > rules.nameMaxLength) errors.name = `Names can be up to ${rules.nameMaxLength} characters.`;
 
   const bio = stripWrappingQuotes(tidy(input.bio));
   if (bio.length > rules.bioMaxLength) errors.bio = `Bios can be up to ${rules.bioMaxLength} characters.`;
 
-  const parsed = input.giftLinks.map(parseGiftLink);
-  const giftLinks = parsed.flatMap((p) => (p.kind === "ok" ? [p.link] : []));
-  if (parsed.some((p) => p.kind === "bad")) errors.giftLinks = "We can only use Venmo, Cash App, Amazon, or Throne links";
+  // One link per app (handoff v2): Venmo, Cash App, Amazon, Throne.
+  const rows = input.giftLinks.filter((row) => row.value.trim());
+  const bad = rows.find((row) => parseGiftEntry(row).kind === "bad");
+  const giftLinks = rows.flatMap((row) => {
+    const parsed = parseGiftEntry(row);
+    return parsed.kind === "ok" ? [parsed.link] : [];
+  });
+  if (bad) errors.giftLinks = GIFT_ENTRY[bad.service].error;
+  else if (new Set(giftLinks.map((l) => l.service)).size < giftLinks.length) errors.giftLinks = "Add one link per app.";
   else if (giftLinks.length > rules.maxGiftLinks) errors.giftLinks = `Add up to ${rules.maxGiftLinks} links.`;
 
   if (!isThemeKey(input.theme)) errors.theme = "Pick a color.";

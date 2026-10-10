@@ -33,6 +33,23 @@ type ClaimCheckoutInput = {
   now: Date;
 };
 
+/**
+ * Stripe's required checkbox under the Pay button (handoff v2 §6, §8): anyone
+ * who pays must be 18 or older and accept the Terms and Privacy Policy. The
+ * live Stripe account needs its Terms of Service URL set (Settings → Public
+ * details) for this to work.
+ */
+export function termsConsent(origin: string): Pick<Stripe.Checkout.SessionCreateParams, "consent_collection" | "custom_text"> {
+  return {
+    consent_collection: { terms_of_service: "required" },
+    custom_text: {
+      terms_of_service_acceptance: {
+        message: `I'm 18 or older and agree to the [Terms of Service](${origin}${routes.terms}) and [Privacy Policy](${origin}${routes.privacy})`,
+      },
+    },
+  };
+}
+
 /** One-time USD payment with Adaptive Pricing, so people abroad pay in their own currency (settled in USD). */
 export function claimCheckoutParams(input: ClaimCheckoutInput): Stripe.Checkout.SessionCreateParams {
   const label = `${formatLong(input.md)}, ${input.year}`;
@@ -60,6 +77,7 @@ export function claimCheckoutParams(input: ClaimCheckoutInput): Stripe.Checkout.
     expires_at: Math.floor(input.now.getTime() / 1000) + CHECKOUT_TTL_SECONDS,
     success_url: input.origin + routes.claimSuccessTemplate,
     cancel_url: input.origin + input.cancelPath,
+    ...termsConsent(input.origin),
   };
 }
 
@@ -103,6 +121,7 @@ export function boostCheckoutParams(input: BoostCheckoutInput): Stripe.Checkout.
     expires_at: Math.floor(input.now.getTime() / 1000) + CHECKOUT_TTL_SECONDS,
     success_url: `${input.origin}${input.returnPath}?boosted={CHECKOUT_SESSION_ID}`,
     cancel_url: input.origin + input.returnPath,
+    ...termsConsent(input.origin),
   };
 }
 

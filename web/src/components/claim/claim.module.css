@@ -64,6 +64,8 @@
 }
 
 .groupHead {
+  /* Phones anchor the ⓘ tooltip to this block, full width. */
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--space-3xs);
@@ -219,11 +221,55 @@
   min-height: 0;
 }
 
+/* The bio counter sits at the right end of its label row (handoff v2). */
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-md);
+}
+
 .counter {
-  align-self: flex-end;
   font-size: var(--text-caption);
   font-weight: var(--weight-regular);
   color: var(--color-text-secondary);
+}
+
+.bioField {
+  margin-top: var(--space-sm);
+}
+
+/* Name is required: red border and "Add a name to continue." */
+.required {
+  border-color: var(--color-error-strong);
+}
+
+.requiredText {
+  margin-top: -6px;
+  font-size: var(--text-note);
+  font-weight: var(--weight-link);
+  color: var(--color-error-strong);
+}
+
+/* The bid box: a fixed $ inside it, digits only. */
+.money {
+  position: relative;
+  display: block;
+}
+
+.moneySign {
+  position: absolute;
+  left: 17px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--text-amount);
+  font-weight: var(--weight-bold);
+  pointer-events: none;
+}
+
+.money .bidInput {
+  width: 100%;
+  padding-left: 40px;
 }
 
 /* ---------- Gift links ---------- */
@@ -239,10 +285,113 @@
   gap: var(--space-sm);
 }
 
-.linkInput {
+.linkControls .appSelect {
+  flex: 0 0 160px;
+  font-size: var(--text-label);
+  font-weight: var(--weight-bold);
+}
+
+/* The box beside the app: a fixed @ or $ for usernames, hidden for full links. */
+.handleBox {
+  position: relative;
   flex: 1;
   min-width: 0;
+  display: block;
+}
+
+.handlePrefix {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--text-body-lg);
+  font-weight: var(--weight-bold);
+  pointer-events: none;
+}
+
+.handleBox .handleInput {
+  width: 100%;
   font-size: var(--text-label);
+}
+
+.handleBox .handleInputPrefixed {
+  padding-left: 32px;
+}
+
+/* ⓘ next to "Where should gifts go?" and its dark tooltip. */
+.infoWrap {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: var(--space-xs);
+}
+
+.infoButton {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: var(--stroke-thin) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: var(--text-fine);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.infoButton:focus-visible {
+  outline: var(--stroke) solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+.infoTip {
+  position: absolute;
+  left: -60px;
+  top: calc(100% + 10px);
+  z-index: 20;
+  width: 270px;
+  padding: var(--space-md) 14px;
+  border-radius: var(--radius-small);
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-fine);
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--duration-quick) var(--ease);
+}
+
+.infoTip::before {
+  content: "";
+  position: absolute;
+  left: 66px;
+  top: -6px;
+  width: 12px;
+  height: 12px;
+  background: var(--color-ink);
+  transform: rotate(45deg);
+}
+
+.infoTip[data-open="true"] {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (hover: hover) {
+  .infoWrap:hover .infoTip {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 
 .addLink {
@@ -250,10 +399,29 @@
   font-size: var(--text-label);
 }
 
+/* Venmo / your @username … then "Full links work too." */
 .accepted {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-3xs) var(--space-md);
   font-size: var(--text-caption);
-  line-height: var(--leading-fine);
+  line-height: var(--leading-relaxed);
   color: var(--color-text-tertiary);
+}
+
+.accepted dt {
+  font-weight: var(--weight-bold);
+  color: var(--color-ink);
+}
+
+.accepted dd {
+  margin: 0;
+}
+
+.accepted .acceptedNote {
+  grid-column: 1 / -1;
+  margin-top: var(--space-2xs);
 }
 
 /* ---------- Your color ---------- */
@@ -523,5 +691,32 @@
 
   .totalAmount {
     font-size: var(--text-stat);
+  }
+}
+
+/* Handoff v2 phone sizes: narrower app dropdown, bigger $ next to the 30px bid. */
+@media (max-width: 640px) {
+  .linkControls .appSelect {
+    flex-basis: 142px;
+  }
+
+  .moneySign {
+    font-size: var(--text-stat);
+  }
+
+  /* The ⓘ tooltip spans the heading block, so it never runs off a narrow screen. */
+  .infoWrap {
+    position: static;
+  }
+
+  .infoTip {
+    left: 0;
+    right: 0;
+    top: calc(100% + 6px);
+    width: auto;
+  }
+
+  .infoTip::before {
+    display: none;
   }
 }
