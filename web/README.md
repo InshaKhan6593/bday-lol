@@ -15,9 +15,23 @@ pnpm db:seed                    # mockup demo data on today's date (ET)
 pnpm dev                        # http://localhost:3000
 ```
 
-### Cloud session (no Docker)
+### Cloud session
 
-Claude Code cloud containers have Postgres 16 installed but no Docker. Run it natively on the same port, so the
+Claude Code cloud containers now ship Docker, but the daemon isn't running and Docker Hub often answers `429 Too
+Many Requests`. Start the daemon and pull through Google's Docker Hub mirror, then run the normal steps:
+
+```bash
+(sudo dockerd > /tmp/dockerd.log 2>&1 &) && sleep 5
+for i in library/postgres:17-alpine axllent/mailpit:latest; do
+  docker pull mirror.gcr.io/$i && docker tag mirror.gcr.io/$i ${i#library/}
+done
+cp .env.example .env.local && pnpm install
+docker compose up -d --pull never && pnpm db:migrate && pnpm db:seed && pnpm dev
+```
+
+#### Without Docker
+
+Older containers have Postgres 16 installed but no Docker. Run it natively on the same port, so the
 `.env.example` URL works unchanged, and use the Mailpit binary for email:
 
 ```bash
