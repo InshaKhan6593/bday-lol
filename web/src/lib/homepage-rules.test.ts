@@ -4,7 +4,7 @@ import { formatCountdown } from "./countdown";
 import { giftButtons } from "./gifts";
 import { comingUpCopy, othersText } from "./homepage-copy";
 import { formatUsd, minToTakeTop } from "./money";
-import { firstName, shortName } from "./people";
+import { cleanName, firstName, shortName } from "./people";
 import { parseReminderInput } from "./reminders";
 import { birthdayShareText, facebookShareUrl, smsShareUrl } from "./share";
 
@@ -28,6 +28,15 @@ describe("names", () => {
     expect(shortName("Mary-Catherine Featherstonehaugh-Worthington")).toBe("Mary-Catherine F.");
     expect(shortName("Cher")).toBe("Cher");
     expect(firstName("Jess Moreno")).toBe("Jess");
+  });
+
+  it("picks the first name like the handoff says", () => {
+    expect(firstName("  Isla   Brown ")).toBe("Isla");
+    expect(firstName("Mary-Catherine Lee")).toBe("Mary-Catherine");
+    expect(firstName("Dr. Sam Rivera")).toBe("Dr. Sam Rivera");
+    expect(firstName("J. Cole")).toBe("J. Cole");
+    expect(firstName("Maya")).toBe("Maya");
+    expect(cleanName("  Sam   Rivera ")).toBe("Sam Rivera");
   });
 });
 

@@ -9,11 +9,12 @@ import type { BoardTypeSettings } from "@/config/board-types";
 import type { ThemeKey } from "@/config/themes";
 import { formatLong, formatLongNb, type MonthDay } from "@/lib/birthday";
 import { boostBoxTop } from "@/lib/boost";
-import { ctaCopy, filterByName, searchCountText } from "@/lib/date-page";
+import { BOARD_PAGE_SIZE, ctaCopy, filterByName, landingRank, moreText, searchCountText } from "@/lib/date-page";
 import { routes } from "@/lib/routes";
 import type { DateEntry } from "@/server/date-page";
 import styles from "./date.module.css";
 import { EntryRow } from "./EntryRow";
+import { useMediaQuery } from "./useMediaQuery";
 
 type Props = {
   md: MonthDay;
@@ -34,8 +35,11 @@ type Props = {
 
 /**
  * The interactive part of the date page: the claim bar, name search and the
- * ranked list. Tapping a card switches the bar to "Claim #N"; the ▲ pill opens
- * the Boost box. Keyed by date, so search and picks reset when the date changes.
+ * ranked board. Picking a card switches the bar to "Outrank [name] for $X"
+ * (desktop scrolls up to it; phones outline the card and show an in-card
+ * button instead). The ▲ pill opens the Boost box. The board shows 20 people
+ * at a time; search covers everyone. Keyed by date, so search, picks and paging
+ * reset when the date changes.
  */
 export function DateBoard({
   md,
@@ -50,6 +54,8 @@ export function DateBoard({
 }: Props) {
   const [pickedRank, setPickedRank] = useState<number | null>(null);
   const [query, setQuery] = useState("");
+  const [limit, setLimit] = useState(BOARD_PAGE_SIZE);
+  const mobile = useMediaQuery("(max-width: 640px)");
   // Opened from an email link ("Boost to take #1 back"): the Boost box starts open, at the top edge of the screen.
   const [boosting, setBoosting] = useState<{ entry: DateEntry; top: number } | null>(() => {
     const entry = initialBoost && entries.find((e) => e.publicId === initialBoost.publicId);
@@ -59,19 +65,26 @@ export function DateBoard({
   const searchRef = useRef<HTMLInputElement>(null);
 
   const label = formatLongNb(md);
-  // Picking #1 just means "go for the top", same as no pick.
-  const picked = pickedRank && pickedRank > 1 ? entries[pickedRank - 1] : undefined;
+  const totals = entries.map((e) => e.totalCents);
+  const landing = (entry: DateEntry) => landingRank(entry.totalCents, totals);
+  const picked = pickedRank ? entries[pickedRank - 1] : undefined;
   const cta = ctaCopy({
     md,
-    isToday,
     topTotalCents: entries[0]?.totalCents ?? null,
-    picked: picked ? { rank: picked.rank, totalCents: picked.totalCents } : null,
+    picked: picked ? { name: picked.name, totalCents: picked.totalCents, landing: landing(picked) } : null,
     rules: settings,
   });
   const q = query.trim();
-  const shown = filterByName(entries, query);
+  const matched = filterByName(entries, query);
+  const shown = matched.slice(0, limit);
+  const more = matched.length > shown.length ? moreText(shown.length, matched.length) : null;
 
   function pick(rank: number) {
+    // Phones: tapping a card toggles its outline and in-card button, no scrolling.
+    if (mobile) {
+      setPickedRank(pickedRank === rank ? null : rank);
+      return;
+    }
     setPickedRank(rank);
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
@@ -88,7 +101,7 @@ export function DateBoard({
         <div className={styles.ctaText}>
           <p className={styles.ctaTitle}>{cta.title}</p>
           <p className={styles.ctaSub}>{cta.sub}</p>
-          {cta.rank && (
+          {picked && picked.rank > 1 && (
             <button type="button" className={styles.goTop} onClick={() => setPickedRank(null)}>
               Or go for #1
             </button>
@@ -136,15 +149,15 @@ export function DateBoard({
               />
             )}
           </label>
-          {q && shown.length > 0 && (
+          {q && matched.length > 0 && (
             <p className={styles.count} aria-live="polite">
-              {searchCountText(shown.length, entries.length)}
+              {searchCountText(matched.length, entries.length)}
             </p>
           )}
         </div>
       )}
 
-      {q && shown.length === 0 && (
+      {q && matched.length === 0 && (
         <Surface outline="dashed" radius="card" padding="none" className={styles.noMatch}>
           <p className={styles.noMatchTitle}>
             No “{q}” on {label} yet
@@ -172,11 +185,22 @@ export function DateBoard({
               theme={theme}
               shareUrl={shareUrl}
               rules={settings}
+              picked={mobile && pickedRank === entry.rank}
+              claimHref={routes.claim(md, landing(entry))}
               onPick={() => pick(entry.rank)}
               onBoost={(button) => openBoost(entry, button)}
             />
           ))}
         </ol>
+      )}
+
+      {more && (
+        <div className={styles.more}>
+          <Button variant="paper" size="lg" shape="large" block className={styles.moreButton} onClick={() => setLimit(limit + BOARD_PAGE_SIZE)}>
+            {more.button}
+          </Button>
+          <p className={styles.moreSub}>{more.sub}</p>
+        </div>
       )}
 
       <BoostDialog

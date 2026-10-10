@@ -31,7 +31,7 @@ type Person = {
   boostUsd?: number;
 };
 
-// "Find your birthday" demo list from the mockup (Day.dc.html).
+// "Find your birthday" demo board from the mockup (Day.dc.html, handoff v2: 34 people).
 const TODAY_PEOPLE: Person[] = [
   {
     name: "Jess Moreno", bio: "30 and still can't cook. Pizza money appreciated.", theme: "lime", totalUsd: 240, boostUsd: 40,
@@ -43,10 +43,38 @@ const TODAY_PEOPLE: Person[] = [
   { name: "Tyler Brooks", bio: "Big 4-0. Be nice to me.", theme: "sky", totalUsd: 225, gifts: [{ service: "throne", url: "https://throne.com/tylerbrooks" }] },
   { name: "Ana Reyes", bio: "Birthday twins with my grandma.", theme: "apricot", totalUsd: 150, gifts: [{ service: "amazon", url: "https://www.amazon.com/hz/wishlist/ls/ANAREYES123" }] },
   { name: "Chris Wu", bio: "Send tacos.", theme: "mint", totalUsd: 60, gifts: [{ service: "venmo", url: "https://venmo.com/u/chriswu" }] },
-  { name: "Maya Patel", bio: "Our girl turns 7 today!", theme: "bubblegum", totalUsd: 40, gifts: [{ service: "amazon", url: "https://www.amazon.com/hz/wishlist/ls/MAYAPATEL7" }] },
+  // A child, added by a parent: first name only and no gift links (handoff v2 §8).
+  { name: "Maya", bio: "Our girl turns 7 today! (Added by her mom)", theme: "bubblegum", totalUsd: 40 },
   { name: "Jordan Lee", bio: "Quarter century. Feeling ancient.", theme: "butter", totalUsd: 25, gifts: [{ service: "cashapp", url: "https://cash.app/$jordanlee" }] },
   { name: "Sam Ortiz", bio: "Just happy to be here.", theme: "seafoam", totalUsd: 10 },
   { name: "Riley Kim", bio: "Low budget, high spirits.", theme: "orchid", totalUsd: 5, gifts: [{ service: "throne", url: "https://throne.com/rileykim" }] },
+  // Handoff v2 adds 26 more, so the board pages ("Show 20 more") and has ties at $5.
+  { name: "Leo Martins", bio: "Another lap around the sun.", theme: "sky", totalUsd: 9 },
+  { name: "Kofi Mensah", bio: "Cake is a food group.", theme: "lime", totalUsd: 9 },
+  { name: "Hannah Becker", bio: "Just here for the cake.", theme: "mint", totalUsd: 8 },
+  { name: "Aiko Tanaka", bio: "Same day as my cat. Respect.", theme: "butter", totalUsd: 8 },
+  { name: "Dev Nolan", bio: "Born on a Tuesday. Still recovering.", theme: "periwinkle", totalUsd: 8 },
+  { name: "Lucía Gómez", bio: "Birthday week is a lifestyle.", theme: "apricot", totalUsd: 7 },
+  { name: "Nate Brooks", bio: "Level 31 unlocked.", theme: "seafoam", totalUsd: 7 },
+  { name: "Ella Fischer", bio: "Cake first, questions later.", theme: "orchid", totalUsd: 7 },
+  { name: "Omar Haddad", bio: "Bought my own birthday. No regrets.", theme: "lavender", totalUsd: 6 },
+  { name: "Grace Liu", bio: "Wish me luck at bowling tonight.", theme: "blush", totalUsd: 6 },
+  { name: "Ben Carter", bio: "Officially old.", theme: "cloud", totalUsd: 6 },
+  { name: "Zoe Martin", bio: "Sending good vibes only.", theme: "bubblegum", totalUsd: 6 },
+  { name: "Ivan Petrov", bio: "First time trying this.", theme: "sky", totalUsd: 5 },
+  { name: "Mia Rossi", bio: "Hi mom.", theme: "lime", totalUsd: 5 },
+  { name: "Theo Baker", bio: "Free pizza accepted.", theme: "mint", totalUsd: 5 },
+  { name: "Nora Quinn", bio: "Another year wiser. Maybe.", theme: "butter", totalUsd: 5 },
+  { name: "Caleb Ward", bio: "Birthday boy, reporting in.", theme: "apricot", totalUsd: 5 },
+  { name: "Isla Brown", bio: "Pls send dog pics.", theme: "seafoam", totalUsd: 5 },
+  { name: "Felix Wong", bio: "Turning 22 again.", theme: "periwinkle", totalUsd: 5 },
+  { name: "Ruby Hall", bio: "Here for a good time.", theme: "orchid", totalUsd: 5 },
+  { name: "Max Weber", bio: "Low key celebrating.", theme: "lavender", totalUsd: 5 },
+  { name: "Sofia Cruz", bio: "Birthday month starts now.", theme: "blush", totalUsd: 5 },
+  { name: "Jack Evans", bio: "No speeches please.", theme: "cloud", totalUsd: 5 },
+  { name: "Layla Ahmed", bio: "Thirty, flirty, thriving.", theme: "bubblegum", totalUsd: 5 },
+  { name: "Owen Price", bio: "Coffee money welcome.", theme: "sky", totalUsd: 5 },
+  { name: "Chloe Adams", bio: "I made it another year.", theme: "lime", totalUsd: 5 },
 ];
 
 // Homepage "Coming up" demo (Main.dc.html): +1, +2, +3 (unclaimed), +4 days.
@@ -117,7 +145,9 @@ await db.transaction(async (tx) => {
   const claims = [0.3, 0.4, 0.0, 0.5, 0.55, 0.6, 0.65, 0.7];
   const added = [];
   for (const [i, person] of TODAY_PEOPLE.entries()) {
-    added.push(await addPerson(today, person, t(reach[i]!), t(claims[i]!)));
+    // The rest joined later in the day, in list order (so ties keep the mockup's order).
+    const later = 0.7 + (i - 7) * 0.008;
+    added.push(await addPerson(today, person, t(reach[i] ?? later), t(claims[i] ?? later)));
   }
   const [jess, tyler, ana] = added;
   await tx.insert(leaderLog).values([

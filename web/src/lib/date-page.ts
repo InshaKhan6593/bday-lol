@@ -12,6 +12,7 @@ import {
   type MonthDay,
 } from "./birthday";
 import { formatUsd, minToPass, minToTakeTop } from "./money";
+import { firstName } from "./people";
 
 /** Rules for the date page ("Find your birthday"), worded exactly like the mockup. */
 
@@ -77,22 +78,30 @@ export function heldText(stints: Stint[], timeZone: string): string | null {
   return `Held the homepage ${formatClock(latest.startedAt, timeZone)} – ${formatClock(latest.endedAt!, timeZone)}`;
 }
 
-/** Hover tooltip on a list card: what it costs to take that person's rank. */
-export function claimRankText(totalCents: number, rules: MoneyRules): string {
-  return `Claim this rank for ${formatUsd(minToPass(totalCents, rules))}`;
+/** Hover popup on a card (and the mobile in-card button): "Outrank Jess for $241". */
+export function outrankText(name: string, totalCents: number, rules: MoneyRules): string {
+  return `Outrank ${firstName(name)} for ${formatUsd(minToPass(totalCents, rules))}`;
+}
+
+/**
+ * Where paying someone's total + $1 really lands you. Ties keep the earlier
+ * claim on top, so you go just above everyone tied at that total: 15 people at
+ * $5 from #20 down, and outranking any of them for $6 lands you at #20.
+ */
+export function landingRank(totalCents: number, allTotalsCents: number[]): number {
+  return allTotalsCents.filter((t) => t > totalCents).length + 1;
 }
 
 type CtaInput = {
   md: MonthDay;
-  isToday: boolean;
   topTotalCents: number | null;
-  /** The card someone tapped, if it isn't #1. */
-  picked: { rank: number; totalCents: number } | null;
+  /** The card someone picked (any rank, #1 included) and where outranking them lands. */
+  picked: { name: string; totalCents: number; landing: number } | null;
   rules: MoneyRules;
 };
 
-/** Black bar above the list: "Own the top spot", or "Claim today's #2 for $226" after tapping a card. */
-export function ctaCopy({ md, isToday, topTotalCents, picked, rules }: CtaInput) {
+/** Black bar above the board: "Own the top spot", or "Outrank Tyler for $226" after picking a card. */
+export function ctaCopy({ md, topTotalCents, picked, rules }: CtaInput) {
   const label = formatLongNb(md);
   if (!picked) {
     return {
@@ -103,12 +112,21 @@ export function ctaCopy({ md, isToday, topTotalCents, picked, rules }: CtaInput)
     };
   }
   const price = formatUsd(minToPass(picked.totalCents, rules));
+  const outrank = outrankText(picked.name, picked.totalCents, rules);
   return {
-    title: `Claim ${isToday ? "today" : label}’s #${picked.rank} for ${price}`,
-    sub: `Bid ${price} or more to take #${picked.rank}.`,
-    button: `Claim #${picked.rank} for ${price}`,
-    rank: picked.rank,
+    title: outrank,
+    sub: `Bid ${price} or more to move up to #${picked.landing}.`,
+    button: outrank,
+    rank: picked.landing,
   };
+}
+
+/** The board shows this many people, then "Show 20 more". */
+export const BOARD_PAGE_SIZE = 20;
+
+/** "Show 20 more" / "Showing 20 of 34 people" under the board. */
+export function moreText(shown: number, total: number, pageSize = BOARD_PAGE_SIZE) {
+  return { button: `Show ${Math.min(pageSize, total - shown)} more`, sub: `Showing ${shown} of ${total} people` };
 }
 
 /** Name search on one date: case-insensitive, ignores surrounding spaces. */

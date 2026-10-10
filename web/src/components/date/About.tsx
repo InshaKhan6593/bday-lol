@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { Surface } from "@/components/ui";
-import { formatLongNb, MONTHS, type MonthDay } from "@/lib/birthday";
+import { formatLongNb, formatShort, MONTHS, type MonthDay } from "@/lib/birthday";
 import { adjacentDay } from "@/lib/date-page";
 import { birthFlower, birthstone, zodiacSign } from "@/lib/facts";
 import { routes } from "@/lib/routes";
 import type { FamousPerson } from "@/server/famous";
 import styles from "./date.module.css";
+
+/** Keeps "Oct 6" on one line. */
+const nb = (text: string) => text.replace(/ /g, " ");
 
 /**
  * "About [date] birthdays" (SEO content under the list): facts, famous people,
@@ -57,9 +60,19 @@ export function About({ md, famous }: { md: MonthDay; famous: FamousPerson[] }) 
       )}
 
       <nav aria-label="Nearby dates" className={styles.dayLinks}>
-        <Link href={routes.date(prev)}>← {formatLongNb(prev)}</Link>
-        <Link href={routes.month(md.month)}>All {month} birthdays</Link>
-        <Link href={routes.date(next)}>{formatLongNb(next)} →</Link>
+        {/* Phones use short month names so long months fit on one line (handoff v2 §5). */}
+        <Link href={routes.date(prev)}>
+          ← <span className={styles.wide}>{formatLongNb(prev)}</span>
+          <span className={styles.narrow}>{nb(formatShort(prev))}</span>
+        </Link>
+        <Link href={routes.month(md.month)} className={styles.monthLink}>
+          <span className={styles.wide}>All {month} birthdays</span>
+          <span className={styles.narrow}>All of {month}</span>
+        </Link>
+        <Link href={routes.date(next)}>
+          <span className={styles.wide}>{formatLongNb(next)}</span>
+          <span className={styles.narrow}>{nb(formatShort(next))}</span> →
+        </Link>
       </nav>
     </section>
   );

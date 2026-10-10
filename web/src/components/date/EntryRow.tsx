@@ -1,17 +1,19 @@
 "use client";
 
-import { useShare } from "@/components/share/useShare";
-import { Avatar, Badge, Button, Icon, IconButton } from "@/components/ui";
+import type { Route } from "next";
+import Link from "next/link";
+import { Avatar, Badge, Button, Icon } from "@/components/ui";
 import type { BoardTypeSettings } from "@/config/board-types";
 import { getTheme, type ThemeKey } from "@/config/themes";
 import { cx } from "@/lib/cx";
-import { claimRankText } from "@/lib/date-page";
+import { outrankText } from "@/lib/date-page";
 import { formatUsd } from "@/lib/money";
 import { firstName } from "@/lib/people";
 import { birthdayShareText } from "@/lib/share";
 import type { DateEntry } from "@/server/date-page";
 import styles from "./date.module.css";
 import { GiftMenu } from "./GiftMenu";
+import { ShareMenu } from "./ShareMenu";
 
 type Props = {
   entry: DateEntry;
@@ -22,25 +24,42 @@ type Props = {
   theme: ThemeKey;
   shareUrl: string;
   rules: Pick<BoardTypeSettings, "minOpenBidCents" | "minStepCents">;
+  /** Phones: this card was tapped, so it's outlined and shows its "Outrank…" button. */
+  picked: boolean;
+  /** Claim page with the date and the rank outranking them lands at. */
+  claimHref: Route;
   onPick: () => void;
   onBoost: (button: HTMLButtonElement) => void;
 };
 
 /**
- * One person on the list. Tapping the card means "Claim this rank"; the
- * ▲ total pill boosts them; the gift and share controls never trigger a claim.
+ * One person on the board. Picking the card means "Outrank them" (desktop: the
+ * hover popup and the black bar; phones: an outline and an in-card button); the
+ * ▲ total pill boosts them; the gift and share controls never pick the card.
  */
-export function EntryRow({ entry, isToday, giftsOpenLabel, theme, shareUrl, rules, onPick, onBoost }: Props) {
+export function EntryRow({
+  entry,
+  isToday,
+  giftsOpenLabel,
+  theme,
+  shareUrl,
+  rules,
+  picked,
+  claimHref,
+  onPick,
+  onBoost,
+}: Props) {
   const top = entry.rank === 1;
-  const claimText = claimRankText(entry.totalCents, rules);
+  const claimText = outrankText(entry.name, entry.totalCents, rules);
 
   return (
-    <li className={cx(styles.row, top && styles.rowTop)}>
+    <li className={cx(styles.row, top && styles.rowTop, picked && styles.rowPicked)}>
       <button
         type="button"
         className={styles.claim}
         onClick={onPick}
         aria-label={`${entry.name}, #${entry.rank}. ${claimText}`}
+        aria-pressed={picked}
       />
       <span className={styles.tip} aria-hidden="true">
         {claimText}
@@ -91,21 +110,15 @@ export function EntryRow({ entry, isToday, giftsOpenLabel, theme, shareUrl, rule
         ) : (
           <span className={styles.giftsOpen}>{giftsOpenLabel}</span>
         )}
-        <RowShare url={shareUrl} name={entry.name} />
+        <ShareMenu url={shareUrl} message={birthdayShareText(firstName(entry.name))} name={entry.name} />
       </div>
-    </li>
-  );
-}
 
-/** Square share button: the phone's share sheet, or copy the date's link. */
-function RowShare({ url, name }: { url: string; name: string }) {
-  const { copied, share } = useShare();
-  return (
-    <IconButton
-      icon={copied ? "check" : "upload"}
-      label={copied ? "Link copied" : `Share ${name}'s birthday`}
-      className={styles.share}
-      onClick={() => share(url, birthdayShareText(firstName(name)))}
-    />
+      {picked && (
+        <Link href={claimHref} className={styles.outrankHere}>
+          {claimText}
+          <Icon name="arrowRight" size={16} />
+        </Link>
+      )}
+    </li>
   );
 }

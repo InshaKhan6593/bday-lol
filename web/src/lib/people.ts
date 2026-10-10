@@ -11,9 +11,23 @@ export function stripWrappingQuotes(text: string): string {
   return text.replace(/^["“”„«»\s]+|["“”„«»\s]+$/g, "");
 }
 
-/** "Jess Moreno" → "Jess". */
+/** How a name is saved: trimmed, with runs of spaces collapsed ("  Sam   Rivera " → "Sam Rivera"). */
+export function cleanName(name: string): string {
+  return words(name).join(" ");
+}
+
+/**
+ * The name used in "Outrank Isla for $6", "Boost Isla", "It's Isla's birthday"
+ * (handoff v2 §14): the first word, so "Mary-Catherine Lee" → "Mary-Catherine".
+ * A first word that is a single letter or ends in a period ("J.", "Dr.") isn't
+ * a first name, so the full name is used instead.
+ */
 export function firstName(name: string): string {
-  return words(name)[0] ?? name;
+  const parts = words(name);
+  const first = parts[0];
+  if (!first) return name.trim();
+  if (parts.length > 1 && (first.length < 2 || first.endsWith("."))) return parts.join(" ");
+  return first;
 }
 
 /** "Marcus Thompson" → "Marcus T." (Coming up cards). Single names stay as they are. */

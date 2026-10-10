@@ -3,13 +3,15 @@ import { formatLongNb, parseShortSlug } from "./birthday";
 import {
   adjacentDay,
   calendarCells,
-  claimRankText,
   ctaCopy,
   dateStatus,
   filterByName,
   formatClock,
   giftsOpenText,
   heldText,
+  landingRank,
+  moreText,
+  outrankText,
   searchCountText,
   statusText,
 } from "./date-page";
@@ -123,32 +125,45 @@ describe("held the homepage", () => {
 
 describe("claim bar and tooltips", () => {
   it("offers the top spot at top + $1, or $5 on an empty date", () => {
-    expect(ctaCopy({ md: oct7, isToday: true, topTotalCents: 24_000, picked: null, rules })).toEqual({
+    expect(ctaCopy({ md: oct7, topTotalCents: 24_000, picked: null, rules })).toEqual({
       title: "Own the top spot",
       sub: "Bid $241 or more.",
       button: `Bid on October${NB}7`,
       rank: null,
     });
-    expect(ctaCopy({ md: oct7, isToday: false, topTotalCents: null, picked: null, rules }).sub).toBe(
+    expect(ctaCopy({ md: oct7, topTotalCents: null, picked: null, rules }).sub).toBe(
       "Bid $5 or more.",
     );
   });
 
-  it("switches to the tapped rank", () => {
-    const picked = { rank: 2, totalCents: 22_500 };
-    expect(ctaCopy({ md: oct7, isToday: true, topTotalCents: 24_000, picked, rules })).toEqual({
-      title: "Claim today’s #2 for $226",
-      sub: "Bid $226 or more to take #2.",
-      button: "Claim #2 for $226",
+  it("switches to outranking the picked person, #1 included", () => {
+    const picked = { name: "Tyler Brooks", totalCents: 22_500, landing: 2 };
+    expect(ctaCopy({ md: oct7, topTotalCents: 24_000, picked, rules })).toEqual({
+      title: "Outrank Tyler for $226",
+      sub: "Bid $226 or more to move up to #2.",
+      button: "Outrank Tyler for $226",
       rank: 2,
     });
-    expect(
-      ctaCopy({ md: { month: 10, day: 12 }, isToday: false, topTotalCents: 24_000, picked, rules }).title,
-    ).toBe(`Claim October${NB}12’s #2 for $226`);
+    const top = { name: "Jess Moreno", totalCents: 24_000, landing: 1 };
+    expect(ctaCopy({ md: oct7, topTotalCents: 24_000, picked: top, rules }).sub).toBe("Bid $241 or more to move up to #1.");
   });
 
   it("prices each card at their total + $1", () => {
-    expect(claimRankText(24_000, rules)).toBe("Claim this rank for $241");
+    expect(outrankText("Jess Moreno", 24_000, rules)).toBe("Outrank Jess for $241");
+    expect(outrankText("Dr. Ana Reyes", 500, rules)).toBe("Outrank Dr. Ana Reyes for $6");
+  });
+
+  it("lands just above everyone tied at the outranked total (handoff example)", () => {
+    // #1–#19 above $5, then 15 people at $5 from #20 down.
+    const totals = [...Array.from({ length: 19 }, (_, i) => 10_000 - i * 100), ...Array.from({ length: 15 }, () => 500)];
+    expect(landingRank(500, totals)).toBe(20);
+    expect(landingRank(totals[0]!, totals)).toBe(1);
+    expect(landingRank(9_900, totals)).toBe(2);
+  });
+
+  it("words the Show more button", () => {
+    expect(moreText(20, 34)).toEqual({ button: "Show 14 more", sub: "Showing 20 of 34 people" });
+    expect(moreText(20, 60)).toEqual({ button: "Show 20 more", sub: "Showing 20 of 60 people" });
   });
 
   it("links the claim page with the date and rank", () => {
