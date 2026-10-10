@@ -29,7 +29,7 @@ export async function paidClaim(tx: Tx, boardId: string, c: ClaimInput) {
       isMinor: false,
     },
   });
-  const result = await fulfillCheckout(tx, { sessionId, presentment: null, paymentIntentId: "pi_test", customerEmail: c.email }, c.at);
+  const result = await fulfillCheckout(tx, { sessionId, presentment: null, paymentIntentId: "pi_test", paymentMethod: "Visa •••• 4242", customerEmail: c.email }, c.at);
   return { ...ids, sessionId, result };
 }
 
@@ -40,6 +40,6 @@ export async function paidBoost(tx: Tx, entryId: string, b: BoostInput) {
   const paymentId = randomUUID();
   const sessionId = nextSession();
   await createPendingBoost(tx, { paymentId, entryId, sessionId, amountCents: b.usd * 100, alertOptIn: b.alert ?? false });
-  const result = await fulfillCheckout(tx, { sessionId, presentment: null, paymentIntentId: "pi_test", customerEmail: b.email }, b.at);
+  const result = await fulfillCheckout(tx, { sessionId, presentment: null, paymentIntentId: "pi_test", paymentMethod: "Apple Pay · Visa •••• 1881", customerEmail: b.email }, b.at);
   return { paymentId, sessionId, result };
 }

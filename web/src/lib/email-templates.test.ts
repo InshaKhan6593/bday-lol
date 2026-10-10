@@ -164,11 +164,11 @@ describe("email wording", () => {
     expect(owner.subject).toBe("You got passed on October 7");
     expect(owner.preheader).toBe("Tyler has $241. $2 takes #1 back.");
     expect(owner.blocks).toContainEqual({
-      kind: "rows",
-      strong: true,
-      rows: [
-        ["#1 Tyler Brooks", "$241"],
-        ["#2 You", "$240"],
+      kind: "receipt",
+      title: "October 7 right now",
+      lines: [
+        { label: "#1 Tyler Brooks", note: "Just took the top spot", amount: "$241" },
+        { label: "#2 You", amount: "$240" },
       ],
     });
     expect(owner.blocks).toContainEqual({
@@ -214,7 +214,7 @@ describe("email wording", () => {
   });
 
   it("admin alert flags a child's listing", () => {
-    const base = { ...person, md, year: 2026, amountCents: 4_000, rank: 3, email: "mom@example.com", giftLinks: [], dateUrl: `${ORIGIN}/october-7` };
+    const base = { ...person, md, year: 2026, amountCents: 4_000, rank: 3, email: "mom@example.com", giftLinks: [], number: "MB-0C5D8E21", dateUrl: `${ORIGIN}/october-7` };
     const child = adminClaimEmail({ ...base, name: "Maya", isMinor: true });
     expect(child.subject).toBe("New child claim: Maya, Oct 7, $40");
     expect(child.preheader).toBe("#3 on October 7, 2026. A child's listing: check it's a first name only and the photo is OK.");

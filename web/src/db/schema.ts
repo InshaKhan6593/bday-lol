@@ -166,6 +166,8 @@ export const payments = pgTable(
     /** What the payer actually saw with Adaptive Pricing, e.g. GBP 400. */
     presentmentCurrency: varchar("presentment_currency", { length: 3 }),
     presentmentAmount: integer("presentment_amount"),
+    /** "Visa •••• 4242" for the receipt, read from Stripe when the payment lands. */
+    paymentMethod: text("payment_method"),
     /** Set when this boost was included in a "You got boosted" digest. */
     digestSentAt: tstz("digest_sent_at"),
     createdAt: createdAt(),

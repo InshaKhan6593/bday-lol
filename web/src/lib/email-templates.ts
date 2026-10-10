@@ -74,23 +74,6 @@ function receiptPanel(r: Receipt, line: { label: string; note: string }, timeZon
   };
 }
 
-function receiptRows(r: Receipt, timeZone: string): EmailBlock {
-  const paid = r.presentment
-    ? `${formatUsd(r.amountCents)} (${formatMinorUnits(r.presentment.amount, r.presentment.currency)} at checkout)`
-    : formatUsd(r.amountCents);
-  const date = r.paidAt.toLocaleDateString("en-US", { timeZone, month: "short", day: "numeric", year: "numeric" });
-  return {
-    kind: "rows",
-    title: "Receipt",
-    rows: [
-      ["For", r.item],
-      ["Paid", paid],
-      ["Date", date],
-      ...(r.reference ? ([["Reference", r.reference]] as Array<[string, string]>) : []),
-    ],
-  };
-}
-
 type Person = { name: string; bio: string; photoUrl: string | null; theme: ThemeKey };
 
 // ---------------------------------------------------------------------------
@@ -184,7 +167,7 @@ export function boostReceiptEmail(i: BoostReceiptInput): EmailContent {
       { kind: "person", name: i.name, line: `${formatUsd(i.totalCents)} · #${i.rank} on ${day}`, photoUrl: i.photoUrl },
       { kind: "p", text: `Nice one. ${standing}${i.alertOptIn ? ` We'll email you if ${first} gets passed.` : ""}` },
       { kind: "button", label: `Share ${first}'s day`, url: i.dateUrl },
-      receiptRows(i.receipt, i.timeZone),
+      receiptPanel(i.receipt, { label: `Boost for ${i.name}`, note: `Adds to ${first}'s total on ${day}` }, i.timeZone),
       { kind: "fine", text: `Boosts are final and paid to mybday.lol, not to ${first}. Gifts still go straight to them.` },
     ],
     reason: `You're getting this because you boosted ${i.name} on mybday.lol.`,
@@ -224,11 +207,11 @@ export function outbidAlertEmail(i: OutbidAlertInput): EmailContent {
     ...colors(i.theme),
     blocks: [
       {
-        kind: "rows",
-        strong: true,
-        rows: [
-          [`#1 ${i.newTop.name}`, formatUsd(i.newTop.totalCents)],
-          [`#${i.rank} ${i.isOwner ? "You" : i.name}`, formatUsd(i.totalCents)],
+        kind: "receipt",
+        title: `${day} right now`,
+        lines: [
+          { label: `#1 ${i.newTop.name}`, note: "Just took the top spot", amount: formatUsd(i.newTop.totalCents) },
+          { label: `#${i.rank} ${i.isOwner ? "You" : i.name}`, amount: formatUsd(i.totalCents) },
         ],
       },
       {
@@ -368,7 +351,13 @@ export function boostDigestEmail(i: BoostDigestInput): EmailContent {
     ...colors(i.theme),
     blocks: [
       { kind: "person", name: i.name, line: `${formatUsd(i.totalCents)} · #${i.rank} on ${day}`, photoUrl: i.photoUrl },
-      { kind: "rows", strong: true, rows: i.boosts.map((b) => [`${time(b.at)} ET`, `+${formatUsd(b.amountCents)}`] as [string, string]) },
+      {
+        kind: "receipt",
+        title: count === 1 ? "1 boost" : `${count} boosts`,
+        // Who boosted is never shown, only when and how much.
+        lines: i.boosts.map((b) => ({ label: `${time(b.at)} ET`, amount: `+${formatUsd(b.amountCents)}` })),
+        total: { label: "Added to your total", amount: `+${formatUsd(added)}` },
+      },
       { kind: "button", label: "Share your link", url: i.dateUrl },
     ],
     reason: `You're getting this because you're on ${possessive(i.md)} birthday board on mybday.lol.`,
@@ -388,8 +377,15 @@ export type AdminClaimInput = Person & {
   giftLinks: GiftLink[];
   /** "This is my child (under 18)" was ticked (07 D4). */
   isMinor: boolean;
+  /** Same receipt number the claimer got, so a question from them is easy to match. */
+  number: string;
   dateUrl: string;
 };
+
+/** "venmo.com/u/samrivera": a gift link without https:// and www., short enough for the details grid. */
+function shortLink(url: string): string {
+  return url.replace(/^https?:\/\//i, "").replace(/^www\./i, "");
+}
 
 export function adminClaimEmail(i: AdminClaimInput): EmailContent {
   const day = formatLong(i.md);
@@ -404,16 +400,17 @@ export function adminClaimEmail(i: AdminClaimInput): EmailContent {
     blocks: [
       { kind: "person", name: i.name, line: i.bio || "(no bio)", photoUrl: i.photoUrl },
       {
-        kind: "rows",
-        rows: [
-          ["Date", `${day}, ${i.year}`],
-          ["Paid", formatUsd(i.amountCents)],
-          ["Rank", `#${i.rank}`],
-          ["Email", i.email],
-          ...(i.isMinor ? ([["Listing", "Child (under 18), added by a parent"]] as Array<[string, string]>) : []),
+        kind: "receipt",
+        title: "Claim details",
+        number: i.number,
+        lines: [{ label: `Claim · ${day}, ${i.year}`, note: `#${i.rank} on the board`, amount: formatUsd(i.amountCents) }],
+        total: { label: "Paid", amount: formatUsd(i.amountCents) },
+        details: [
+          ["Email", i.email, "wide"],
           ["Color", getTheme(i.theme).name],
-          ...i.giftLinks.map((l) => [GIFT_SERVICES[l.service].short, l.url] as [string, string]),
-          ...(i.photoUrl ? ([["Photo", i.photoUrl]] as Array<[string, string]>) : []),
+          ["Photo", i.photoUrl ? "Yes, shown above" : "None"],
+          ...(i.isMinor ? ([["Listing", "Child (under 18), added by a parent", "wide"]] as const) : []),
+          ...i.giftLinks.map((l) => [GIFT_SERVICES[l.service].short, shortLink(l.url), "wide"] as const),
         ],
       },
       { kind: "button", label: `Open ${possessive(i.md)} board`, url: i.dateUrl },

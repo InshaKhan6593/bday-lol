@@ -31,7 +31,7 @@ async function pending(tx: Tx, boardId: string, sessionId: string, c: ValidClaim
   return ids;
 }
 
-const paid = (sessionId: string) => ({ sessionId, presentment: null, paymentIntentId: "pi_123", customerEmail: null });
+const paid = (sessionId: string) => ({ sessionId, presentment: null, paymentIntentId: "pi_123", paymentMethod: null, customerEmail: null });
 
 async function openLog(tx: Tx, boardId: string) {
   return (await tx.select().from(leaderLog).where(eq(leaderLog.boardId, boardId))).filter((r) => r.endedAt === null);
@@ -78,7 +78,7 @@ describe("claim money path", () => {
 
       const result = await fulfillCheckout(
         tx,
-        { sessionId: "cs_test_a", presentment: { currency: "gbp", amount: 19_000 }, paymentIntentId: "pi_1", customerEmail: null },
+        { sessionId: "cs_test_a", presentment: { currency: "gbp", amount: 19_000 }, paymentIntentId: "pi_1", paymentMethod: "Visa •••• 4242", customerEmail: null },
         NOON,
       );
       expect(result).toEqual({
@@ -100,6 +100,7 @@ describe("claim money path", () => {
         stripePaymentIntentId: "pi_1",
         presentmentCurrency: "GBP",
         presentmentAmount: 19_000,
+        paymentMethod: "Visa •••• 4242",
       });
       expect(await openLog(tx, board.id)).toMatchObject([{ entryId: ids.entryId, startedAt: NOON }]);
     });

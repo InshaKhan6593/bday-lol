@@ -37,7 +37,7 @@ describe("outbid alerts", () => {
       expect(await sendDueOutbidAlerts(tx, mailer, at("14:42"))).toMatchObject({ sent: 2, failed: 0 });
       const [owner] = mailer.to("jess@example.com");
       expect(owner?.subject).toBe("You got passed on October 7");
-      expect(owner?.text).toContain("#1 Tyler Brooks: $251");
+      expect(owner?.text).toContain("#1 Tyler Brooks (Just took the top spot): $251");
       expect(owner?.text).toContain("#2 You: $240");
       expect(owner?.text).toContain("Take #1 back for $12");
       expect(owner?.text).toContain("October 7 ends at midnight ET.");

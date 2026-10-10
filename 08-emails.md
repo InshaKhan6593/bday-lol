@@ -25,8 +25,31 @@ Plus our own voice, from the mockup: short and punchy ("One birthday. The whole 
 
 Same design language as the app (and close to Gumroad's neo-brutalist emails): the person's **theme ground** as the background,
 a **kicker over a giant title** (the homepage hero), a **white card with ink outlines and a hard shadow** (a thick bottom-right
-border, because Gmail strips `box-shadow`), the **black claim bar with an accent button**, **avatar circles**, receipt rows.
+border, because Gmail strips `box-shadow`), the **black claim bar with an accent button**, **avatar circles**.
 Bricolage Grotesque loads where inboxes allow web fonts (Apple Mail, iOS); others fall back to Helvetica.
+
+**Panels (redesigned 2026-10-10, after comparing with Apple's, Nike's and Stripe's receipts).** Every table is now one
+panel: an ink-outlined box with a strip in the person's color (title on the left, receipt number on the right), lines
+with the amount on the right, a dashed rule, a bold total, and small uppercase labels over values in a grey footer.
+Long values (emails, links) take a full row so they don't break mid-word on phones.
+
+| Email | Panel |
+|---|---|
+| 1 Claim confirmation | **Receipt No. MB-4F7K2A9C**: "Claim · October 7, 2026 $241", **Total paid $241**, then Paid on / Payment ("Visa •••• 4242") / Charged ("GBP 192.00" when Adaptive Pricing converted it) |
+| 2 Boost receipt | Same receipt: "Boost for Jess Moreno, adds to Jess's total on October 7" |
+| 3 Outbid alert | **October 7 right now**: "#1 Tyler Brooks, just took the top spot $241 / #2 You $240", then the black claim bar |
+| 6 You got boosted | **3 boosts**: one line per boost with its time, then **Added to your total +$25** |
+| 8 Admin alert | **Claim details** with the same receipt number as the claimer's, then email, color, photo, child flag and gift links |
+
+- **Receipt number**: `MB-` + the first 8 characters of our payment id. Stripe keeps the full id as `metadata.paymentId`,
+  so support can search for it there.
+- **Card**: read from Stripe (the PaymentIntent's charge) when the webhook lands, saved as `payments.payment_method`. If
+  Stripe can't be reached the payment still goes through and the receipt leaves the card out.
+- **Every email**: invisible padding after the preview line (otherwise inboxes show the start of the body next to the
+  subject) and "mybday.lol · FAQ · Terms · Privacy" in the footer, like the site.
+- **Dark mode**: we ask for light only, but the Gmail app on Android forces dark anyway. Checked with Chromium's forced
+  dark mode: everything stays readable. Black buttons and the black bar have a thin `#3d3d3d` edge so they don't vanish
+  into the darkened card. Still to do before launch: check on a real phone in Gmail, Apple Mail and Outlook.
 
 ## The emails
 

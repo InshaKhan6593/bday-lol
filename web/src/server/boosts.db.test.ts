@@ -41,6 +41,7 @@ const paid = (sessionId: string, email: string | null = null) => ({
   sessionId,
   presentment: null,
   paymentIntentId: null,
+  paymentMethod: null,
   customerEmail: email,
 });
 

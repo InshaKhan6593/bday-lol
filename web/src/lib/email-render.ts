@@ -20,23 +20,26 @@ export type EmailBlock =
   /** Avatar circle + name + one line under it. */
   | { kind: "person"; name: string; line: string; photoUrl?: string | null }
   | { kind: "note"; text: string }
-  /** Label/value rows. "strong" = standings and boost lists (bold labels, bigger amounts). */
-  | { kind: "rows"; title?: string; strong?: boolean; rows: Array<[label: string, value: string]> }
   /**
-   * A receipt panel (Apple/Stripe style, in our look): an outlined box with a
-   * strip in the person's color, line items with amounts on the right, a
-   * dashed rule, a bold total, then small labelled details in a grey footer.
+   * A panel (Apple/Stripe receipt style, in our look): an outlined box with a
+   * strip in the person's color, lines with amounts on the right, a dashed
+   * rule, a bold total, then small labelled details in a grey footer. Used for
+   * receipts, boost lists, standings and the admin's claim details.
    */
   | {
       kind: "receipt";
       title: string;
-      /** "MB-4F7K2A9C", top right of the strip. */
-      number: string;
+      /** Receipt number, top right of the strip: "No. MB-4F7K2A9C". */
+      number?: string;
       lines: Array<{ label: string; note?: string; amount: string }>;
-      total: { label: string; amount: string };
-      details: Array<[label: string, value: string]>;
+      total?: { label: string; amount: string };
+      /** Two per row; "wide" takes a whole row (emails and links, so they don't break mid-word on phones). */
+      details?: ReadonlyArray<EmailDetail>;
     }
   | { kind: "fine"; text: string };
+
+/** A labelled detail in a panel's grey footer. "wide" takes a whole row. */
+export type EmailDetail = readonly [label: string, value: string] | readonly [label: string, value: string, "wide"];
 
 export type EmailContent = {
   subject: string;
@@ -57,6 +60,13 @@ export type EmailContent = {
 export type RenderedEmail = { subject: string; html: string; text: string };
 
 const INK = "#141414";
+/**
+ * A thin grey edge on black buttons and the black bar. In light mode it
+ * disappears into the black; when an app forces dark mode on the email
+ * (Gmail on Android ignores "light only") the card turns black too, and this
+ * edge is what keeps the button visible.
+ */
+const EDGE = "#3d3d3d";
 const FONT = "'Bricolage Grotesque', 'Helvetica Neue', Helvetica, Arial, sans-serif";
 const BUTTER = { ground: "#FFEC94", accent: "#A88BFF" };
 /**
@@ -89,9 +99,9 @@ function initials(name: string): string {
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? (parts.at(-1)?.[0] ?? "") : "")).toUpperCase();
 }
 
-/** Tiny uppercase label over its value (Apple's receipt grid). */
-function detailCell(label: string, value: string): string {
-  return `<td width="50%" style="padding:6px 8px 6px 0;vertical-align:top"><p style="margin:0;font-size:11px;line-height:1.4;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#666666">${escapeHtml(label)}</p><p style="margin:2px 0 0;font-size:15px;line-height:1.4;font-weight:600;color:${INK}">${escapeHtml(value)}</p></td>`;
+/** Tiny uppercase label over its value (Apple's receipt grid). Long values (emails, links) wrap anywhere. */
+function detailCell(label: string, value: string, wide = false): string {
+  return `<td ${wide ? 'colspan="2"' : 'width="50%"'} style="padding:6px 8px 6px 0;vertical-align:top"><p style="margin:0;font-size:11px;line-height:1.4;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#666666">${escapeHtml(label)}</p><p style="margin:2px 0 0;font-size:15px;line-height:1.4;font-weight:600;color:${INK};word-break:break-word;overflow-wrap:anywhere">${escapeHtml(value)}</p></td>`;
 }
 
 function receiptHtml(block: Extract<EmailBlock, { kind: "receipt" }>, ground: string): string {
@@ -103,16 +113,32 @@ function receiptHtml(block: Extract<EmailBlock, { kind: "receipt" }>, ground: st
         }</td><td align="right" style="padding:0 0 10px;vertical-align:top;font-size:17px;line-height:1.35;font-weight:800;color:${INK};white-space:nowrap">${escapeHtml(line.amount)}</td></tr>`,
     )
     .join("");
+  // Pairs of short details side by side; a wide one gets its own row.
   const pairs: string[] = [];
-  for (let i = 0; i < block.details.length; i += 2) {
-    const [a, b] = [block.details[i]!, block.details[i + 1]];
-    pairs.push(`<tr>${detailCell(a[0], a[1])}${b ? detailCell(b[0], b[1]) : `<td width="50%"></td>`}</tr>`);
+  let half: [string, string] | null = null;
+  const flush = () => {
+    if (half) pairs.push(`<tr>${detailCell(half[0], half[1])}<td width="50%"></td></tr>`);
+    half = null;
+  };
+  for (const [label, value, wide] of block.details ?? []) {
+    if (wide) {
+      flush();
+      pairs.push(`<tr>${detailCell(label, value, true)}</tr>`);
+    } else if (half) {
+      pairs.push(`<tr>${detailCell(half[0], half[1])}${detailCell(label, value)}</tr>`);
+      half = null;
+    } else half = [label, value];
   }
+  flush();
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 18px;border:3px solid ${INK};border-radius:18px;border-collapse:separate;border-spacing:0">
-<tr><td style="background:${ground};border-bottom:3px solid ${INK};border-radius:15px 15px 0 0;padding:12px 18px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="font-size:13px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:${INK}">${escapeHtml(block.title)}</td><td align="right" style="font-size:13px;font-weight:600;color:${INK};white-space:nowrap">No. ${escapeHtml(block.number)}</td></tr></table></td></tr>
-<tr><td style="padding:16px 18px 4px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${lines}</table></td></tr>
+<tr><td style="background:${ground};border-bottom:3px solid ${INK};border-radius:15px 15px 0 0;padding:12px 18px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="font-size:13px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:${INK}">${escapeHtml(block.title)}</td><td align="right" style="font-size:13px;font-weight:600;color:${INK};white-space:nowrap">${block.number ? `No. ${escapeHtml(block.number)}` : ""}</td></tr></table></td></tr>
+<tr><td style="padding:16px 18px ${block.total ? 4 : 6}px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${lines}</table></td></tr>${
+    block.total
+      ? `
 <tr><td style="padding:0 18px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="border-top:2px dashed ${INK};font-size:0;line-height:0">&nbsp;</td></tr></table></td></tr>
-<tr><td style="padding:12px 18px 16px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="font-size:17px;font-weight:800;color:${INK}">${escapeHtml(block.total.label)}</td><td align="right" style="font-size:26px;line-height:1;font-weight:800;letter-spacing:-0.02em;color:${INK};white-space:nowrap">${escapeHtml(block.total.amount)}</td></tr></table></td></tr>${
+<tr><td style="padding:12px 18px 16px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="font-size:17px;font-weight:800;color:${INK}">${escapeHtml(block.total.label)}</td><td align="right" style="font-size:26px;line-height:1;font-weight:800;letter-spacing:-0.02em;color:${INK};white-space:nowrap">${escapeHtml(block.total.amount)}</td></tr></table></td></tr>`
+      : ""
+  }${
     pairs.length
       ? `\n<tr><td style="background:#f6f6f6;border-top:2px solid #e6e6e6;border-radius:0 0 15px 15px;padding:10px 18px 12px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${pairs.join("")}</table></td></tr>`
       : ""
@@ -125,9 +151,9 @@ function blockHtml(block: EmailBlock, accent: string, ground: string): string {
     case "p":
       return `<p style="margin:0 0 16px;font-size:17px;line-height:1.5;color:#333333">${escapeHtml(block.text)}</p>`;
     case "button":
-      return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px 0 20px"><tr><td style="background:${INK};border-radius:16px"><a href="${safeUrl(block.url)}" style="display:inline-block;padding:16px 26px;font-family:${FONT};font-size:17px;font-weight:800;color:#ffffff;text-decoration:none">${escapeHtml(block.label)}</a></td></tr></table>`;
+      return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px 0 20px"><tr><td style="background:${INK};border:2px solid ${EDGE};border-radius:16px"><a href="${safeUrl(block.url)}" style="display:inline-block;padding:16px 26px;font-family:${FONT};font-size:17px;font-weight:800;color:#ffffff;text-decoration:none">${escapeHtml(block.label)}</a></td></tr></table>`;
     case "bar":
-      return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 20px;background:${INK};border-radius:20px"><tr><td style="padding:18px 20px">
+      return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 20px;background:${INK};border:2px solid ${EDGE};border-radius:20px"><tr><td style="padding:18px 20px">
 <p style="margin:0;font-size:20px;line-height:1.2;font-weight:800;color:#ffffff">${escapeHtml(block.title)}</p>${
         block.sub ? `<p style="margin:4px 0 0;font-size:14px;line-height:1.4;color:#d6d6d6">${escapeHtml(block.sub)}</p>` : ""
       }
@@ -141,18 +167,6 @@ function blockHtml(block: EmailBlock, accent: string, ground: string): string {
     }
     case "note":
       return `<p style="margin:0 0 18px;padding:14px 16px;border:3px solid ${INK};border-radius:16px;font-size:16px;line-height:1.45;color:${INK}">${escapeHtml(block.text)}</p>`;
-    case "rows":
-      return `${
-        block.title
-          ? `<p style="margin:6px 0 8px;font-size:13px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:${INK}">${escapeHtml(block.title)}</p>`
-          : ""
-      }<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 16px;border-top:2px solid #efefef">${block.rows
-        .map(([label, value]) =>
-          block.strong
-            ? `<tr><td style="padding:12px 14px 12px 0;border-bottom:2px solid #efefef;font-size:17px;font-weight:700;color:${INK}">${escapeHtml(label)}</td><td align="right" style="padding:12px 0;border-bottom:2px solid #efefef;font-size:20px;font-weight:800;color:${INK};white-space:nowrap">${escapeHtml(value)}</td></tr>`
-            : `<tr><td style="padding:9px 14px 9px 0;border-bottom:2px solid #efefef;font-size:14px;color:#4a4a4a;white-space:nowrap;vertical-align:top">${escapeHtml(label)}</td><td style="padding:9px 0;border-bottom:2px solid #efefef;font-size:15px;font-weight:600;color:${INK};word-break:break-word">${escapeHtml(value)}</td></tr>`,
-        )
-        .join("")}</table>`;
     case "receipt":
       return receiptHtml(block, ground);
     case "fine":
@@ -172,16 +186,12 @@ function blockText(block: EmailBlock): string {
       return [block.title, block.sub, `${block.label}: ${block.url}`].filter(Boolean).join("\n");
     case "person":
       return `${block.name}\n${block.line}`;
-    case "rows":
-      return [block.title?.toUpperCase(), ...block.rows.map(([label, value]) => `${label}: ${value}`)]
-        .filter(Boolean)
-        .join("\n");
     case "receipt":
       return [
-        `${block.title.toUpperCase()} No. ${block.number}`,
+        block.title.toUpperCase() + (block.number ? ` No. ${block.number}` : ""),
         ...block.lines.map((line) => `${line.label}${line.note ? ` (${line.note})` : ""}: ${line.amount}`),
-        `${block.total.label}: ${block.total.amount}`,
-        ...block.details.map(([label, value]) => `${label}: ${value}`),
+        ...(block.total ? [`${block.total.label}: ${block.total.amount}`] : []),
+        ...(block.details ?? []).map(([label, value]) => `${label}: ${value}`),
       ].join("\n");
   }
 }

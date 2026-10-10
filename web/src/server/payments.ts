@@ -80,6 +80,8 @@ export type PaidSession = {
   /** What the payer saw with Adaptive Pricing, e.g. GBP 400. Null when they paid in USD. */
   presentment: { currency: string; amount: number } | null;
   paymentIntentId: string | null;
+  /** "Visa •••• 4242" for the receipt. Null when Stripe couldn't tell us. */
+  paymentMethod: string | null;
   /** The email Stripe collected. Boosts use it for the receipt and alert list; claims keep the form email. */
   customerEmail: string | null;
 };
@@ -151,6 +153,7 @@ export async function fulfillCheckout(db: Executor, paid: PaidSession, instant: 
         stripePaymentIntentId: paid.paymentIntentId,
         presentmentCurrency: paid.presentment?.currency.toUpperCase() ?? null,
         presentmentAmount: paid.presentment?.amount ?? null,
+        paymentMethod: paid.paymentMethod,
         ...(kind === "boost" ? { email: boosterEmail } : {}),
       })
       .where(eq(payments.id, row.paymentId));

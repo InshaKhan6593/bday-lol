@@ -69,10 +69,30 @@ describe("stripe events", () => {
         metadata,
         presentment_details: { presentment_currency: "eur", presentment_amount: 470 },
       });
-      const outcome = await handleStripeEvent(tx, event, NOON);
+      const looked: string[] = [];
+      const lookup = async (id: string) => (looked.push(id), "Visa •••• 4242");
+      const outcome = await handleStripeEvent(tx, event, NOON, lookup);
+      expect(outcome).toMatchObject({ handled: true, action: "fulfilled", result: { status: "fulfilled" } });
+      expect(looked).toEqual(["pi_42"]);
+      const [row] = await tx.select().from(payments).where(eq(payments.stripeSessionId, "cs_test_hook"));
+      expect(row).toMatchObject({
+        status: "paid",
+        stripePaymentIntentId: "pi_42",
+        presentmentCurrency: "EUR",
+        presentmentAmount: 470,
+        paymentMethod: "Visa •••• 4242",
+      });
+    });
+  });
+
+  it("still fulfils when Stripe can't say which card paid (the receipt just leaves it out)", async () => {
+    await inRollback(async (tx) => {
+      const { metadata } = await setup(tx);
+      const event = sessionEvent("checkout.session.completed", { id: "cs_test_hook", payment_status: "paid", payment_intent: "pi_42", metadata });
+      const outcome = await handleStripeEvent(tx, event, NOON, async () => null);
       expect(outcome).toMatchObject({ handled: true, action: "fulfilled", result: { status: "fulfilled" } });
       const [row] = await tx.select().from(payments).where(eq(payments.stripeSessionId, "cs_test_hook"));
-      expect(row).toMatchObject({ status: "paid", stripePaymentIntentId: "pi_42", presentmentCurrency: "EUR", presentmentAmount: 470 });
+      expect(row).toMatchObject({ status: "paid", paymentMethod: null });
     });
   });
 

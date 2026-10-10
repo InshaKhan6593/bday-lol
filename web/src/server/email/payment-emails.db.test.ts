@@ -42,6 +42,7 @@ describe("payment emails", () => {
       // A short receipt number from our payment id (Stripe holds the full id as metadata.paymentId).
       expect(confirmation?.text).toContain(`RECEIPT No. ${receiptNumber(sam.paymentId)}`);
       expect(confirmation?.text).toContain("Total paid: $241");
+      expect(confirmation?.text).toContain("Payment: Visa •••• 4242");
       // The photo is absolute, so it loads in the inbox.
       expect(confirmation?.html).toContain('src="https://mybday.lol/uploads/sam.jpg"');
 

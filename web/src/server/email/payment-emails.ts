@@ -39,8 +39,7 @@ export async function sendPaymentEmails(db: Executor, mailer: Mailer, sessionId:
     reference: payment.stripePaymentIntentId,
     item: payment.kind === "claim" ? `Claim ${day}, ${year} on mybday.lol` : `Boost ${entry.name} on mybday.lol`,
     number: receiptNumber(payment.id),
-    // The card isn't stored yet; it comes from Stripe in the rollout of the new receipt.
-    method: null,
+    method: payment.paymentMethod,
   };
   const person = { name: entry.name, bio: entry.bio, photoUrl: entry.photoUrl, theme: entry.theme };
 
@@ -94,6 +93,7 @@ export async function sendPaymentEmails(db: Executor, mailer: Mailer, sessionId:
             email: payment.email ?? entry.ownerEmail ?? "",
             giftLinks: entry.giftLinks,
             isMinor: entry.isMinor,
+            number: receipt.number,
             dateUrl: ctx.dateUrl,
           }),
         },
