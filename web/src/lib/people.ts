@@ -36,3 +36,28 @@ export function shortName(name: string): string {
   if (parts.length < 2) return parts[0] ?? name;
   return `${parts[0]} ${parts.at(-1)![0]!.toUpperCase()}.`;
 }
+
+/**
+ * The name part of a personal link (handoff v2 §14): mybday.lol/october-7/lucia-gomez.
+ * Accents and symbols are stripped; a name with nothing usable left becomes "birthday".
+ */
+export function personSlug(name: string): string {
+  const slug = name
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48)
+    .replace(/-+$/g, "");
+  return slug || "birthday";
+}
+
+/** Two people with the same name on one date get -2, -3… ("sam-rivera", "sam-rivera-2"). */
+export function uniqueSlug(base: string, taken: Iterable<string>): string {
+  const used = new Set(taken);
+  if (!used.has(base)) return base;
+  for (let n = 2; ; n++) {
+    if (!used.has(`${base}-${n}`)) return `${base}-${n}`;
+  }
+}

@@ -18,6 +18,7 @@ import { formatLong, nextDates, startOfDayIn, zonedDate, type MonthDay } from "@
 import { now } from "@/lib/clock";
 import { publicId } from "@/lib/ids";
 import { ensureCurrentBoard } from "@/server/boards";
+import { freeSlug } from "@/server/payments";
 
 assertLocalDatabase();
 
@@ -107,6 +108,7 @@ await db.transaction(async (tx) => {
       .values({
         publicId: publicId(),
         boardId: board.id,
+        slug: await freeSlug(tx, board.id, person.name),
         name: person.name,
         bio: person.bio,
         theme: person.theme,

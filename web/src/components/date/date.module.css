@@ -586,6 +586,41 @@
   outline-offset: 2px;
 }
 
+/* ---------- Followed personal link (Day.dc.html "focus") ---------- */
+
+.followed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px var(--space-lg);
+  padding: 14px 18px;
+  background: var(--accent);
+  border: var(--border);
+  border-radius: var(--radius-panel);
+}
+
+.followedText {
+  flex: 1 1 260px;
+  font-size: var(--text-body-lg);
+  font-weight: var(--weight-bold);
+  line-height: 1.3;
+}
+
+.followed .followedButton {
+  min-height: var(--control-sm);
+  border-radius: var(--radius-small);
+  font-size: var(--text-label);
+  white-space: nowrap;
+}
+
+/* The followed person's card: an accent ring and a deeper shadow. */
+.row.rowFocused {
+  box-shadow:
+    0 0 0 6px var(--accent),
+    10px 10px 0 6px var(--color-ink);
+}
+
 /* ---------- Phones: tap a card to outrank (DayMobile.dc.html) ---------- */
 
 .outrankHere {

@@ -31,6 +31,8 @@ export type EntryContext = {
   /** The board's day is today (and hasn't ended). */
   isToday: boolean;
   dateUrl: string;
+  /** Their personal link (mybday.lol/october-7/sam-rivera): what "Share your link" shares. */
+  personUrl: string;
 };
 
 export async function loadEntryContext(db: Executor, entryId: string, instant: Date): Promise<EntryContext | null> {
@@ -69,5 +71,6 @@ export async function loadEntryContext(db: Executor, entryId: string, instant: D
     today,
     isToday: row.key === toKey(today) && year === today.year && row.closesAt.getTime() > instant.getTime(),
     dateUrl: absoluteUrl(routes.date(md)),
+    personUrl: absoluteUrl(routes.person(md, e.slug)),
   };
 }

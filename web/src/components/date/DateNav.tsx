@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Popover } from "radix-ui";
-import { useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { Button, Icon, IconButton } from "@/components/ui";
 import { getTheme, type ThemeKey } from "@/config/themes";
 import { compareMonthDay, MONTHS, type MonthDay } from "@/lib/birthday";
@@ -19,6 +19,9 @@ type Props = {
   calendarTops: Record<string, number>;
 };
 
+/** Window event that opens the date picker. */
+export const OPEN_DATE_PICKER = "mybday:open-date-picker";
+
 /** ◀ Pick a date ▶ and "Back to today". The picker shows every date's current top bid. */
 export function DateNav({ md, today, todayTheme, calendarTops }: Props) {
   const [open, setOpen] = useState(false);
@@ -31,6 +34,16 @@ export function DateNav({ md, today, todayTheme, calendarTops }: Props) {
     // Each time it opens, start on the month being viewed.
     if (next) setMonth(md.month);
   }
+
+  // "Find your birthday →" on a followed personal link opens the picker from elsewhere on the page.
+  useEffect(() => {
+    const openPicker = () => {
+      setMonth(md.month);
+      setOpen(true);
+    };
+    window.addEventListener(OPEN_DATE_PICKER, openPicker);
+    return () => window.removeEventListener(OPEN_DATE_PICKER, openPicker);
+  }, [md.month]);
 
   return (
     <Popover.Root open={open} onOpenChange={toggle}>

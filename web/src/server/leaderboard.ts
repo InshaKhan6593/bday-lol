@@ -8,6 +8,8 @@ import { getBoardType } from "./boards";
 export type RankedEntry = {
   id: string;
   publicId: string;
+  /** Personal link name ("sam-rivera"). Null only for rows made before personal links existed. */
+  slug: string | null;
   rank: number;
   name: string;
   bio: string;
@@ -57,6 +59,7 @@ export async function getRankedEntries(db: Executor, boardId: string): Promise<R
     .select({
       id: entries.id,
       publicId: entries.publicId,
+      slug: entries.slug,
       name: entries.name,
       bio: entries.bio,
       photoUrl: entries.photoUrl,

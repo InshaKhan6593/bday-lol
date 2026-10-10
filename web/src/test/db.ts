@@ -7,6 +7,7 @@ import { boardTypes, entries, type GiftLink } from "@/db/schema";
 import { publicId } from "@/lib/ids";
 import type { MonthDay } from "@/lib/birthday";
 import { ensureBoard } from "@/server/boards";
+import { freeSlug } from "@/server/payments";
 
 export type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -57,6 +58,7 @@ export async function addPeople(
     await tx.insert(entries).values({
       publicId: publicId(),
       boardId: board.id,
+      slug: (p.status ?? "live") === "live" ? await freeSlug(tx, board.id, p.name) : null,
       name: p.name,
       theme: p.theme ?? "sky",
       giftLinks: p.gifts ?? [],

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { BoostDialog } from "@/components/boost/BoostDialog";
 import { InviteButtons } from "@/components/share/ShareButtons";
 import { Button, Icon, IconButton, Surface } from "@/components/ui";
@@ -10,9 +10,11 @@ import type { ThemeKey } from "@/config/themes";
 import { formatLong, formatLongNb, type MonthDay } from "@/lib/birthday";
 import { boostBoxTop } from "@/lib/boost";
 import { BOARD_PAGE_SIZE, ctaCopy, filterByName, landingRank, moreText, searchCountText } from "@/lib/date-page";
-import { routes } from "@/lib/routes";
+import { firstName } from "@/lib/people";
+import { absoluteUrl, routes } from "@/lib/routes";
 import type { DateEntry } from "@/server/date-page";
 import styles from "./date.module.css";
+import { OPEN_DATE_PICKER } from "./DateNav";
 import { EntryRow } from "./EntryRow";
 import { useMediaQuery } from "./useMediaQuery";
 
@@ -31,6 +33,8 @@ type Props = {
   dayEnd: { endsAt: string; serverNow: string } | null;
   /** From an outbid email's "Boost to take #1 back" link: open the Boost box for this person with the amount filled in. */
   initialBoost?: { publicId: string; amountCents: number } | null;
+  /** A followed personal link: this person's card is highlighted, scrolled to and introduced by a banner. */
+  focusPublicId?: string | null;
 };
 
 /**
@@ -51,10 +55,47 @@ export function DateBoard({
   settings,
   dayEnd,
   initialBoost,
+  focusPublicId = null,
 }: Props) {
   const [pickedRank, setPickedRank] = useState<number | null>(null);
   const [query, setQuery] = useState("");
-  const [limit, setLimit] = useState(BOARD_PAGE_SIZE);
+  // A personal link to someone past the first 20 loads enough of the board to show them.
+  const focusIndex = focusPublicId ? entries.findIndex((e) => e.publicId === focusPublicId) : -1;
+  const [limit, setLimit] = useState(
+    Math.max(BOARD_PAGE_SIZE, Math.ceil((focusIndex + 1) / BOARD_PAGE_SIZE) * BOARD_PAGE_SIZE),
+  );
+  const focused = focusIndex >= 0 ? entries[focusIndex] : undefined;
+
+  // Scroll to the followed person's card (ScrollToTop leaves pages with a scroll target alone).
+  // Runs after the page has fully loaded, plus a beat (like the mockup): the browser restores its own
+  // scroll position on load, which would otherwise undo this. It glides there like the mockup; a
+  // smooth scroll can stall while the page is still settling, so if the card still isn't on screen
+  // a second later it jumps the rest of the way.
+  useEffect(() => {
+    if (!focusPublicId) return;
+    const timers: Array<ReturnType<typeof setTimeout>> = [];
+    const card = () => document.querySelector("[data-scroll-target]");
+    const scroll = () => {
+      timers.push(
+        setTimeout(() => {
+          const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          card()?.scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" });
+          timers.push(
+            setTimeout(() => {
+              const box = card()?.getBoundingClientRect();
+              if (box && (box.bottom < 0 || box.top > window.innerHeight)) card()?.scrollIntoView({ block: "center" });
+            }, 1000),
+          );
+        }, 350),
+      );
+    };
+    if (document.readyState === "complete") scroll();
+    else window.addEventListener("load", scroll, { once: true });
+    return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener("load", scroll);
+    };
+  }, [focusPublicId]);
   const mobile = useMediaQuery("(max-width: 640px)");
   // Opened from an email link ("Boost to take #1 back"): the Boost box starts open, at the top edge of the screen.
   const [boosting, setBoosting] = useState<{ entry: DateEntry; top: number } | null>(() => {
@@ -177,19 +218,42 @@ export function DateBoard({
       {shown.length > 0 && (
         <ol className={styles.list} aria-label={`Everyone celebrating ${formatLong(md)}`}>
           {shown.map((entry) => (
-            <EntryRow
-              key={entry.publicId}
-              entry={entry}
-              isToday={isToday}
-              giftsOpenLabel={giftsOpenLabel}
-              theme={theme}
-              shareUrl={shareUrl}
-              rules={settings}
-              picked={mobile && pickedRank === entry.rank}
-              claimHref={routes.claim(md, landing(entry))}
-              onPick={() => pick(entry.rank)}
-              onBoost={(button) => openBoost(entry, button)}
-            />
+            <Fragment key={entry.publicId}>
+              {entry === focused && (
+                <li className={styles.followed}>
+                  <p className={styles.followedText}>
+                    You followed {firstName(entry.name)}’s link.{" "}
+                    {isToday
+                      ? "Send a gift or boost them to the top."
+                      : "Boost them to the top, and come back on their birthday to send a gift."}
+                  </p>
+                  <Button
+                    variant="paper"
+                    size="md"
+                    className={styles.followedButton}
+                    onClick={() => {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                      window.dispatchEvent(new Event(OPEN_DATE_PICKER));
+                    }}
+                  >
+                    Find your birthday →
+                  </Button>
+                </li>
+              )}
+              <EntryRow
+                entry={entry}
+                isToday={isToday}
+                giftsOpenLabel={giftsOpenLabel}
+                theme={theme}
+                shareUrl={entry.slug ? absoluteUrl(routes.person(md, entry.slug)) : shareUrl}
+                rules={settings}
+                focused={entry === focused}
+                picked={mobile && pickedRank === entry.rank}
+                claimHref={routes.claim(md, landing(entry))}
+                onPick={() => pick(entry.rank)}
+                onBoost={(button) => openBoost(entry, button)}
+              />
+            </Fragment>
           ))}
         </ol>
       )}

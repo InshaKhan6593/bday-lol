@@ -4,6 +4,7 @@ import { boards, entries, leaderLog, payments, reminders } from "@/db/schema";
 import { parseKey } from "@/lib/birthday";
 import type { ValidClaim } from "@/lib/claim";
 import { publicId } from "@/lib/ids";
+import { personSlug, uniqueSlug } from "@/lib/people";
 import { cancelOutbidAlerts, queueOutbidAlerts, subscribeToAlerts } from "./outbid";
 
 /**
@@ -116,6 +117,7 @@ export async function fulfillCheckout(db: Executor, paid: PaidSession, instant: 
         entryId: entries.id,
         boardId: entries.boardId,
         ownerEmail: entries.ownerEmail,
+        name: entries.name,
       })
       .from(payments)
       .innerJoin(entries, eq(entries.id, payments.entryId))
@@ -153,9 +155,11 @@ export async function fulfillCheckout(db: Executor, paid: PaidSession, instant: 
       .where(eq(payments.id, row.paymentId));
 
     if (kind === "claim") {
+      // The personal link is picked under the board lock, so two Sam Riveras paying at once get -2 apart.
+      const slug = await freeSlug(tx, row.boardId, row.name);
       await tx
         .update(entries)
-        .set({ status: "live", totalCents: row.amountCents, totalReachedAt: instant, liveAt: instant })
+        .set({ status: "live", slug, totalCents: row.amountCents, totalReachedAt: instant, liveAt: instant })
         .where(eq(entries.id, row.entryId));
       await addClaimReminder(tx, row.ownerEmail, board!.key);
     } else {
@@ -189,6 +193,16 @@ export async function fulfillCheckout(db: Executor, paid: PaidSession, instant: 
       alerted,
     };
   });
+}
+
+/** A personal link name not yet used on this board: "sam-rivera", then "sam-rivera-2"… */
+export async function freeSlug(db: Executor, boardId: string, name: string): Promise<string> {
+  const base = personSlug(name);
+  const rows = await db
+    .select({ slug: entries.slug })
+    .from(entries)
+    .where(and(eq(entries.boardId, boardId), sql`${entries.slug} LIKE ${`${base}%`}`));
+  return uniqueSlug(base, rows.flatMap((r) => (r.slug ? [r.slug] : [])));
 }
 
 /**

@@ -4,7 +4,7 @@ import { formatCountdown } from "./countdown";
 import { giftButtons } from "./gifts";
 import { comingUpCopy, othersText } from "./homepage-copy";
 import { formatUsd, minToTakeTop } from "./money";
-import { cleanName, firstName, shortName } from "./people";
+import { cleanName, firstName, personSlug, shortName, uniqueSlug } from "./people";
 import { parseReminderInput } from "./reminders";
 import { birthdayShareText, facebookShareUrl, smsShareUrl } from "./share";
 
@@ -37,6 +37,17 @@ describe("names", () => {
     expect(firstName("J. Cole")).toBe("J. Cole");
     expect(firstName("Maya")).toBe("Maya");
     expect(cleanName("  Sam   Rivera ")).toBe("Sam Rivera");
+  });
+
+  it("makes personal link slugs like the handoff says", () => {
+    expect(personSlug("Lucía Gómez")).toBe("lucia-gomez");
+    expect(personSlug("  Isla  Brown ")).toBe("isla-brown");
+    expect(personSlug("Mary-Catherine O'Neil")).toBe("mary-catherine-o-neil");
+    expect(personSlug("Zoë 🎂")).toBe("zoe");
+    expect(personSlug("🎉🎉")).toBe("birthday");
+    expect(personSlug("x".repeat(60))).toHaveLength(48);
+    expect(uniqueSlug("sam-rivera", [])).toBe("sam-rivera");
+    expect(uniqueSlug("sam-rivera", ["sam-rivera", "sam-rivera-2"])).toBe("sam-rivera-3");
   });
 });
 

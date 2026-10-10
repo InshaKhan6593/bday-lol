@@ -21,6 +21,8 @@ export const routes = {
   /** The same page as Stripe's success_url: Stripe swaps in the real id ({CHECKOUT_SESSION_ID} must stay unencoded). */
   claimSuccessTemplate: "/claim/success?session_id={CHECKOUT_SESSION_ID}",
   date: (md: MonthDay) => `/${toSlug(md)}` as Route,
+  /** A personal link: the date's board, scrolled to and highlighting this person (handoff v2). */
+  person: (md: MonthDay, slug: string | null) => (slug ? `/${toSlug(md)}/${slug}` : `/${toSlug(md)}`) as Route,
   /** "Boost to take #1 back" in outbid emails: the date page opens the Boost box with the amount filled in. */
   boostLink: (md: MonthDay, publicId: string, amountCents: number) =>
     `/${toSlug(md)}?boost=${encodeURIComponent(publicId)}&amount=${Math.round(amountCents / 100)}` as Route,

@@ -37,7 +37,7 @@ describe("payment emails", () => {
       const [confirmation] = mailer.to("sam@example.com");
       expect(confirmation?.subject).toBe("October 7 is yours. For now.");
       expect(confirmation?.text).toContain("You're on the mybday.lol homepage until midnight ET");
-      expect(confirmation?.text).toContain("Share your link: https://mybday.lol/october-7");
+      expect(confirmation?.text).toMatch(/Share your link: https:\/\/mybday\.lol\/october-7\/sam-rivera$/m);
       expect(confirmation?.text).toContain("Reference: pi_test");
       // The photo is absolute, so it loads in the inbox.
       expect(confirmation?.html).toContain('src="https://mybday.lol/uploads/sam.jpg"');

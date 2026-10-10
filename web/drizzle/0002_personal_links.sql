@@ -1,0 +1,2 @@
+ALTER TABLE "entries" ADD COLUMN "slug" varchar(60);--> statement-breakpoint
+CREATE UNIQUE INDEX "entries_board_slug_uq" ON "entries" USING btree ("board_id","slug") WHERE "entries"."slug" IS NOT NULL;

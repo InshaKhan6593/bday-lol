@@ -26,6 +26,8 @@ type Props = {
   rules: Pick<BoardTypeSettings, "minOpenBidCents" | "minStepCents">;
   /** Phones: this card was tapped, so it's outlined and shows its "Outrank…" button. */
   picked: boolean;
+  /** Arrived on this person's personal link: highlighted, scrolled to, and no outrank popup. */
+  focused?: boolean;
   /** Claim page with the date and the rank outranking them lands at. */
   claimHref: Route;
   onPick: () => void;
@@ -45,6 +47,7 @@ export function EntryRow({
   shareUrl,
   rules,
   picked,
+  focused = false,
   claimHref,
   onPick,
   onBoost,
@@ -53,17 +56,24 @@ export function EntryRow({
   const claimText = outrankText(entry.name, entry.totalCents, rules);
 
   return (
-    <li className={cx(styles.row, top && styles.rowTop, picked && styles.rowPicked)}>
-      <button
-        type="button"
-        className={styles.claim}
-        onClick={onPick}
-        aria-label={`${entry.name}, #${entry.rank}. ${claimText}`}
-        aria-pressed={picked}
-      />
-      <span className={styles.tip} aria-hidden="true">
-        {claimText}
-      </span>
+    <li
+      className={cx(styles.row, top && styles.rowTop, picked && styles.rowPicked, focused && styles.rowFocused)}
+      data-scroll-target={focused ? "" : undefined}
+    >
+      {!focused && (
+        <>
+          <button
+            type="button"
+            className={styles.claim}
+            onClick={onPick}
+            aria-label={`${entry.name}, #${entry.rank}. ${claimText}`}
+            aria-pressed={picked}
+          />
+          <span className={styles.tip} aria-hidden="true">
+            {claimText}
+          </span>
+        </>
+      )}
 
       <span className={styles.avatarWrap}>
         <span className={styles.rank} aria-hidden="true">

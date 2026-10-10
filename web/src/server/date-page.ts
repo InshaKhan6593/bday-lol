@@ -10,6 +10,8 @@ import { getBirthdaySettings, getCurrentBoard, getCurrentTopTotals, getLeaderLog
 /** One person on the date page's list. Only public fields: this goes to the browser. */
 export type DateEntry = {
   publicId: string;
+  /** Personal link name: /october-7/sam-rivera. */
+  slug: string | null;
   rank: number;
   name: string;
   bio: string;
@@ -67,6 +69,7 @@ export async function getDatePageData(db: Executor, md: MonthDay, instant: Date)
     todayTheme: todayBoard.entries[0]?.theme ?? settings.defaultTheme,
     entries: board.entries.map((e) => ({
       publicId: e.publicId,
+      slug: e.slug,
       rank: e.rank,
       name: e.name,
       bio: e.bio,

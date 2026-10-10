@@ -108,6 +108,8 @@ export const entries = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     /** Short public id used in URLs (boost links in emails). */
     publicId: varchar("public_id", { length: 16 }).notNull().unique(),
+    /** Personal link name, unique on its board: mybday.lol/october-7/sam-rivera. Set when the entry goes live. */
+    slug: varchar("slug", { length: 60 }),
     boardId: uuid("board_id").notNull().references(() => boards.id),
     name: varchar("name", { length: 40 }).notNull(),
     bio: varchar("bio", { length: 80 }).notNull().default(""),
@@ -131,6 +133,7 @@ export const entries = pgTable(
       .on(t.boardId, t.totalCents.desc(), t.totalReachedAt.asc())
       .where(sql`${t.status} = 'live'`),
     index("entries_owner_email_idx").on(t.ownerEmail),
+    uniqueIndex("entries_board_slug_uq").on(t.boardId, t.slug).where(sql`${t.slug} IS NOT NULL`),
     check("entries_total_whole_dollars_chk", sql`${t.totalCents} >= 0 AND ${t.totalCents} % 100 = 0`),
     check("entries_name_len_chk", sql`char_length(${t.name}) BETWEEN 1 AND 40`),
     check("entries_gift_links_max_chk", sql`jsonb_array_length(${t.giftLinks}) <= 4`),

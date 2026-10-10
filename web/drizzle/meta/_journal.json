@@ -15,6 +15,13 @@
       "when": 1791606883218,
       "tag": "0001_handoff_v2_gift_links",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791607484644,
+      "tag": "0002_personal_links",
+      "breakpoints": true
     }
   ]
 }
