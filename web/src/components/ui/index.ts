@@ -2,6 +2,7 @@ export { Avatar, initials } from "./Avatar";
 export { Badge } from "./Badge";
 export { Button } from "./Button";
 export { Chip } from "./Chip";
+export { ColorIcon, type ColorIconName } from "./ColorIcon";
 export { Field, Hint, Input, Textarea } from "./Field";
 export { Icon, type IconName, type IconSize } from "./Icon";
 export { IconButton } from "./IconButton";

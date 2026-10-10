@@ -120,7 +120,7 @@ export function EntryRow({
         ) : (
           <span className={styles.giftsOpen}>{giftsOpenLabel}</span>
         )}
-        <ShareMenu url={shareUrl} message={birthdayShareText(firstName(entry.name))} name={entry.name} />
+        <ShareMenu url={shareUrl} message={birthdayShareText(firstName(entry.name))} name={entry.name} theme={theme} />
       </div>
 
       {picked && (

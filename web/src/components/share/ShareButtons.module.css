@@ -7,9 +7,9 @@
 /*
  * Every label gets the width of the longest one ("Facebook"), text left-aligned,
  * so each icon + label group is the same width. The groups stay centered and
- * the icons line up in a column.
+ * the icons line up in a column. (The label is the button's last span; the icon comes before it.)
  */
-.grid > * > span {
+.grid > * > span:last-child {
   min-width: 4.8em;
   text-align: left;
 }
