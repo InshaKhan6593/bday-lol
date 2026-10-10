@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { escapeHtml, formatMinorUnits, renderEmail } from "./email-render";
 import { sampleEmails } from "./email-samples";
-import { claimConfirmationEmail, outbidAlertEmail, reminderEmail } from "./email-templates";
+import { adminClaimEmail, claimConfirmationEmail, outbidAlertEmail, reminderEmail, yourDayEmail } from "./email-templates";
 
 const ORIGIN = "https://mybday.lol";
 const md = { month: 10, day: 7 };
@@ -152,5 +152,37 @@ describe("email wording", () => {
     const again = reminderEmail({ md, source: "claim", topTotalCents: 4_000, minCents: 4_100, claimUrl: `${ORIGIN}/claim?date=october-7` });
     expect(again.subject).toBe("Claim October 7 again");
     expect(again.preheader).toBe("It's a week away and the board starts fresh. The top bid is $40.");
+  });
+
+  it("your day is here: talks to the parent about a child, and never mentions gifts (07 D4)", () => {
+    const base = { ...person, md, totalCents: 4_000, hasGiftLinks: false, dateUrl: `${ORIGIN}/october-7/maya` };
+    const child = yourDayEmail({ ...base, name: "Maya", rank: 3, isMinor: true });
+    expect(child.subject).toBe("Happy birthday to Maya! 🎂");
+    expect(child.preheader).toBe("Maya is #3 on today's board.");
+    expect(child.blocks).toContainEqual({
+      kind: "p",
+      text: "Maya is #3 on today's board. Share the link so family and friends can celebrate with Maya.",
+    });
+    expect(child.reason).toBe("You're getting this because you added Maya to October 7's birthday board on mybday.lol.");
+    expect(JSON.stringify(child).toLowerCase()).not.toContain("gift");
+    expect(yourDayEmail({ ...base, name: "Maya", rank: 1, isMinor: true }).preheader).toBe(
+      "Maya is on the mybday.lol homepage today.",
+    );
+
+    const adult = yourDayEmail({ ...base, rank: 1, hasGiftLinks: true, isMinor: false });
+    expect(adult.subject).toBe("Happy birthday, Sam! 🎂");
+    expect(adult.preheader).toBe("You're on the mybday.lol homepage today. Your gift buttons are live.");
+  });
+
+  it("admin alert flags a child's listing", () => {
+    const base = { ...person, md, year: 2026, amountCents: 4_000, rank: 3, email: "mom@example.com", giftLinks: [], dateUrl: `${ORIGIN}/october-7` };
+    const child = adminClaimEmail({ ...base, name: "Maya", isMinor: true });
+    expect(child.subject).toBe("New child claim: Maya, Oct 7, $40");
+    expect(child.preheader).toBe("#3 on October 7, 2026. A child's listing: check it's a first name only and the photo is OK.");
+    expect(JSON.stringify(child.blocks)).toContain("Child (under 18), added by a parent");
+
+    const adult = adminClaimEmail({ ...base, isMinor: false });
+    expect(adult.subject).toBe("New claim: Sam Rivera, Oct 7, $40");
+    expect(JSON.stringify(adult.blocks)).not.toContain("Child");
   });
 });

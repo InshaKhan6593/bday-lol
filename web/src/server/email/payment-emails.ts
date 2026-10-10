@@ -90,6 +90,7 @@ export async function sendPaymentEmails(db: Executor, mailer: Mailer, sessionId:
             rank: mine.rank,
             email: payment.email ?? entry.ownerEmail ?? "",
             giftLinks: entry.giftLinks,
+            isMinor: entry.isMinor,
             dateUrl: ctx.dateUrl,
           }),
         },

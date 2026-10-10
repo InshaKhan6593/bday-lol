@@ -59,6 +59,7 @@ export async function startClaimCheckout(_prev: ClaimActionState, form: FormData
       giftLinks: giftRows(form),
       theme: text(form, "theme"),
       email: text(form, "email"),
+      isMinor: text(form, "isMinor") === "1",
     },
     page.minCents,
     page.target,

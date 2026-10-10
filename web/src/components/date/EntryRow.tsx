@@ -18,7 +18,7 @@ import { ShareMenu } from "./ShareMenu";
 type Props = {
   entry: DateEntry;
   isToday: boolean;
-  /** "Gifts open Oct 7" for any other day. */
+  /** "Gifts open Oct 7" for any other day (only shown when the person has gift links). */
   giftsOpenLabel: string;
   /** The page theme (the viewed date's #1), used by the badge, tooltips and gift menu. */
   theme: ThemeKey;
@@ -115,11 +115,13 @@ export function EntryRow({
       </span>
 
       <div className={styles.actions}>
-        {isToday ? (
-          entry.giftLinks.length > 0 && <GiftMenu links={entry.giftLinks} theme={theme} />
-        ) : (
-          <span className={styles.giftsOpen}>{giftsOpenLabel}</span>
-        )}
+        {/* No gift links, no gift controls: that covers children too, who never have any (07 D4). */}
+        {entry.giftLinks.length > 0 &&
+          (isToday ? (
+            <GiftMenu links={entry.giftLinks} theme={theme} />
+          ) : (
+            <span className={styles.giftsOpen}>{giftsOpenLabel}</span>
+          ))}
         <ShareMenu url={shareUrl} message={birthdayShareText(firstName(entry.name))} name={entry.name} theme={theme} />
       </div>
 

@@ -169,7 +169,7 @@ describe("boosts", () => {
         boardId,
         sessionId: "cs_test_claim",
         photoUrl: null,
-        claim: { md: oct7, amountCents: 24_100, name: "Sam Rivera", bio: "", giftLinks: [], theme: "sky", email: "sam@example.com" },
+        claim: { md: oct7, amountCents: 24_100, name: "Sam Rivera", bio: "", giftLinks: [], theme: "sky", email: "sam@example.com", isMinor: false },
       });
       const result = await fulfillCheckout(tx, paid("cs_test_claim"), at("15:00"));
       expect(result).toMatchObject({ kind: "claim", previousTopEntryId: jess.id, topEntryId: ids.entryId, alerted: ["jess@example.com"] });

@@ -85,6 +85,7 @@ export async function getClaimOutcome(db: Executor, sessionId: string, instant: 
       when,
       currentYear: today.year,
       toTopCents: mine.rank > 1 ? takeTopBoost(first.totalCents, mine.totalCents, settings.minBoostCents) : null,
+      hasGifts: mine.giftLinks.length > 0,
     },
     you: person(mine),
     top: person(first),

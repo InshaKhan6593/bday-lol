@@ -10,6 +10,7 @@ import { parseAmountCents } from "@/lib/boost";
 import {
   bidError,
   bidHint,
+  MINOR_NAME_ERROR,
   targetBox,
   validateClaim,
   withMonth,
@@ -78,6 +79,9 @@ export function ClaimForm({ header, footer, settings, md: serverMd, target, minC
   const [links, setLinks] = useState<GiftEntry[]>([{ service: "venmo", value: "" }]);
   const [theme, setTheme] = useState<ThemeKey>(settings.claimTheme ?? "sky");
   const [email, setEmail] = useState("");
+  // "This is my child (under 18)": first name only, gift links locked (07 D4). Typed links are kept for unticking.
+  const [isMinor, setIsMinor] = useState(false);
+  const giftLinks = isMinor ? [] : links;
   const [tried, setTried] = useState(false);
   const [server, sendClaim, sending] = useActionState(startClaimCheckout, {});
 
@@ -92,10 +96,12 @@ export function ClaimForm({ header, footer, settings, md: serverMd, target, minC
     : { label: "Current leader", name: "Pick a date to see", amount: "—" };
   const hint = hasDate ? bidHint(target, minCents) : null;
   const result = md
-    ? validateClaim({ md, bid, name, bio, giftLinks: links, theme, email }, minCents, target, settings)
+    ? validateClaim({ md, bid, name, bio, giftLinks, theme, email, isMinor }, minCents, target, settings)
     : null;
   const errors: Partial<Record<ClaimField, string>> = tried && result && !result.ok ? result.errors : {};
-  const nameError = tried && !name.trim() ? "Add a name to continue." : errors.name;
+  // A child's full name is flagged as it's typed, not only after "Pay & claim".
+  const minorNameError = isMinor && name.trim().includes(" ") ? MINOR_NAME_ERROR : undefined;
+  const nameError = tried && !name.trim() ? "Add a name to continue." : (minorNameError ?? errors.name);
 
   // A bid error from the server means the leader changed: reload the black box and the minimum.
   useEffect(() => {
@@ -120,7 +126,8 @@ export function ClaimForm({ header, footer, settings, md: serverMd, target, minC
     data.set("bid", bid);
     data.set("name", name);
     data.set("bio", bio);
-    for (const row of links) {
+    if (isMinor) data.set("isMinor", "1");
+    for (const row of giftLinks) {
       data.append("giftService", row.service);
       data.append("giftValue", row.value);
     }
@@ -231,11 +238,11 @@ export function ClaimForm({ header, footer, settings, md: serverMd, target, minC
               <Kicker className={styles.sectionTitle}>About the birthday person</Kicker>
               <div className={styles.personRow}>
                 <PhotoPicker photo={photo} onChange={setPhoto} error={server.errors?.photo} />
-                <Field label="Name" className={styles.nameField}>
+                <Field label={isMinor ? "First name" : "Name"} className={styles.nameField}>
                   <Input
                     name="name"
-                    autoComplete="name"
-                    placeholder="Full name"
+                    autoComplete={isMinor ? "off" : "name"}
+                    placeholder={isMinor ? "First name only" : "Full name"}
                     maxLength={settings.nameMaxLength}
                     value={name}
                     aria-invalid={nameError ? true : undefined}
@@ -252,6 +259,10 @@ export function ClaimForm({ header, footer, settings, md: serverMd, target, minC
                   {nameError}
                 </p>
               )}
+              <label className={styles.check}>
+                <input type="checkbox" name="isMinor" checked={isMinor} onChange={(e) => setIsMinor(e.target.checked)} />
+                This is my child (under 18)
+              </label>
               <Field
                 label={
                   <span className={styles.labelRow}>
@@ -288,12 +299,20 @@ export function ClaimForm({ header, footer, settings, md: serverMd, target, minC
                   board.
                 </span>
               </div>
-              <GiftLinkInputs rows={links} onChange={setLinks} />
+              {isMinor && (
+                <p className={styles.giftsLocked}>
+                  Gifts are turned off for anyone under 18. Friends and family can still boost them up the board.
+                </p>
+              )}
+              {/* A disabled fieldset locks every app dropdown, box and button in one go. */}
+              <fieldset disabled={isMinor} className={cx(styles.giftRows, isMinor && styles.locked)}>
+                <GiftLinkInputs rows={links} onChange={setLinks} />
+              </fieldset>
               {/* Each row shows its own app error; this line is for "Add one link per app." and the like. */}
-              {errors.giftLinks && !links.some((row) => giftEntryHint(row)?.tone === "error") && (
+              {errors.giftLinks && !giftLinks.some((row) => giftEntryHint(row)?.tone === "error") && (
                 <Hint tone="error">{errors.giftLinks}</Hint>
               )}
-              <dl className={styles.accepted}>
+              <dl className={cx(styles.accepted, isMinor && styles.locked)}>
                 <dt>Venmo</dt>
                 <dd>your @username</dd>
                 <dt>Cash App</dt>
@@ -373,8 +392,9 @@ export function ClaimForm({ header, footer, settings, md: serverMd, target, minC
                 </Hint>
               )}
               <p className={styles.fine}>
-                Bids are final. If someone outbids you, you stay on this day’s birthday board and can still get gifts
-                from friends and followers.
+                {isMinor
+                  ? "Bids are final. If someone outbids you, your child stays on this day’s birthday board."
+                  : "Bids are final. If someone outbids you, you stay on this day’s birthday board and can still get gifts from friends and followers."}
               </p>
             </Surface>
           </aside>

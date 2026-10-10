@@ -243,6 +243,7 @@ export async function sendYourDayEmails(db: Executor, mailer: Mailer, instant: D
           rank: e.rank,
           totalCents: e.totalCents,
           hasGiftLinks: e.giftLinks.length > 0,
+          isMinor: e.isMinor,
           dateUrl: absoluteUrl(routes.person(today, e.slug)),
         }),
       },

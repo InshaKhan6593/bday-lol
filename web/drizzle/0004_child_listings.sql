@@ -1,0 +1,2 @@
+ALTER TABLE "entries" ADD COLUMN "is_minor" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "entries" ADD CONSTRAINT "entries_minor_no_gifts_chk" CHECK (NOT "entries"."is_minor" OR jsonb_array_length("entries"."gift_links") = 0);

@@ -90,6 +90,8 @@ export type ClaimInput = {
   giftLinks: GiftEntry[];
   theme: string;
   email: string;
+  /** "This is my child (under 18)": first name only and no gift links (07 D4). */
+  isMinor: boolean;
 };
 
 export type ClaimField = "bid" | "name" | "bio" | "giftLinks" | "theme" | "email";
@@ -102,7 +104,13 @@ export type ValidClaim = {
   giftLinks: GiftLink[];
   theme: ThemeKey;
   email: string;
+  isMinor: boolean;
 };
+
+/** Under the name box when "This is my child" is ticked and the name has more than one word. */
+export const MINOR_NAME_ERROR = "For a child, use their first name only.";
+/** Gift links sent for a child (the form locks them, so only a hand-made request gets this). */
+export const MINOR_GIFTS_ERROR = "Gifts aren’t allowed for anyone under 18.";
 
 export type ClaimResult = { ok: true; claim: ValidClaim } | { ok: false; errors: Partial<Record<ClaimField, string>> };
 
@@ -129,6 +137,7 @@ export function validateClaim(input: ClaimInput, minCents: number, target: Claim
   const name = cleanName(input.name);
   if (!name) errors.name = "Add a name to continue.";
   else if (name.length > rules.nameMaxLength) errors.name = `Names can be up to ${rules.nameMaxLength} characters.`;
+  else if (input.isMinor && name.includes(" ")) errors.name = MINOR_NAME_ERROR;
 
   const bio = stripWrappingQuotes(tidy(input.bio));
   if (bio.length > rules.bioMaxLength) errors.bio = `Bios can be up to ${rules.bioMaxLength} characters.`;
@@ -140,7 +149,8 @@ export function validateClaim(input: ClaimInput, minCents: number, target: Claim
     const parsed = parseGiftEntry(row);
     return parsed.kind === "ok" ? [parsed.link] : [];
   });
-  if (bad) errors.giftLinks = GIFT_ENTRY[bad.service].error;
+  if (input.isMinor && rows.length > 0) errors.giftLinks = MINOR_GIFTS_ERROR;
+  else if (bad) errors.giftLinks = GIFT_ENTRY[bad.service].error;
   else if (new Set(giftLinks.map((l) => l.service)).size < giftLinks.length) errors.giftLinks = "Add one link per app.";
   else if (giftLinks.length > rules.maxGiftLinks) errors.giftLinks = `Add up to ${rules.maxGiftLinks} links.`;
 
@@ -152,7 +162,16 @@ export function validateClaim(input: ClaimInput, minCents: number, target: Claim
   if (Object.keys(errors).length > 0) return { ok: false, errors };
   return {
     ok: true,
-    claim: { md: input.md, amountCents, name, bio, giftLinks, theme: input.theme as ThemeKey, email: email.toLowerCase() },
+    claim: {
+      md: input.md,
+      amountCents,
+      name,
+      bio,
+      giftLinks,
+      theme: input.theme as ThemeKey,
+      email: email.toLowerCase(),
+      isMinor: input.isMinor,
+    },
   };
 }
 

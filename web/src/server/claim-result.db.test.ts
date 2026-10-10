@@ -42,10 +42,22 @@ describe("claim outcome (Success page)", () => {
       const out = await getClaimOutcome(tx, "cs_test_today1", NOON_OCT_7);
       expect(out).toEqual({
         status: "done",
-        placement: { md: oct7, year: 2026, rank: 1, when: "today", currentYear: 2026, toTopCents: null },
+        // No gift links in this fixture, so the Success copy leaves gifts out.
+        placement: { md: oct7, year: 2026, rank: 1, when: "today", currentYear: 2026, toTopCents: null, hasGifts: false },
         you: { name: "Sam Rivera", photoUrl: null, theme: "sky", slug: "sam-rivera" },
         top: { name: "Sam Rivera", photoUrl: null, theme: "sky", slug: "sam-rivera" },
       });
+    });
+  });
+
+  it("knows whether the listing has gift links", async () => {
+    await inRollback(async (tx) => {
+      const type = await addBirthdayType(tx);
+      const venmo = [{ service: "venmo" as const, url: "https://venmo.com/u/sam" }];
+      await addPeople(tx, type, oct7, 2026, [{ ...today[0]!, gifts: venmo }]);
+      await pay(tx, "Sam Rivera", "cs_test_gifts1", "paid", 241);
+      const out = await getClaimOutcome(tx, "cs_test_gifts1", NOON_OCT_7);
+      expect(out.status === "done" && out.placement.hasGifts).toBe(true);
     });
   });
 

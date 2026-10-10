@@ -21,6 +21,7 @@ function claim(name: string, usd: number): ValidClaim {
     giftLinks: [{ service: "venmo", url: "https://venmo.com/u/sam" }],
     theme: "sky",
     email: `${name.split(" ")[0]!.toLowerCase()}@example.com`,
+    isMinor: false,
   };
 }
 
@@ -48,6 +49,24 @@ describe("claim money path", () => {
       const [payment] = await tx.select().from(payments).where(eq(payments.id, ids.paymentId));
       expect(payment).toMatchObject({ status: "pending", kind: "claim", amountCents: 24_100, stripeSessionId: "cs_test_a" });
       expect(await getRankedEntries(tx, board.id)).toEqual([]);
+    });
+  });
+
+  it("saves a child's listing with its flag, and the database refuses a child with gift links (07 D4)", async () => {
+    await inRollback(async (tx) => {
+      const type = await addBirthdayType(tx);
+      const board = await ensureBoard(tx, type, oct7, 2026);
+      const ids = await pending(tx, board.id, "cs_test_kid", { ...claim("Maya", 40), giftLinks: [], isMinor: true });
+      const [entry] = await tx.select().from(entries).where(eq(entries.id, ids.entryId));
+      expect(entry).toMatchObject({ name: "Maya", isMinor: true, giftLinks: [] });
+
+      // A savepoint, so the failed insert doesn't end the test's transaction.
+      await expect(
+        tx.transaction((sp) => pending(sp, board.id, "cs_test_kid2", { ...claim("Leo", 40), isMinor: true })),
+      ).rejects.toThrow();
+      const adultIds = await pending(tx, board.id, "cs_test_a", claim("Sam Rivera", 241));
+      const [adult] = await tx.select().from(entries).where(eq(entries.id, adultIds.entryId));
+      expect(adult).toMatchObject({ isMinor: false });
     });
   });
 

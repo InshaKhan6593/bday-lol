@@ -8,6 +8,7 @@ const base: Placement = {
   when: "today",
   currentYear: 2026,
   toTopCents: null,
+  hasGifts: true,
 };
 
 describe("success copy", () => {
@@ -17,6 +18,7 @@ describe("success copy", () => {
       title: ["October 7 is yours.", "For now."],
       sub: "Share it so everyone knows it's your day.",
       note: "If someone passes you, we'll email you right away so you can take it back. Either way, you stay on October 7's birthday board.",
+      linkHelp: "Put it in your bio or story. Followers land right on your spot to send a gift or boost you.",
       link: { label: "See the homepage", to: "home" },
     });
   });
@@ -48,6 +50,13 @@ describe("success copy", () => {
     expect(copy.title).toEqual(["You're #1 on October 7."]);
     expect(copy.sub).toBe("Share it so everyone knows it's your day.");
     expect(successCopy({ ...base, rank: 2, when: "closed", toTopCents: 200 }).sub).not.toContain("more takes #1");
+  });
+
+  it("leaves gifts out for a listing without gift links, like a child's (07 D4)", () => {
+    const copy = successCopy({ ...base, rank: 3, toTopCents: 1_600, hasGifts: false });
+    expect(copy.note).toBe("You stay on October 7's birthday board, where friends and followers can find you and boost you.");
+    expect(copy.linkHelp).toBe("Put it in your bio or story. Followers land right on your spot to boost you.");
+    expect(successCopy({ ...base, hasGifts: false }).linkHelp).not.toContain("gift");
   });
 
   it("labels the link card", () => {

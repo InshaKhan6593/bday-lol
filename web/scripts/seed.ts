@@ -28,6 +28,8 @@ type Person = {
   theme: ThemeKey;
   totalUsd: number;
   gifts?: GiftLink[];
+  /** A child added by a parent (07 D4): first name only, never gift links. */
+  minor?: boolean;
   /** Optional boost on top of the claim (claim = total - boost). */
   boostUsd?: number;
 };
@@ -45,7 +47,7 @@ const TODAY_PEOPLE: Person[] = [
   { name: "Ana Reyes", bio: "Birthday twins with my grandma.", theme: "apricot", totalUsd: 150, gifts: [{ service: "amazon", url: "https://www.amazon.com/hz/wishlist/ls/ANAREYES123" }] },
   { name: "Chris Wu", bio: "Send tacos.", theme: "mint", totalUsd: 60, gifts: [{ service: "venmo", url: "https://venmo.com/u/chriswu" }] },
   // A child, added by a parent: first name only and no gift links (handoff v2 §8).
-  { name: "Maya", bio: "Our girl turns 7 today! (Added by her mom)", theme: "bubblegum", totalUsd: 40 },
+  { name: "Maya", bio: "Our girl turns 7 today! (Added by her mom)", theme: "bubblegum", totalUsd: 40, minor: true },
   { name: "Jordan Lee", bio: "Quarter century. Feeling ancient.", theme: "butter", totalUsd: 25, gifts: [{ service: "cashapp", url: "https://cash.app/$jordanlee" }] },
   { name: "Sam Ortiz", bio: "Just happy to be here.", theme: "seafoam", totalUsd: 10 },
   { name: "Riley Kim", bio: "Low budget, high spirits.", theme: "orchid", totalUsd: 5, gifts: [{ service: "throne", url: "https://throne.com/rileykim" }] },
@@ -81,7 +83,7 @@ const TODAY_PEOPLE: Person[] = [
 // Homepage "Coming up" demo (Main.dc.html): +1, +2, +3 (unclaimed), +4 days.
 const UPCOMING: Array<Person | null> = [
   { name: "Marcus Thompson", bio: "Finally old enough to rent a car.", theme: "periwinkle", totalUsd: 85 },
-  { name: "Priya Shah", bio: "Treat yourself, but also treat me.", theme: "orchid", totalUsd: 410 },
+  { name: "Priya Shah", bio: "Treat yourself, but also treat me.", theme: "orchid", totalUsd: 410, gifts: [{ service: "throne", url: "https://throne.com/priyashah" }] },
   null,
   { name: "Dev Nolan", bio: "Birthday week is a lifestyle.", theme: "seafoam", totalUsd: 12 },
 ];
@@ -114,6 +116,7 @@ await db.transaction(async (tx) => {
         bio: person.bio,
         theme: person.theme,
         giftLinks: person.gifts ?? [],
+        isMinor: person.minor ?? false,
         ownerEmail: emailFor(person.name),
         totalCents: cents(person.totalUsd),
         totalReachedAt: reachedAt,

@@ -33,6 +33,7 @@ async function setup(tx: Tx) {
       giftLinks: [],
       theme: "sky",
       email: "sam@example.com",
+      isMinor: false,
     },
   });
   const metadata = { kind: "claim", paymentId: ids.paymentId, entryId: ids.entryId, boardId: board.id };

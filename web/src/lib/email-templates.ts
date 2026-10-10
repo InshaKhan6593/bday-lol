@@ -267,12 +267,30 @@ export type YourDayInput = Person & {
   rank: number;
   totalCents: number;
   hasGiftLinks: boolean;
+  /** A child's listing (07 D4): the email goes to the parent, so it talks about the child. */
+  isMinor: boolean;
   dateUrl: string;
 };
 
 export function yourDayEmail(i: YourDayInput): EmailContent {
   const first = firstName(i.name);
   const day = formatLong(i.md);
+  if (i.isMinor) {
+    const where = i.rank === 1 ? `${first} is on the mybday.lol homepage today.` : `${first} is #${i.rank} on today's board.`;
+    return {
+      subject: `Happy birthday to ${first}! 🎂`,
+      preheader: where,
+      kicker: `Happy birthday, ${first}`,
+      title: day,
+      ...colors(i.theme),
+      blocks: [
+        { kind: "person", name: i.name, line: `${formatUsd(i.totalCents)} · #${i.rank} today`, photoUrl: i.photoUrl },
+        { kind: "p", text: `${where} Share the link so family and friends can celebrate with ${first}.` },
+        { kind: "button", label: `Share ${first}'s link`, url: i.dateUrl },
+      ],
+      reason: `You're getting this because you added ${first} to ${possessive(i.md)} birthday board on mybday.lol.`,
+    };
+  }
   const where = i.rank === 1 ? "You're on the mybday.lol homepage today." : `You're #${i.rank} on today's board.`;
   const gifts = i.hasGiftLinks
     ? "Your gift buttons are live, so share your link and let people celebrate you."
@@ -338,14 +356,18 @@ export type AdminClaimInput = Person & {
   rank: number;
   email: string;
   giftLinks: GiftLink[];
+  /** "This is my child (under 18)" was ticked (07 D4). */
+  isMinor: boolean;
   dateUrl: string;
 };
 
 export function adminClaimEmail(i: AdminClaimInput): EmailContent {
   const day = formatLong(i.md);
   return {
-    subject: `New claim: ${i.name}, ${formatShort(i.md)}, ${formatUsd(i.amountCents)}`,
-    preheader: `#${i.rank} on ${day}, ${i.year}. Check the photo, name and bio.`,
+    subject: `New ${i.isMinor ? "child " : ""}claim: ${i.name}, ${formatShort(i.md)}, ${formatUsd(i.amountCents)}`,
+    preheader: i.isMinor
+      ? `#${i.rank} on ${day}, ${i.year}. A child's listing: check it's a first name only and the photo is OK.`
+      : `#${i.rank} on ${day}, ${i.year}. Check the photo, name and bio.`,
     kicker: "New claim",
     title: day,
     ...colors(i.theme),
@@ -358,6 +380,7 @@ export function adminClaimEmail(i: AdminClaimInput): EmailContent {
           ["Paid", formatUsd(i.amountCents)],
           ["Rank", `#${i.rank}`],
           ["Email", i.email],
+          ...(i.isMinor ? ([["Listing", "Child (under 18), added by a parent"]] as Array<[string, string]>) : []),
           ["Color", getTheme(i.theme).name],
           ...i.giftLinks.map((l) => [GIFT_SERVICES[l.service].short, l.url] as [string, string]),
           ...(i.photoUrl ? ([["Photo", i.photoUrl]] as Array<[string, string]>) : []),

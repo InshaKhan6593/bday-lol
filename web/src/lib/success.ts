@@ -17,6 +17,8 @@ export type Placement = {
   currentYear: number;
   /** Smallest boost that takes #1 (rank 2+ on an open board). */
   toTopCents: number | null;
+  /** The listing has gift links. Children never do (07 D4), so their copy doesn't mention gifts. */
+  hasGifts: boolean;
 };
 
 export type SuccessCopy = {
@@ -25,6 +27,8 @@ export type SuccessCopy = {
   title: string[];
   sub: string;
   note: string;
+  /** Under "Your personal link". */
+  linkHelp: string;
   link: { label: string; to: "home" | "date" };
 };
 
@@ -43,6 +47,9 @@ export function successCopy(p: Placement): SuccessCopy {
   const day = formatLong(p.md);
   const passedNote = `If someone passes you, we'll email you right away so you can take it back. Either way, you stay on ${possessive(p.md)} birthday board.`;
   const share = "Share it so everyone knows it's your day.";
+  const linkHelp = p.hasGifts
+    ? "Put it in your bio or story. Followers land right on your spot to send a gift or boost you."
+    : "Put it in your bio or story. Followers land right on your spot to boost you.";
 
   if (p.rank === 1 && p.when === "today") {
     return {
@@ -50,6 +57,7 @@ export function successCopy(p: Placement): SuccessCopy {
       title: [`${day} is yours.`, "For now."],
       sub: share,
       note: passedNote,
+      linkHelp,
       link: { label: "See the homepage", to: "home" },
     };
   }
@@ -59,6 +67,7 @@ export function successCopy(p: Placement): SuccessCopy {
       title: [`${day} is yours.`, "For now."],
       sub: share,
       note: passedNote,
+      linkHelp,
       link: { label: `See ${possessive(p.md)} board`, to: "date" },
     };
   }
@@ -68,7 +77,10 @@ export function successCopy(p: Placement): SuccessCopy {
     title: p.when === "closed" ? [`You're #${p.rank} on ${day}.`] : [`You're #${p.rank} on ${day}.`, "Boost to climb."],
     sub: share,
     // Outbid emails only go out when someone loses #1, so this note doesn't promise one.
-    note: `You stay on ${possessive(p.md)} birthday board, where friends and followers can find you, boost you and send gifts.`,
+    note: p.hasGifts
+      ? `You stay on ${possessive(p.md)} birthday board, where friends and followers can find you, boost you and send gifts.`
+      : `You stay on ${possessive(p.md)} birthday board, where friends and followers can find you and boost you.`,
+    linkHelp,
     link: { label: `See ${possessive(p.md)} board`, to: "date" },
   };
 }

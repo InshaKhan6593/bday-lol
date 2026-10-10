@@ -99,7 +99,7 @@ export default async function ClaimSuccessPage({ searchParams }: Props) {
             <p className={styles.sub}>{copy.sub}</p>
           </div>
 
-          <PersonalLink url={personUrl} path={personPath} />
+          <PersonalLink url={personUrl} path={personPath} help={copy.linkHelp} />
 
           <ShareButtons
             large

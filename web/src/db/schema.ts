@@ -116,6 +116,8 @@ export const entries = pgTable(
     photoUrl: text("photo_url"),
     theme: text("theme").$type<ThemeKey>().notNull(),
     giftLinks: jsonb("gift_links").$type<GiftLink[]>().notNull().default([]),
+    /** A child added by a parent (07 D4): first name only, never gift links. */
+    isMinor: boolean("is_minor").notNull().default(false),
     /** Never shown publicly. Used for receipts and outbid alerts. */
     ownerEmail: text("owner_email"),
     totalCents: integer("total_cents").notNull().default(0),
@@ -137,6 +139,7 @@ export const entries = pgTable(
     check("entries_total_whole_dollars_chk", sql`${t.totalCents} >= 0 AND ${t.totalCents} % 100 = 0`),
     check("entries_name_len_chk", sql`char_length(${t.name}) BETWEEN 1 AND 40`),
     check("entries_gift_links_max_chk", sql`jsonb_array_length(${t.giftLinks}) <= 4`),
+    check("entries_minor_no_gifts_chk", sql`NOT ${t.isMinor} OR jsonb_array_length(${t.giftLinks}) = 0`),
     check("entries_live_has_total_chk", sql`${t.status} <> 'live' OR ${t.totalReachedAt} IS NOT NULL`),
   ],
 );

@@ -223,9 +223,11 @@ export function DateBoard({
                 <li className={styles.followed}>
                   <p className={styles.followedText}>
                     You followed {firstName(entry.name)}’s link.{" "}
-                    {isToday
-                      ? "Send a gift or boost them to the top."
-                      : "Boost them to the top, and come back on their birthday to send a gift."}
+                    {entry.giftLinks.length === 0
+                      ? "Boost them to the top."
+                      : isToday
+                        ? "Send a gift or boost them to the top."
+                        : "Boost them to the top, and come back on their birthday to send a gift."}
                   </p>
                   <Button
                     variant="paper"

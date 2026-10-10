@@ -26,6 +26,7 @@ export async function paidClaim(tx: Tx, boardId: string, c: ClaimInput) {
       giftLinks: [{ service: "venmo", url: "https://venmo.com/u/someone" }],
       theme: c.theme ?? "sky",
       email: c.email,
+      isMinor: false,
     },
   });
   const result = await fulfillCheckout(tx, { sessionId, presentment: null, paymentIntentId: "pi_test", customerEmail: c.email }, c.at);

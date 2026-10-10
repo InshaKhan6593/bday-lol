@@ -17,6 +17,8 @@ export function sampleEmails(origin: string): Array<{ id: string; label: string;
   const paidAt = new Date("2026-10-07T14:40:00-04:00");
   const sam = { name: "Sam Rivera", bio: "Turning 25 today. Tacos over cake, always and forever.", photoUrl: null, theme: "sky" as const };
   const jess = { name: "Jess Moreno", bio: "30 and still can't cook. Pizza money appreciated.", photoUrl: null, theme: "lime" as const };
+  // A child added by a parent (07 D4): first name only, no gift links.
+  const maya = { name: "Maya", bio: "Our girl turns 7 today! (Added by her mom)", photoUrl: null, theme: "bubblegum" as const };
 
   return [
     {
@@ -102,7 +104,13 @@ export function sampleEmails(origin: string): Array<{ id: string; label: string;
       id: "your-day",
       label: "5. Your day is here",
       unsubscribe: true,
-      content: yourDayEmail({ ...jess, md, rank: 1, totalCents: 24_000, hasGiftLinks: true, dateUrl }),
+      content: yourDayEmail({ ...jess, md, rank: 1, totalCents: 24_000, hasGiftLinks: true, isMinor: false, dateUrl }),
+    },
+    {
+      id: "your-day-child",
+      label: "5. Your day is here (a child, to the parent)",
+      unsubscribe: true,
+      content: yourDayEmail({ ...maya, md, rank: 5, totalCents: 4_000, hasGiftLinks: false, isMinor: true, dateUrl }),
     },
     {
       id: "digest",
@@ -143,6 +151,23 @@ export function sampleEmails(origin: string): Array<{ id: string; label: string;
           { service: "venmo", url: "https://venmo.com/u/samrivera" },
           { service: "throne", url: "https://throne.com/samrivera" },
         ],
+        isMinor: false,
+        dateUrl,
+      }),
+    },
+    {
+      id: "admin-child",
+      label: "8. Admin alert (a child's listing)",
+      unsubscribe: false,
+      content: adminClaimEmail({
+        ...maya,
+        md,
+        year: 2026,
+        amountCents: 4_000,
+        rank: 5,
+        email: "mom@example.com",
+        giftLinks: [],
+        isMinor: true,
         dateUrl,
       }),
     },

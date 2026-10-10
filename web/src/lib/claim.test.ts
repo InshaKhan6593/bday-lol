@@ -5,6 +5,8 @@ import {
   bidHint,
   claimMinCents,
   claimTarget,
+  MINOR_GIFTS_ERROR,
+  MINOR_NAME_ERROR,
   parseClaimParams,
   squareCrop,
   targetBox,
@@ -202,6 +204,7 @@ describe("claim form", () => {
     ],
     theme: "butter",
     email: " Sam@Example.com ",
+    isMinor: false,
   };
 
   it("accepts a good claim and tidies it", () => {
@@ -216,6 +219,7 @@ describe("claim form", () => {
         giftLinks: [{ service: "venmo", url: "https://venmo.com/u/sam" }],
         theme: "butter",
         email: "sam@example.com",
+        isMinor: false,
       },
     });
   });
@@ -277,6 +281,46 @@ describe("claim form", () => {
   });
 });
 
+describe("child listings (07 D4)", () => {
+  const target = claimTarget([], 1);
+  const child: ClaimInput = {
+    md: { month: 10, day: 7 },
+    bid: "$5",
+    name: " Maya ",
+    bio: "Our girl turns 7 today!",
+    giftLinks: [{ service: "venmo", value: "" }],
+    theme: "bubblegum",
+    email: "mom@example.com",
+    isMinor: true,
+  };
+
+  it("accepts a first name with no gift links and keeps the flag", () => {
+    const result = validateClaim(child, 500, target, settings);
+    expect(result.ok && result.claim).toMatchObject({ name: "Maya", giftLinks: [], isMinor: true });
+  });
+
+  it("allows one-word names with hyphens and apostrophes", () => {
+    for (const name of ["Mary-Kate", "D'Andre", "Zoë"]) {
+      expect(validateClaim({ ...child, name }, 500, target, settings).ok).toBe(true);
+    }
+  });
+
+  it("refuses a full name", () => {
+    const result = validateClaim({ ...child, name: "Maya Lopez" }, 500, target, settings);
+    expect(result).toEqual({ ok: false, errors: { name: MINOR_NAME_ERROR } });
+  });
+
+  it("refuses gift links, even ones the locked form would never send", () => {
+    const result = validateClaim({ ...child, giftLinks: [{ service: "venmo", value: "maya" }] }, 500, target, settings);
+    expect(result).toEqual({ ok: false, errors: { giftLinks: MINOR_GIFTS_ERROR } });
+  });
+
+  it("keeps the same rules off for adults", () => {
+    const adult = { ...child, name: "Maya Lopez", giftLinks: [{ service: "venmo" as const, value: "maya" }], isMinor: false };
+    expect(validateClaim(adult, 500, target, settings).ok).toBe(true);
+  });
+});
+
 describe("bio quotes", () => {
   it("strips double quotes typed around a bio, so the homepage shows one pair", () => {
     expect(stripWrappingQuotes('"Turning 25 today"')).toBe("Turning 25 today");
@@ -303,6 +347,7 @@ describe("bio quotes", () => {
         giftLinks: [],
         theme: "butter",
         email: "sam@example.com",
+        isMinor: false,
       },
       500,
       claimTarget([], 1),

@@ -16,6 +16,8 @@ export type RankedEntry = {
   photoUrl: string | null;
   theme: (typeof entries.$inferSelect)["theme"];
   giftLinks: (typeof entries.$inferSelect)["giftLinks"];
+  /** A child added by a parent (07 D4). */
+  isMinor: boolean;
   totalCents: number;
 };
 
@@ -65,6 +67,7 @@ export async function getRankedEntries(db: Executor, boardId: string): Promise<R
       photoUrl: entries.photoUrl,
       theme: entries.theme,
       giftLinks: entries.giftLinks,
+      isMinor: entries.isMinor,
       totalCents: entries.totalCents,
     })
     .from(entries)

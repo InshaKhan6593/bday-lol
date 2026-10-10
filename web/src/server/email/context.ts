@@ -17,6 +17,7 @@ export type EntryContext = {
     photoUrl: string | null;
     theme: (typeof entries.$inferSelect)["theme"];
     giftLinks: (typeof entries.$inferSelect)["giftLinks"];
+    isMinor: boolean;
     ownerEmail: string | null;
     live: boolean;
   };
@@ -59,6 +60,7 @@ export async function loadEntryContext(db: Executor, entryId: string, instant: D
       photoUrl: e.photoUrl ? absoluteUrl(e.photoUrl) : null,
       theme: e.theme,
       giftLinks: e.giftLinks,
+      isMinor: e.isMinor,
       ownerEmail: e.ownerEmail,
       live: e.status === "live",
     },

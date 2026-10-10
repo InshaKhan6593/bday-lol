@@ -36,6 +36,7 @@ export async function createPendingClaim(db: Executor, input: PendingClaimInput)
       photoUrl: input.photoUrl,
       theme: claim.theme,
       giftLinks: claim.giftLinks,
+      isMinor: claim.isMinor,
       ownerEmail: claim.email,
       status: "pending",
     });
