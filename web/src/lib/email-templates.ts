@@ -455,7 +455,7 @@ export function adminClaimEmail(i: AdminClaimInput): EmailContent {
     title: day,
     ...colors(i.theme),
     blocks: [
-      { kind: "person", name: i.name, line: i.bio || "(no bio)", photoUrl: i.photoUrl },
+      { kind: "person", name: i.name, line: i.bio, photoUrl: i.photoUrl },
       {
         kind: "receipt",
         title: "Claim details",
@@ -465,7 +465,6 @@ export function adminClaimEmail(i: AdminClaimInput): EmailContent {
         details: [
           ["Email", i.email, "wide"],
           ["Color", getTheme(i.theme).name],
-          ["Photo", i.photoUrl ? "Yes, shown above" : "None"],
           ...(i.isMinor ? ([["Listing", "Child (under 18), added by a parent", "wide"]] as const) : []),
           ...i.giftLinks.map((l) => [GIFT_SERVICES[l.service].short, shortLink(l.url), "wide"] as const),
         ],

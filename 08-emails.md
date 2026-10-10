@@ -39,7 +39,7 @@ Long values (emails, links) take a full row so they don't break mid-word on phon
 | 2 Boost receipt | Same receipt: "Boost for Jess Moreno, adds to Jess's total on October 7" |
 | 3 Outbid alert | Redesigned like auction outbid alerts (see below) |
 | 6 You got boosted | **3 boosts**: one line per boost with its time. No total row: the title already says +$25 |
-| 8 Admin alert | **Claim details** with the same receipt number as the claimer's, then email, color, photo, child flag and gift links |
+| 8 Admin alert | **Claim details** with the same receipt number as the claimer's, then email, color, child flag and gift links (the photo is in the avatar circle; initials when there is none) |
 
 - **No repeats**: each fact appears once. Under the person's name goes their **bio** (how they look on the board),
   except in the boost receipt and digest, where it's their new standing ("$265 · #1 on October 7") and the sentence
