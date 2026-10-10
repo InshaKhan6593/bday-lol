@@ -2,7 +2,7 @@
 
 **Read this first.** This folder holds the full brief for a client build (the `.md` files) and the app itself (`web/`).
 The foundation is built and runs locally: database schema, date rules with tests, the design system and seed data.
-Every page in the mockup is built. Claims and boosts are paid for through Stripe Checkout (test mode locally), and all 8 emails send (Mailpit locally, Resend in production). Next up is SEO (step 9).
+Every page in the mockup is built. Claims and boosts are paid for through Stripe Checkout (test mode locally), and all 8 emails send (Mailpit locally, Resend in production). SEO (step 9) is done: 46 → 97 on the claude-seo audit ([seo-audit/](seo-audit/)). Next up is the admin (step 10).
 
 > **Handoff v2 (2026-10-10).** The client sent an updated mockup and developer notes: the site is now **mybday.lol**,
 > with personal links, a reworked Claim form, Terms/Privacy pages and more. It's built (see the
@@ -44,6 +44,7 @@ payments through Stripe Checkout (Adaptive Pricing, settled in USD) and a hidden
 | [07-open-questions.md](07-open-questions.md) | Gaps and conflicts, **with our decisions**. Section C + the draft message at the bottom are what still needs the client |
 | [08-emails.md](08-emails.md) | The 8 emails: research on what good ones say, the design, and each email's subject, preview line and content |
 | [web/](web/) | **The Next.js app.** Setup, commands and folder map in [web/README.md](web/README.md) |
+| [seo-audit/](seo-audit/) | SEO audit on [claude-seo](https://github.com/AgriciDaniel/claude-seo)'s analysers: `audit.py`, before/after reports, the client report page |
 | `resources/` | *(local only)* Original material from the client (see below) |
 
 ### resources/ (local only)
@@ -89,11 +90,11 @@ Mailpit on :8030). Production plan: Vercel Pro + Supabase (Postgres + Storage fo
 | 8. The 8 emails: designed in the app's look, sent once each (dedupe log), receipts + admin alert from the Stripe webhook, outbid alerts within seconds, a cron every minute for the hourly boost digest, "Your day is here" (8 AM ET) and reminders (a week before; claimers auto-added), signed unsubscribe page + one-click | ✅ Done (`web/src/lib/email-templates.ts`, `web/src/server/email/`, `web/src/app/api/cron/emails/route.ts`, `web/src/app/unsubscribe/`) |
 | 8b. Child listings (07 D4): `is_minor` flag + "This is my child (under 18)" checkbox on Claim (first name only, gift links locked), server check + a database check (a child can never have gift links), no gift controls for children, your-day email to the parent + admin alert flag, tests. Decided: no gift links → no "Gifts open" pill and no gift wording (personal-link banner, Success page), for anyone | ✅ Done (`web/src/lib/claim.ts`, `web/src/components/claim/ClaimForm.tsx`, `web/src/components/date/EntryRow.tsx`, `web/src/lib/email-templates.ts`, migration `web/drizzle/0004_child_listings.sql`) |
 | 8c. Email redesign (after comparing with Apple/Stripe receipts, auction outbid alerts and game leaderboards): receipt panels with a receipt number and the card from Stripe, a mini leaderboard in rank emails, one full-width button per email, footer links, inbox-preview padding, checked in forced dark mode | ✅ Done (`web/src/lib/email-render.ts`, `web/src/lib/email-templates.ts`, `web/src/lib/payment-method.ts`, migration `web/drizzle/0005_payment_method.sql`; details in [08-emails.md](08-emails.md#design)). Screenshots sent to the client for feedback |
-| 9. SEO: month pages, About section data, OG images, sitemap | ⏭️ Next |
-| 10. Admin | ⬜ |
+| 9. SEO: 12 month pages, About section data (commonness rank from FiveThirtyEight, famous people from Wikidata + pageviews, refreshed monthly), unique titles/descriptions, structured data, share images for every page, sitemap, robots.txt. Audited with claude-seo before and after: **46 → 97/100** | ✅ Done (details in [06-seo.md](06-seo.md#built-step-9-2026-10-10), report in [seo-audit/reports/](seo-audit/reports/COMPARISON.md); points to confirm in [07 D9–D14](07-open-questions.md#d-handoff-v2-points-to-confirm-with-the-client)) |
+| 10. Admin | ⏭️ Next |
 | 11. Deploy to Vercel + Supabase, test live | ⬜ |
 
-**Tests:** every feature ships with tests (`pnpm test`, 235 so far): pure rules in `web/src/lib/*.test.ts` and
+**Tests:** every feature ships with tests (`pnpm test`, 287 so far): pure rules in `web/src/lib/*.test.ts` and
 database tests in `*.db.test.ts`, which run against the local Docker Postgres inside a rolled-back transaction.
 
 ## Handoff v2 (2026-10-10)

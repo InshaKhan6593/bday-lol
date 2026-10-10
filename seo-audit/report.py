@@ -287,6 +287,7 @@ a:focus-visible {{ outline: 3px solid var(--accent); outline-offset: 2px; }}
   <section aria-labelledby="open">
     <h2 id="open">Still open</h2>
     <div class="card"><ul class="plain">{still}</ul></div>
+    <p class="note"><strong>About the 37%.</strong> The toolkit wants each generated page to be at least 40% different from its siblings, and stops treating it as a risk below 30%. Every date page carries the same board text from the mockup ("Own the top spot", "Bid on…", the card labels), so a 3-word comparison always counts that part as shared; the rest (the date's facts, rank and up to 15 people) is different on every page. Shortening the summary paragraph got the figure to 39% but pushed most pages under 300 words, so we kept the fuller version. What would close the gap is more writing per date, for example a short intro you write for the dates you care most about, or a holidays/events list per date. The homepage is the mockup's own copy, so its word count stays as designed.</p>
     <h3>Needs you</h3>
     <ul class="plain">
       <li><strong>Search Console.</strong> Add the site in Google Search Console and send us the HTML-tag verification code; we put it in the site settings and submit the sitemap.</li>

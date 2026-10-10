@@ -1,0 +1,560 @@
+{
+  "base": "http://localhost:3000",
+  "run_at": "2026-10-10T09:46:24+00:00",
+  "claude_seo": "2.4.2",
+  "overall": 97,
+  "scores": {
+    "Crawlability": 100,
+    "Indexability": 100,
+    "On-page": 100,
+    "Content": 40,
+    "Structured data": 100,
+    "Sharing": 100,
+    "Security": 100
+  },
+  "checks": [
+    {
+      "id": "status-200",
+      "category": "Crawlability",
+      "severity": "critical",
+      "title": "Every public page (366 dates, 12 months, home, FAQ, legal) answers 200",
+      "passed": true,
+      "detail": "382/382 pass",
+      "source": "seo-technical \u00a71",
+      "failing": []
+    },
+    {
+      "id": "robots-exists",
+      "category": "Crawlability",
+      "severity": "high",
+      "title": "robots.txt exists",
+      "passed": true,
+      "detail": "",
+      "source": "seo-technical \u00a71",
+      "failing": []
+    },
+    {
+      "id": "robots-sitemap",
+      "category": "Crawlability",
+      "severity": "medium",
+      "title": "robots.txt points to the sitemap",
+      "passed": true,
+      "detail": "",
+      "source": "seo-programmatic: Sitemap",
+      "failing": []
+    },
+    {
+      "id": "robots-not-blocking",
+      "category": "Crawlability",
+      "severity": "critical",
+      "title": "robots.txt does not block pages that should be indexed or read",
+      "passed": true,
+      "detail": "",
+      "source": "seo-technical \u00a71",
+      "failing": []
+    },
+    {
+      "id": "sitemap-valid",
+      "category": "Crawlability",
+      "severity": "high",
+      "title": "sitemap.xml exists and parses",
+      "passed": true,
+      "detail": "",
+      "source": "seo-sitemap",
+      "failing": []
+    },
+    {
+      "id": "sitemap-complete",
+      "category": "Crawlability",
+      "severity": "high",
+      "title": "Sitemap lists home, FAQ, all 366 dates and all 12 months",
+      "passed": true,
+      "detail": "380/380 pass",
+      "source": "seo-programmatic: Sitemap",
+      "failing": []
+    },
+    {
+      "id": "sitemap-clean",
+      "category": "Crawlability",
+      "severity": "medium",
+      "title": "Sitemap holds no noindex, redirected or missing URLs",
+      "passed": true,
+      "detail": "",
+      "source": "seo-programmatic: Sitemap",
+      "failing": []
+    },
+    {
+      "id": "sitemap-lastmod",
+      "category": "Crawlability",
+      "severity": "low",
+      "title": "Sitemap entries carry <lastmod>",
+      "passed": true,
+      "detail": "",
+      "source": "seo-programmatic: Sitemap",
+      "failing": []
+    },
+    {
+      "id": "sitemap-discovery",
+      "category": "Crawlability",
+      "severity": "medium",
+      "title": "claude-seo sitemap_discovery finds a valid sitemap",
+      "passed": true,
+      "detail": "",
+      "source": "sitemap_discovery.py",
+      "failing": []
+    },
+    {
+      "id": "hub-links",
+      "category": "Crawlability",
+      "severity": "high",
+      "title": "Each month page (hub) links to every date in it",
+      "passed": true,
+      "detail": "12/12 pass",
+      "source": "seo-programmatic: Internal Linking (hub/spoke)",
+      "failing": []
+    },
+    {
+      "id": "click-depth",
+      "category": "Crawlability",
+      "severity": "high",
+      "title": "Every date and month page is within 3 clicks of the homepage",
+      "passed": true,
+      "detail": "378/378 pass",
+      "source": "seo-technical \u00a71 (crawl depth)",
+      "failing": []
+    },
+    {
+      "id": "internal-links",
+      "category": "Crawlability",
+      "severity": "high",
+      "title": "No internal link leads to an error page",
+      "passed": true,
+      "detail": "383/383 pass",
+      "source": "seo-page: Internal links",
+      "failing": []
+    },
+    {
+      "id": "legacy-redirect",
+      "category": "Crawlability",
+      "severity": "low",
+      "title": "Old /oct-7 share links redirect permanently to /october-7",
+      "passed": true,
+      "detail": "",
+      "source": "seo-technical \u00a74 (301, one hop)",
+      "failing": []
+    },
+    {
+      "id": "index-allowed",
+      "category": "Indexability",
+      "severity": "critical",
+      "title": "Public pages are not noindex",
+      "passed": true,
+      "detail": "382/382 pass",
+      "source": "seo-technical \u00a72",
+      "failing": []
+    },
+    {
+      "id": "noindex-private",
+      "category": "Indexability",
+      "severity": "medium",
+      "title": "Claim, checkout result and unsubscribe pages are noindex",
+      "passed": true,
+      "detail": "4/4 pass",
+      "source": "06-seo.md + seo-technical \u00a72",
+      "failing": []
+    },
+    {
+      "id": "canonical-self",
+      "category": "Indexability",
+      "severity": "high",
+      "title": "Every public page has an absolute, self-referencing canonical",
+      "passed": true,
+      "detail": "382/382 pass",
+      "source": "seo-programmatic: Canonical Strategy",
+      "failing": []
+    },
+    {
+      "id": "canonical-person",
+      "category": "Indexability",
+      "severity": "medium",
+      "title": "Personal links canonicalise to their date page",
+      "passed": true,
+      "detail": "",
+      "source": "seo-technical \u00a72 (duplicates)",
+      "failing": []
+    },
+    {
+      "id": "soft-404",
+      "category": "Indexability",
+      "severity": "medium",
+      "title": "Impossible dates answer 404, not a page",
+      "passed": true,
+      "detail": "3/3 pass",
+      "source": "seo-technical \u00a72",
+      "failing": []
+    },
+    {
+      "id": "lang-viewport",
+      "category": "Indexability",
+      "severity": "medium",
+      "title": "Pages declare a language and a mobile viewport",
+      "passed": true,
+      "detail": "382/382 pass",
+      "source": "seo-technical \u00a75",
+      "failing": []
+    },
+    {
+      "id": "title-present",
+      "category": "On-page",
+      "severity": "critical",
+      "title": "Every page has a title",
+      "passed": true,
+      "detail": "382/382 pass",
+      "source": "quality-gates.md",
+      "failing": []
+    },
+    {
+      "id": "title-length",
+      "category": "On-page",
+      "severity": "medium",
+      "title": "Titles are 30\u201360 characters (Google truncates around 60)",
+      "passed": true,
+      "detail": "382/382 pass",
+      "source": "quality-gates.md",
+      "failing": []
+    },
+    {
+      "id": "title-unique",
+      "category": "On-page",
+      "severity": "high",
+      "title": "Titles are unique",
+      "passed": true,
+      "detail": "382/382 pass",
+      "source": "quality-gates.md",
+      "failing": []
+    },
+    {
+      "id": "desc-present",
+      "category": "On-page",
+      "severity": "high",
+      "title": "Every page has a meta description",
+      "passed": true,
+      "detail": "382/382 pass",
+      "source": "quality-gates.md",
+      "failing": []
+    },
+    {
+      "id": "desc-length",
+      "category": "On-page",
+      "severity": "low",
+      "title": "Descriptions are 120\u2013160 characters",
+      "passed": true,
+      "detail": "382/382 pass",
+      "source": "quality-gates.md",
+      "failing": []
+    },
+    {
+      "id": "desc-unique",
+      "category": "On-page",
+      "severity": "high",
+      "title": "Descriptions are unique",
+      "passed": true,
+      "detail": "382/382 pass",
+      "source": "quality-gates.md",
+      "failing": []
+    },
+    {
+      "id": "desc-not-templated",
+      "category": "On-page",
+      "severity": "medium",
+      "title": "Descriptions don't restate the title (metadata_template site_risk: low)",
+      "passed": true,
+      "detail": "382/382 pass",
+      "source": "metadata_template.py",
+      "failing": []
+    },
+    {
+      "id": "one-h1",
+      "category": "On-page",
+      "severity": "high",
+      "title": "Exactly one H1 per page",
+      "passed": true,
+      "detail": "382/382 pass",
+      "source": "seo-page",
+      "failing": []
+    },
+    {
+      "id": "heading-order",
+      "category": "On-page",
+      "severity": "low",
+      "title": "Heading levels don't skip (H2 \u2192 H4)",
+      "passed": true,
+      "detail": "382/382 pass",
+      "source": "seo-page",
+      "failing": []
+    },
+    {
+      "id": "thin-programmatic",
+      "category": "Content",
+      "severity": "medium",
+      "title": "Date and month pages have 300+ words of main content",
+      "passed": true,
+      "detail": "378/378 pass",
+      "source": "seo-programmatic: Quality Gates (<300 words)",
+      "failing": []
+    },
+    {
+      "id": "unique-content",
+      "category": "Content",
+      "severity": "high",
+      "title": "Date pages are \u226540% unique (average 37%, measured on 3-word sequences in the main content)",
+      "passed": false,
+      "detail": "17/366 pass",
+      "source": "seo-programmatic: Thin Content Safeguards",
+      "failing": [
+        "/april-1 (38%)",
+        "/april-10 (35%)",
+        "/april-11 (37%)",
+        "/april-12 (37%)",
+        "/april-13 (34%)",
+        "/april-14 (36%)",
+        "/april-15 (35%)",
+        "/april-16 (38%)",
+        "/april-17 (38%)",
+        "/april-18 (37%)",
+        "/april-19 (36%)",
+        "/april-2 (36%)"
+      ]
+    },
+    {
+      "id": "content-quality",
+      "category": "Content",
+      "severity": "low",
+      "title": "content_quality.py scores 60+ on main content",
+      "passed": true,
+      "detail": "382/382 pass",
+      "source": "content_quality.py",
+      "failing": []
+    },
+    {
+      "id": "home-words",
+      "category": "Content",
+      "severity": "low",
+      "title": "Homepage explains itself in 500+ words (204 now)",
+      "passed": false,
+      "detail": "",
+      "source": "quality-gates.md (homepage)",
+      "failing": [
+        "/ (204)"
+      ]
+    },
+    {
+      "id": "schema-valid",
+      "category": "Structured data",
+      "severity": "critical",
+      "title": "All JSON-LD blocks parse",
+      "passed": true,
+      "detail": "382/382 pass",
+      "source": "seo-schema",
+      "failing": []
+    },
+    {
+      "id": "schema-home",
+      "category": "Structured data",
+      "severity": "medium",
+      "title": "Home pages carry Organization + WebSite",
+      "passed": true,
+      "detail": "1/1 pass",
+      "source": "seo-schema / schema-types.md",
+      "failing": []
+    },
+    {
+      "id": "schema-date",
+      "category": "Structured data",
+      "severity": "medium",
+      "title": "Date pages carry BreadcrumbList + WebPage",
+      "passed": true,
+      "detail": "366/366 pass",
+      "source": "seo-schema / schema-types.md",
+      "failing": []
+    },
+    {
+      "id": "schema-month",
+      "category": "Structured data",
+      "severity": "medium",
+      "title": "Month pages carry BreadcrumbList + CollectionPage",
+      "passed": true,
+      "detail": "12/12 pass",
+      "source": "seo-schema / schema-types.md",
+      "failing": []
+    },
+    {
+      "id": "schema-deprecated",
+      "category": "Structured data",
+      "severity": "high",
+      "title": "No deprecated schema types (HowTo, SpecialAnnouncement\u2026)",
+      "passed": true,
+      "detail": "382/382 pass",
+      "source": "deprecated-types-2024-2026.md",
+      "failing": []
+    },
+    {
+      "id": "og-tags",
+      "category": "Sharing",
+      "severity": "high",
+      "title": "Open Graph title, description, url and image on every shareable page",
+      "passed": true,
+      "detail": "380/380 pass",
+      "source": "seo-page: Technical Elements",
+      "failing": []
+    },
+    {
+      "id": "twitter-card",
+      "category": "Sharing",
+      "severity": "low",
+      "title": "Twitter/X card is summary_large_image",
+      "passed": true,
+      "detail": "380/380 pass",
+      "source": "seo-page: Technical Elements",
+      "failing": []
+    },
+    {
+      "id": "og-image-loads",
+      "category": "Sharing",
+      "severity": "high",
+      "title": "Share images load (sampled: home, 3 dates, a month, FAQ, a personal link)",
+      "passed": true,
+      "detail": "7/7 pass",
+      "source": "06-seo.md (OG image per date)",
+      "failing": []
+    },
+    {
+      "id": "og-person",
+      "category": "Sharing",
+      "severity": "medium",
+      "title": "Personal links share their own card (handoff v2)",
+      "passed": true,
+      "detail": "",
+      "source": "Handoff v2 / 06-seo.md",
+      "failing": []
+    },
+    {
+      "id": "hdr-x-content-type-options",
+      "category": "Security",
+      "severity": "low",
+      "title": "x-content-type-options header",
+      "passed": true,
+      "detail": "",
+      "source": "seo-technical \u00a73",
+      "failing": []
+    },
+    {
+      "id": "hdr-referrer-policy",
+      "category": "Security",
+      "severity": "low",
+      "title": "referrer-policy header",
+      "passed": true,
+      "detail": "",
+      "source": "seo-technical \u00a73",
+      "failing": []
+    },
+    {
+      "id": "hdr-framing",
+      "category": "Security",
+      "severity": "low",
+      "title": "Clickjacking protection (X-Frame-Options or CSP frame-ancestors)",
+      "passed": true,
+      "detail": "",
+      "source": "seo-technical \u00a73",
+      "failing": []
+    }
+  ],
+  "pages_crawled": 387,
+  "date_unique_avg": 37.3,
+  "sample_pages": {
+    "/": {
+      "status": 200,
+      "title": "Birthday Leaderboard: Bid to Own Today's Spot",
+      "description": "Today is October 10 and Jess Moreno owns it with $240. Every date has its own board: bid for the top spot, boost friends and send gifts straight to them.",
+      "canonical": "http://localhost:3000",
+      "h1": "October 10",
+      "words": 204,
+      "unique_pct": null,
+      "schema": [
+        "Organization",
+        "WebSite"
+      ],
+      "og_image": "http://localhost:3000/opengraph-image?7c77e54f5620a203"
+    },
+    "/october-7": {
+      "status": 200,
+      "title": "October 7 Birthday: Famous People, Facts & Who's #1",
+      "description": "Born on October 7: Shawn Ashmore and Simon Cowell. It's the 118th most common birthday in the US. Nobody has claimed it for 2027 yet. Bids start at $5.",
+      "canonical": "http://localhost:3000/october-7",
+      "h1": "Everyone celebrating October 7",
+      "words": 320,
+      "unique_pct": 37,
+      "schema": [
+        "BreadcrumbList",
+        "WebPage"
+      ],
+      "og_image": "http://localhost:3000/october-7/opengraph-image?3fde5180ea8f94b0"
+    },
+    "/february-29": {
+      "status": 200,
+      "title": "February 29 Birthday: Famous People, Facts & Who's #1",
+      "description": "Born on February 29: Ferran Torres. The rarest birthday of all, here once every four years. Nobody has claimed it for 2028 yet. Bids start at $5.",
+      "canonical": "http://localhost:3000/february-29",
+      "h1": "Everyone celebrating February 29",
+      "words": 314,
+      "unique_pct": 55,
+      "schema": [
+        "BreadcrumbList",
+        "WebPage"
+      ],
+      "og_image": "http://localhost:3000/february-29/opengraph-image?3fde5180ea8f94b0"
+    },
+    "/december-25": {
+      "status": 200,
+      "title": "December 25 Birthday: Famous People, Facts & Who's #1",
+      "description": "Born on December 25: Jeremy Strong and Sissy Spacek. It's the 365th most common birthday in the US. Nobody has claimed it for 2026 yet. Bids start at $5.",
+      "canonical": "http://localhost:3000/december-25",
+      "h1": "Everyone celebrating December 25",
+      "words": 324,
+      "unique_pct": 40,
+      "schema": [
+        "BreadcrumbList",
+        "WebPage"
+      ],
+      "og_image": "http://localhost:3000/december-25/opengraph-image?3fde5180ea8f94b0"
+    },
+    "/october": {
+      "status": 200,
+      "title": "October Birthdays: Famous People, Facts & Top Bids",
+      "description": "October's most common birthday is October 1 and its rarest is October 31. Birthstone opal, flower marigold. 4 of 31 dates have a #1 so far.",
+      "canonical": "http://localhost:3000/october",
+      "h1": "October birthdays",
+      "words": 612,
+      "unique_pct": null,
+      "schema": [
+        "BreadcrumbList",
+        "CollectionPage"
+      ],
+      "og_image": "http://localhost:3000/october/opengraph-image?3fde5180ea8f94b0"
+    },
+    "/how-it-works": {
+      "status": 200,
+      "title": "How It Works: Bids, Boosts and Birthday Gifts | mybday.lol",
+      "description": "Bid on any date, boost friends up the board and send gifts that go straight to them. How the birthday leaderboard works, with answers to common questions.",
+      "canonical": "http://localhost:3000/how-it-works",
+      "h1": "One birthday. The whole internet.",
+      "words": 450,
+      "unique_pct": null,
+      "schema": [
+        "FAQPage"
+      ],
+      "og_image": "http://localhost:3000/how-it-works/opengraph-image?011bcb957a38f226"
+    }
+  },
+  "person_path": "/october-10/jess-moreno"
+}
