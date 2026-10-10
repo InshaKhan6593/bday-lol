@@ -15,6 +15,20 @@ pnpm db:seed                    # mockup demo data on today's date (ET)
 pnpm dev                        # http://localhost:3000
 ```
 
+### Cloud session (no Docker)
+
+Claude Code cloud containers have Postgres 16 installed but no Docker. Run it natively on the same port, so the
+`.env.example` URL works unchanged, and use the Mailpit binary for email:
+
+```bash
+sudo sed -i 's/^port = 5432/port = 5440/' /etc/postgresql/16/main/postgresql.conf && sudo pg_ctlcluster 16 main start
+sudo -u postgres psql -p 5440 -c "CREATE ROLE bday LOGIN SUPERUSER PASSWORD 'bday';" -c "CREATE DATABASE bday OWNER bday;"
+cp .env.example .env.local && pnpm install && pnpm db:migrate && pnpm db:seed
+# Mailpit: download mailpit-linux-amd64.tar.gz from github.com/axllent/mailpit/releases, then
+./mailpit --listen 127.0.0.1:8030 --smtp 127.0.0.1:1030 &
+pnpm dev
+```
+
 ### Payments (Stripe test mode)
 
 Put your Stripe **test** keys in `.env.local` (`STRIPE_SECRET_KEY=sk_test_…`). Then, in a second terminal,

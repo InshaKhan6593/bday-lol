@@ -88,11 +88,12 @@ Mailpit on :8030). Production plan: Vercel Pro + Supabase (Postgres + Storage fo
 | 7. Boosts, #1 log and outbid alerts (Boost box → Stripe → total + #1 log; "Email me if X gets passed" list; alerts queued for the passed #1 + their list, ≤1 per person per 15 min, none after the day ends; email deep link opens the Boost box pre-filled; "Today ends in 12 min" warning) | ✅ Done (`web/src/server/actions/boost.ts`, `web/src/server/payments.ts`, `web/src/server/outbid.ts`) |
 | 8. The 8 emails: designed in the app's look, sent once each (dedupe log), receipts + admin alert from the Stripe webhook, outbid alerts within seconds, a cron every minute for the hourly boost digest, "Your day is here" (8 AM ET) and reminders (a week before; claimers auto-added), signed unsubscribe page + one-click | ✅ Done (`web/src/lib/email-templates.ts`, `web/src/server/email/`, `web/src/app/api/cron/emails/route.ts`, `web/src/app/unsubscribe/`) |
 | 8b. Child listings (07 D4): `is_minor` flag + "This is my child (under 18)" checkbox on Claim (first name only, gift links locked), server check + a database check (a child can never have gift links), no gift controls for children, your-day email to the parent + admin alert flag, tests. Decided: no gift links → no "Gifts open" pill and no gift wording (personal-link banner, Success page), for anyone | ✅ Done (`web/src/lib/claim.ts`, `web/src/components/claim/ClaimForm.tsx`, `web/src/components/date/EntryRow.tsx`, `web/src/lib/email-templates.ts`, migration `web/drizzle/0004_child_listings.sql`) |
+| 8c. Email redesign (after comparing with Apple/Stripe receipts, auction outbid alerts and game leaderboards): receipt panels with a receipt number and the card from Stripe, a mini leaderboard in rank emails, one full-width button per email, footer links, inbox-preview padding, checked in forced dark mode | ✅ Done (`web/src/lib/email-render.ts`, `web/src/lib/email-templates.ts`, `web/src/lib/payment-method.ts`, migration `web/drizzle/0005_payment_method.sql`; details in [08-emails.md](08-emails.md#design)). Screenshots sent to the client for feedback |
 | 9. SEO: month pages, About section data, OG images, sitemap | ⏭️ Next |
 | 10. Admin | ⬜ |
 | 11. Deploy to Vercel + Supabase, test live | ⬜ |
 
-**Tests:** every feature ships with tests (`pnpm test`, 225 so far): pure rules in `web/src/lib/*.test.ts` and
+**Tests:** every feature ships with tests (`pnpm test`, 235 so far): pure rules in `web/src/lib/*.test.ts` and
 database tests in `*.db.test.ts`, which run against the local Docker Postgres inside a rolled-back transaction.
 
 ## Handoff v2 (2026-10-10)
