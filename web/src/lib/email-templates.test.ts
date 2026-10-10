@@ -160,27 +160,30 @@ describe("email wording", () => {
       isToday: true,
       boostUrl: `${ORIGIN}/october-7?boost=x&amount=2`,
     };
+    // Like auction outbid alerts: who's on top, where you are, what wins it back, when it closes, one button.
     const owner = outbidAlertEmail({ ...base, isOwner: true });
-    expect(owner.subject).toBe("You got passed on October 7");
+    expect(owner.subject).toBe("You've been outbid on October 7");
     expect(owner.preheader).toBe("Tyler has $241. $2 takes #1 back.");
-    expect(owner.blocks).toContainEqual({
-      kind: "receipt",
-      title: "October 7 right now",
-      lines: [
-        { label: "#1 Tyler Brooks", note: "Just took the top spot", amount: "$241" },
-        { label: "#2 You", amount: "$240" },
-      ],
-    });
-    expect(owner.blocks).toContainEqual({
-      kind: "bar",
-      title: "Take #1 back for $2",
-      sub: "October 7 ends at midnight ET.",
-      label: "Boost $2",
-      url: base.boostUrl,
+    expect(owner.blocks).toEqual([
+      {
+        kind: "versus",
+        left: { kicker: "#1 now", name: "Tyler Brooks", amount: "$241" },
+        right: { kicker: "#2 now", name: "You", amount: "$240" },
+      },
+      { kind: "callout", title: "$2 takes #1 back", sub: "Bidding on October 7 closes tonight at midnight ET." },
+      { kind: "button", label: "Boost $2 and retake #1", url: base.boostUrl, wide: true },
+      { kind: "fine", text: "Getting outbid is part of the game. Boosts add to the total and are final." },
+    ]);
+    const later = outbidAlertEmail({ ...base, isOwner: true, isToday: false });
+    expect(later.blocks).toContainEqual({
+      kind: "callout",
+      title: "$2 takes #1 back",
+      sub: "Bidding stays open until October 7 ends at midnight ET.",
     });
 
     const fan = outbidAlertEmail({ ...base, isOwner: false });
-    expect(fan.subject).toBe("Jess got passed on October 7");
+    expect(fan.subject).toBe("Jess was outbid on October 7");
+    expect(fan.blocks).toContainEqual({ kind: "callout", title: "$2 puts Jess back on top", sub: "Bidding on October 7 closes tonight at midnight ET." });
     expect(fan.reason).toBe("You're getting this because you asked us to email you if Jess gets passed.");
   });
 

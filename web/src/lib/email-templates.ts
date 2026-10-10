@@ -108,7 +108,7 @@ export function claimConfirmationEmail(i: ClaimConfirmationInput): EmailContent 
       title: label,
       ...colors(i.theme),
       blocks: [
-        { kind: "person", name: i.name, line: `${total} · #${i.rank} on ${day}`, photoUrl: i.photoUrl },
+        { kind: "person", name: i.name, line: i.bio, photoUrl: i.photoUrl },
         { kind: "p", text: `Someone bid more while you were paying. ${toTop}Share your link and friends and followers can boost you there.` },
         { kind: "button", label: "Share your link", url: i.shareUrl },
         receiptPanel(i.receipt, { label: `Claim · ${formatLong(i.md)}, ${i.year}`, note: "Your spot on the birthday board" }, i.timeZone),
@@ -128,7 +128,7 @@ export function claimConfirmationEmail(i: ClaimConfirmationInput): EmailContent 
     title: label,
     ...colors(i.theme),
     blocks: [
-      { kind: "person", name: i.name, line: `${total} · #1 on ${day}`, photoUrl: i.photoUrl },
+      { kind: "person", name: i.name, line: i.bio, photoUrl: i.photoUrl },
       { kind: "p", text: lead },
       { kind: "button", label: "Share your link", url: i.shareUrl },
       receiptPanel(i.receipt, { label: `Claim · ${formatLong(i.md)}, ${i.year}`, note: "Your spot on the birthday board" }, i.timeZone),
@@ -165,7 +165,12 @@ export function boostReceiptEmail(i: BoostReceiptInput): EmailContent {
     ...colors(i.theme),
     blocks: [
       { kind: "person", name: i.name, line: `${formatUsd(i.totalCents)} · #${i.rank} on ${day}`, photoUrl: i.photoUrl },
-      { kind: "p", text: `Nice one. ${standing}${i.alertOptIn ? ` We'll email you if ${first} gets passed.` : ""}` },
+      {
+        kind: "p",
+        text: i.alertOptIn
+          ? `Nice one. We'll email you if ${first} gets passed.`
+          : `Nice one. Share ${possessive(i.md)} board so more friends can push ${first} up.`,
+      },
       { kind: "button", label: `Share ${first}'s day`, url: i.dateUrl },
       receiptPanel(i.receipt, { label: `Boost for ${i.name}`, note: `Adds to ${first}'s total on ${day}` }, i.timeZone),
       { kind: "fine", text: `Boosts are final and paid to mybday.lol, not to ${first}. Gifts still go straight to them.` },
@@ -197,30 +202,28 @@ export function outbidAlertEmail(i: OutbidAlertInput): EmailContent {
   const first = firstName(i.name);
   const day = formatLong(i.md);
   const amount = formatUsd(i.amountCents);
-  const who = i.isOwner ? "You" : first;
   const newTop = firstName(i.newTop.name);
+  // Laid out like auction outbid alerts: who's on top now, where you are, what wins it back, when it closes, one button.
   return {
-    subject: `${i.isOwner ? "You" : first} got passed on ${day}`,
+    subject: i.isOwner ? `You've been outbid on ${day}` : `${first} was outbid on ${day}`,
     preheader: `${newTop} has ${formatUsd(i.newTop.totalCents)}. ${amount} takes #1 back.`,
-    kicker: `${who} got passed on`,
+    kicker: i.isOwner ? "You've been outbid on" : `${first} was outbid on`,
     title: day,
     ...colors(i.theme),
     blocks: [
       {
-        kind: "receipt",
-        title: `${day} right now`,
-        lines: [
-          { label: `#1 ${i.newTop.name}`, note: "Just took the top spot", amount: formatUsd(i.newTop.totalCents) },
-          { label: `#${i.rank} ${i.isOwner ? "You" : i.name}`, amount: formatUsd(i.totalCents) },
-        ],
+        kind: "versus",
+        left: { kicker: "#1 now", name: i.newTop.name, amount: formatUsd(i.newTop.totalCents) },
+        right: { kicker: `#${i.rank} now`, name: i.isOwner ? "You" : i.name, amount: formatUsd(i.totalCents) },
       },
       {
-        kind: "bar",
-        title: `Take #1 back for ${amount}`,
-        sub: i.isToday ? `${day} ends at midnight ET.` : undefined,
-        label: `Boost ${amount}`,
-        url: i.boostUrl,
+        kind: "callout",
+        title: i.isOwner ? `${amount} takes #1 back` : `${amount} puts ${first} back on top`,
+        sub: i.isToday
+          ? `Bidding on ${day} closes tonight at midnight ET.`
+          : `Bidding stays open until ${day} ends at midnight ET.`,
       },
+      { kind: "button", label: i.isOwner ? `Boost ${amount} and retake #1` : `Boost ${first} ${amount}`, url: i.boostUrl, wide: true },
       { kind: "fine", text: "Getting outbid is part of the game. Boosts add to the total and are final." },
     ],
     reason: i.isOwner
@@ -297,7 +300,7 @@ export function yourDayEmail(i: YourDayInput): EmailContent {
       title: day,
       ...colors(i.theme),
       blocks: [
-        { kind: "person", name: i.name, line: `${formatUsd(i.totalCents)} · #${i.rank} today`, photoUrl: i.photoUrl },
+        { kind: "person", name: i.name, line: i.bio, photoUrl: i.photoUrl },
         { kind: "p", text: `${where} Share the link so family and friends can celebrate with ${first}.` },
         { kind: "button", label: `Share ${first}'s link`, url: i.dateUrl },
       ],
@@ -315,7 +318,7 @@ export function yourDayEmail(i: YourDayInput): EmailContent {
     title: day,
     ...colors(i.theme),
     blocks: [
-      { kind: "person", name: i.name, line: `${formatUsd(i.totalCents)} · #${i.rank} today`, photoUrl: i.photoUrl },
+      { kind: "person", name: i.name, line: i.bio, photoUrl: i.photoUrl },
       { kind: "p", text: `${where} ${gifts}` },
       { kind: "button", label: "Share your link", url: i.dateUrl },
     ],
@@ -346,7 +349,7 @@ export function boostDigestEmail(i: BoostDigestInput): EmailContent {
     subject:
       count === 1 ? `Someone boosted you +${formatUsd(added)}` : `${count} people boosted you +${formatUsd(added)}`,
     preheader: `You're #${i.rank} on ${day} with ${formatUsd(i.totalCents)}.`,
-    kicker: count === 1 ? "Someone boosted you" : `${count} boosts for you`,
+    kicker: "You got boosted",
     title: `+${formatUsd(added)}`,
     ...colors(i.theme),
     blocks: [
@@ -356,7 +359,6 @@ export function boostDigestEmail(i: BoostDigestInput): EmailContent {
         title: count === 1 ? "1 boost" : `${count} boosts`,
         // Who boosted is never shown, only when and how much.
         lines: i.boosts.map((b) => ({ label: `${time(b.at)} ET`, amount: `+${formatUsd(b.amountCents)}` })),
-        total: { label: "Added to your total", amount: `+${formatUsd(added)}` },
       },
       { kind: "button", label: "Share your link", url: i.dateUrl },
     ],

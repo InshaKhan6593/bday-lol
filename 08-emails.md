@@ -35,12 +35,21 @@ Long values (emails, links) take a full row so they don't break mid-word on phon
 
 | Email | Panel |
 |---|---|
-| 1 Claim confirmation | **Receipt No. MB-4F7K2A9C**: "Claim · October 7, 2026 $241", **Total paid $241**, then Paid on / Payment ("Visa •••• 4242") / Charged ("GBP 192.00" when Adaptive Pricing converted it) |
+| 1 Claim confirmation | **Receipt No. MB-4F7K2A9C**: "Claim · October 7, 2026" with **TOTAL PAID $241** once on the right (a single item's amount is the total, so it isn't repeated), then Paid on / Payment ("Visa •••• 4242") / Charged ("GBP 192.00" when Adaptive Pricing converted it) |
 | 2 Boost receipt | Same receipt: "Boost for Jess Moreno, adds to Jess's total on October 7" |
-| 3 Outbid alert | **October 7 right now**: "#1 Tyler Brooks, just took the top spot $241 / #2 You $240", then the black claim bar |
-| 6 You got boosted | **3 boosts**: one line per boost with its time, then **Added to your total +$25** |
+| 3 Outbid alert | Redesigned like auction outbid alerts (see below) |
+| 6 You got boosted | **3 boosts**: one line per boost with its time. No total row: the title already says +$25 |
 | 8 Admin alert | **Claim details** with the same receipt number as the claimer's, then email, color, photo, child flag and gift links |
 
+- **No repeats**: each fact appears once. Under the person's name goes their **bio** (how they look on the board),
+  except in the boost receipt and digest, where it's their new standing ("$265 · #1 on October 7") and the sentence
+  doesn't say it again.
+- **Outbid alert** (redesigned 2026-10-10 from auction outbid alerts: 32auctions, Givebutter, HikaShop, Charity Auctions
+  Today, which all show the item, who's ahead, the amount that wins it back, when bidding closes, and one "bid again"
+  link). Subject **You've been outbid on October 7** (a fan gets **Jess was outbid on October 7**). Two tiles side by
+  side: **#1 NOW Tyler Brooks $241** (filled with the person's color) and **#2 NOW You $240** (dashed). Then a big
+  **$2 takes #1 back** with "Bidding on October 7 closes tonight at midnight ET." and one full-width button
+  **Boost $2 and retake #1**.
 - **Receipt number**: `MB-` + the first 8 characters of our payment id. Stripe keeps the full id as `metadata.paymentId`,
   so support can search for it there.
 - **Card**: read from Stripe (the PaymentIntent's charge) when the webhook lands, saved as `payments.payment_method`. If
@@ -60,7 +69,7 @@ Unsubscribe links on 4, 5, 6 and 7 (spec §8). "Jess", "October 7" and amounts b
 |---|---|---|---|---|---|
 | 1 | **Claim confirmation** (is the receipt) | Right after payment, to the claimer | Today's #1: **October 7 is yours. For now.** · Later date: **October 12 is yours. For now.** · Passed while paying: **You're #3 on October 7** | "You're on the homepage with $241." / "$91 more takes #1. Friends can boost you from your page." | Avatar row ($241 · #1). One line: on the homepage until midnight ET, we'll email you if outbid (rank 2+: how much takes #1). **Share your link**. Receipt. "Bids are final. Questions? Just reply." |
 | 2 | **Boost receipt** | Right after payment, to the booster (Stripe's email) | **Your $16 boost for Tyler is in** | "Tyler is #1 on October 9 with $241." | Title "+$16". Standing, plus "We'll email you if Tyler gets passed" when ticked. **Share Tyler's day**. Receipt. "Paid to bday.lol, not to Tyler." |
-| 3 | **Outbid alert** | When someone loses #1 (max 1 per person per 15 min), to them and their alert list | **You got passed on October 7** / **Jess got passed on October 7** | "Tyler has $241. $2 takes #1 back." | Standings: "#1 Tyler Brooks $241 / #2 You $240". Claim bar **Take #1 back for $2** → **Boost $2** (opens the Boost box pre-filled). "October 7 ends at midnight ET." when it's today |
+| 3 | **Outbid alert** | When someone loses #1 (max 1 per person per 15 min), to them and their alert list | **You've been outbid on October 7** / **Jess was outbid on October 7** | "Tyler has $241. $2 takes #1 back." | Tiles "#1 NOW Tyler Brooks $241" vs "#2 NOW You $240", **$2 takes #1 back**, when bidding closes, **Boost $2 and retake #1** (opens the Boost box pre-filled) |
 | 4 | **Birthday reminder** | 7 days before, homepage signups | **October 7 is in a week** | "Claim it before someone else does. Nobody has claimed it yet." | One line. Claim bar **Own October 7 for $5** → **Claim October 7** |
 | 5 | **Your day is here** | 8:00 AM ET on the day, everyone on that day's list | **Happy birthday, Jess! 🎂** | "You're on the bday.lol homepage today. Your gift buttons are live." | Avatar row. Where they stand + gift buttons are live. **Share your link**. A child's listing (07 D4) goes to the parent: **Happy birthday to Maya! 🎂**, "Maya is #5 on today's board. Share the link so family and friends can celebrate with Maya.", no gift wording |
 | 6 | **You got boosted** | About once an hour, bundled, to the birthday person | **3 people boosted you +$25** / **Someone boosted you +$5** | "You're #1 on October 7 with $265." | Title "+$25". Each boost with its time ("1:12 PM ET  +$5"); never who boosted. **Share your link** |

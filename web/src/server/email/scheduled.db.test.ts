@@ -36,14 +36,14 @@ describe("outbid alerts", () => {
 
       expect(await sendDueOutbidAlerts(tx, mailer, at("14:42"))).toMatchObject({ sent: 2, failed: 0 });
       const [owner] = mailer.to("jess@example.com");
-      expect(owner?.subject).toBe("You got passed on October 7");
-      expect(owner?.text).toContain("#1 Tyler Brooks (Just took the top spot): $251");
-      expect(owner?.text).toContain("#2 You: $240");
-      expect(owner?.text).toContain("Take #1 back for $12");
-      expect(owner?.text).toContain("October 7 ends at midnight ET.");
-      expect(owner?.text).toMatch(/Boost \$12: https:\/\/mybday\.lol\/october-7\?boost=\w+&amount=12/);
+      expect(owner?.subject).toBe("You've been outbid on October 7");
+      expect(owner?.text).toContain("#1 now: Tyler Brooks, $251");
+      expect(owner?.text).toContain("#2 now: You, $240");
+      expect(owner?.text).toContain("$12 takes #1 back");
+      expect(owner?.text).toContain("Bidding on October 7 closes tonight at midnight ET.");
+      expect(owner?.text).toMatch(/Boost \$12 and retake #1: https:\/\/mybday\.lol\/october-7\?boost=\w+&amount=12/);
       const [fan] = mailer.to("fan@example.com");
-      expect(fan?.subject).toBe("Jess got passed on October 7");
+      expect(fan?.subject).toBe("Jess was outbid on October 7");
 
       expect(await sendDueOutbidAlerts(tx, mailer, at("14:43"))).toMatchObject({ sent: 0 });
     });
@@ -95,8 +95,8 @@ describe("outbid alerts", () => {
 
       await sendDueOutbidAlerts(tx, mailer, at("14:56"));
       expect(mailer.to("fan@example.com").map((e) => e.subject).sort()).toEqual([
-        "Jess got passed on October 7",
-        "Marcus got passed on October 8",
+        "Jess was outbid on October 7",
+        "Marcus was outbid on October 8",
       ]);
     });
   });

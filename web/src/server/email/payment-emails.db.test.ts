@@ -82,7 +82,8 @@ describe("payment emails", () => {
       expect(await sendPaymentEmails(tx, mailer, boost.sessionId, at("11:00"))).toMatchObject({ sent: 1 });
       const [receipt] = mailer.to("fan@example.com");
       expect(receipt?.subject).toBe("Your $16 boost for Tyler is in");
-      expect(receipt?.text).toContain("Tyler is #1 on October 7 with $241.");
+      // The standing sits under Tyler's name; the sentence doesn't repeat it.
+      expect(receipt?.text).toContain("Tyler Brooks\n$241 · #1 on October 7");
       expect(receipt?.text).toContain("We'll email you if Tyler gets passed.");
       expect(mailer.to("admin@example.com")).toEqual([]);
     });
@@ -140,8 +141,8 @@ describe("payment emails", () => {
       expect(out?.payment.sent).toBe(2);
       expect(out?.alerts.sent).toBe(1);
       const [alert] = mailer.to("jess@example.com");
-      expect(alert?.subject).toBe("You got passed on October 7");
-      expect(alert?.text).toContain("Boost $2: https://mybday.lol/october-7?boost=");
+      expect(alert?.subject).toBe("You've been outbid on October 7");
+      expect(alert?.text).toContain("Boost $2 and retake #1: https://mybday.lol/october-7?boost=");
       const [row] = await tx.select().from(outbidAlerts).where(eq(outbidAlerts.entryId, jess.entryId));
       expect(row?.sentAt).toEqual(at("14:40"));
     });
