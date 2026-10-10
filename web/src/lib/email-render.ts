@@ -22,6 +22,20 @@ export type EmailBlock =
   | { kind: "note"; text: string }
   /** Label/value rows. "strong" = standings and boost lists (bold labels, bigger amounts). */
   | { kind: "rows"; title?: string; strong?: boolean; rows: Array<[label: string, value: string]> }
+  /**
+   * A receipt panel (Apple/Stripe style, in our look): an outlined box with a
+   * strip in the person's color, line items with amounts on the right, a
+   * dashed rule, a bold total, then small labelled details in a grey footer.
+   */
+  | {
+      kind: "receipt";
+      title: string;
+      /** "MB-4F7K2A9C", top right of the strip. */
+      number: string;
+      lines: Array<{ label: string; note?: string; amount: string }>;
+      total: { label: string; amount: string };
+      details: Array<[label: string, value: string]>;
+    }
   | { kind: "fine"; text: string };
 
 export type EmailContent = {
@@ -45,6 +59,12 @@ export type RenderedEmail = { subject: string; html: string; text: string };
 const INK = "#141414";
 const FONT = "'Bricolage Grotesque', 'Helvetica Neue', Helvetica, Arial, sans-serif";
 const BUTTER = { ground: "#FFEC94", accent: "#A88BFF" };
+/**
+ * Invisible filler after the preview line. Without it, inboxes keep reading
+ * into the email ("…today's board. mybday.lol Happy birthday, Maya October 10")
+ * and show that next to the subject.
+ */
+const PREHEADER_PAD = "&#847;&zwnj;&nbsp;".repeat(90);
 
 export function escapeHtml(value: string): string {
   return value
@@ -69,7 +89,38 @@ function initials(name: string): string {
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? (parts.at(-1)?.[0] ?? "") : "")).toUpperCase();
 }
 
-function blockHtml(block: EmailBlock, accent: string): string {
+/** Tiny uppercase label over its value (Apple's receipt grid). */
+function detailCell(label: string, value: string): string {
+  return `<td width="50%" style="padding:6px 8px 6px 0;vertical-align:top"><p style="margin:0;font-size:11px;line-height:1.4;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#666666">${escapeHtml(label)}</p><p style="margin:2px 0 0;font-size:15px;line-height:1.4;font-weight:600;color:${INK}">${escapeHtml(value)}</p></td>`;
+}
+
+function receiptHtml(block: Extract<EmailBlock, { kind: "receipt" }>, ground: string): string {
+  const lines = block.lines
+    .map(
+      (line) =>
+        `<tr><td style="padding:0 12px 10px 0;vertical-align:top"><p style="margin:0;font-size:16px;line-height:1.35;font-weight:700;color:${INK}">${escapeHtml(line.label)}</p>${
+          line.note ? `<p style="margin:2px 0 0;font-size:14px;line-height:1.4;color:#555555">${escapeHtml(line.note)}</p>` : ""
+        }</td><td align="right" style="padding:0 0 10px;vertical-align:top;font-size:17px;line-height:1.35;font-weight:800;color:${INK};white-space:nowrap">${escapeHtml(line.amount)}</td></tr>`,
+    )
+    .join("");
+  const pairs: string[] = [];
+  for (let i = 0; i < block.details.length; i += 2) {
+    const [a, b] = [block.details[i]!, block.details[i + 1]];
+    pairs.push(`<tr>${detailCell(a[0], a[1])}${b ? detailCell(b[0], b[1]) : `<td width="50%"></td>`}</tr>`);
+  }
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 18px;border:3px solid ${INK};border-radius:18px;border-collapse:separate;border-spacing:0">
+<tr><td style="background:${ground};border-bottom:3px solid ${INK};border-radius:15px 15px 0 0;padding:12px 18px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="font-size:13px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:${INK}">${escapeHtml(block.title)}</td><td align="right" style="font-size:13px;font-weight:600;color:${INK};white-space:nowrap">No. ${escapeHtml(block.number)}</td></tr></table></td></tr>
+<tr><td style="padding:16px 18px 4px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${lines}</table></td></tr>
+<tr><td style="padding:0 18px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="border-top:2px dashed ${INK};font-size:0;line-height:0">&nbsp;</td></tr></table></td></tr>
+<tr><td style="padding:12px 18px 16px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="font-size:17px;font-weight:800;color:${INK}">${escapeHtml(block.total.label)}</td><td align="right" style="font-size:26px;line-height:1;font-weight:800;letter-spacing:-0.02em;color:${INK};white-space:nowrap">${escapeHtml(block.total.amount)}</td></tr></table></td></tr>${
+    pairs.length
+      ? `\n<tr><td style="background:#f6f6f6;border-top:2px solid #e6e6e6;border-radius:0 0 15px 15px;padding:10px 18px 12px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${pairs.join("")}</table></td></tr>`
+      : ""
+  }
+</table>`;
+}
+
+function blockHtml(block: EmailBlock, accent: string, ground: string): string {
   switch (block.kind) {
     case "p":
       return `<p style="margin:0 0 16px;font-size:17px;line-height:1.5;color:#333333">${escapeHtml(block.text)}</p>`;
@@ -102,6 +153,8 @@ function blockHtml(block: EmailBlock, accent: string): string {
             : `<tr><td style="padding:9px 14px 9px 0;border-bottom:2px solid #efefef;font-size:14px;color:#4a4a4a;white-space:nowrap;vertical-align:top">${escapeHtml(label)}</td><td style="padding:9px 0;border-bottom:2px solid #efefef;font-size:15px;font-weight:600;color:${INK};word-break:break-word">${escapeHtml(value)}</td></tr>`,
         )
         .join("")}</table>`;
+    case "receipt":
+      return receiptHtml(block, ground);
     case "fine":
       return `<p style="margin:0 0 6px;font-size:13px;line-height:1.45;color:#4a4a4a">${escapeHtml(block.text)}</p>`;
   }
@@ -123,6 +176,13 @@ function blockText(block: EmailBlock): string {
       return [block.title?.toUpperCase(), ...block.rows.map(([label, value]) => `${label}: ${value}`)]
         .filter(Boolean)
         .join("\n");
+    case "receipt":
+      return [
+        `${block.title.toUpperCase()} No. ${block.number}`,
+        ...block.lines.map((line) => `${line.label}${line.note ? ` (${line.note})` : ""}: ${line.amount}`),
+        `${block.total.label}: ${block.total.amount}`,
+        ...block.details.map(([label, value]) => `${label}: ${value}`),
+      ].join("\n");
   }
 }
 
@@ -138,12 +198,16 @@ type RenderOptions = {
 export function renderEmail(content: EmailContent, options: RenderOptions): RenderedEmail {
   const ground = hex(content.ground, BUTTER.ground);
   const accent = hex(content.accent, BUTTER.accent);
+  const link = (path: string, label: string) =>
+    `<a href="${safeUrl(options.origin + path)}" style="color:${INK};font-weight:700;text-decoration:underline">${label}</a>`;
   const footer = [
     escapeHtml(content.reason),
     options.unsubscribeUrl
       ? `<a href="${safeUrl(options.unsubscribeUrl)}" style="color:${INK};font-weight:700">Unsubscribe</a>`
       : "",
     options.footerAddress ? escapeHtml(options.footerAddress) : "",
+    // Same links as the site footer.
+    `<span style="display:inline-block;padding-top:8px">mybday.lol &nbsp;·&nbsp; ${link("/how-it-works", "FAQ")} &nbsp;·&nbsp; ${link("/terms", "Terms")} &nbsp;·&nbsp; ${link("/privacy", "Privacy")}</span>`,
   ]
     .filter(Boolean)
     .join("<br>");
@@ -155,7 +219,7 @@ export function renderEmail(content: EmailContent, options: RenderOptions): Rend
 <style>@media (max-width:480px){.hero-title{font-size:48px!important}.card{padding:22px 18px!important}}</style>
 </head>
 <body style="margin:0;padding:0;background:${ground};font-family:${FONT};color:${INK};-webkit-font-smoothing:antialiased">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">${escapeHtml(content.preheader)}</div>
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">${escapeHtml(content.preheader)}${PREHEADER_PAD}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${ground}"><tr><td align="center" style="padding:28px 16px 36px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
 <tr><td style="padding:0 4px 26px"><a href="${safeUrl(options.origin)}" style="font-family:${FONT};font-size:26px;font-weight:800;letter-spacing:-0.02em;color:${INK};text-decoration:none">mybday.lol</a></td></tr>
@@ -164,7 +228,7 @@ export function renderEmail(content: EmailContent, options: RenderOptions): Rend
 <h1 class="hero-title" style="margin:0;font-family:${FONT};font-size:64px;line-height:0.95;font-weight:800;letter-spacing:-0.045em;color:${INK}">${escapeHtml(content.title)}</h1>
 </td></tr>
 <tr><td class="card" style="background:#ffffff;border:3px solid ${INK};border-right-width:9px;border-bottom-width:9px;border-radius:26px;padding:28px 26px">
-${content.blocks.map((b) => blockHtml(b, accent)).join("\n")}
+${content.blocks.map((b) => blockHtml(b, accent, ground)).join("\n")}
 </td></tr>
 <tr><td style="padding:20px 6px 0;font-size:13px;line-height:1.6;color:#4a4a4a">${footer}</td></tr>
 </table></td></tr></table>
@@ -181,6 +245,7 @@ ${content.blocks.map((b) => blockHtml(b, accent)).join("\n")}
     content.reason,
     ...(options.unsubscribeUrl ? [`Unsubscribe: ${options.unsubscribeUrl}`] : []),
     ...(options.footerAddress ? [options.footerAddress] : []),
+    `FAQ: ${options.origin}/how-it-works · Terms: ${options.origin}/terms · Privacy: ${options.origin}/privacy`,
   ].join("\n");
 
   return { subject: content.subject, html, text };

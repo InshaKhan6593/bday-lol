@@ -42,6 +42,8 @@ export function sampleEmails(origin: string): Array<{ id: string; label: string;
           paidAt,
           reference: "pi_3UOgwH…P2W",
           item: "Claim October 7, 2026 on mybday.lol",
+          number: "MB-4F7K2A9C",
+          method: "Visa •••• 4242",
         },
       }),
     },
@@ -60,7 +62,7 @@ export function sampleEmails(origin: string): Array<{ id: string; label: string;
         isToday: true,
         shareUrl: dateUrl,
         timeZone: tz,
-        receipt: { amountCents: 15_000, presentment: null, paidAt, reference: null, item: "Claim October 7, 2026 on mybday.lol" },
+        receipt: { amountCents: 15_000, presentment: null, paidAt, reference: null, item: "Claim October 7, 2026 on mybday.lol", number: "MB-9D21C04E", method: "Mastercard •••• 8812" },
       }),
     },
     {
@@ -75,7 +77,7 @@ export function sampleEmails(origin: string): Array<{ id: string; label: string;
         alertOptIn: true,
         dateUrl,
         timeZone: tz,
-        receipt: { amountCents: 500, presentment: { currency: "pkr", amount: 143_994 }, paidAt, reference: null, item: "Boost Jess Moreno on mybday.lol" },
+        receipt: { amountCents: 500, presentment: { currency: "pkr", amount: 143_994 }, paidAt, reference: null, item: "Boost Jess Moreno on mybday.lol", number: "MB-17B3E5F0", method: null },
       }),
     },
     {

@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { outbidAlerts, reminders } from "@/db/schema";
+import { receiptNumber } from "@/lib/email-templates";
 import { addBirthdayType, inRollback } from "@/test/db";
 import { failingMailer, memoryMailer } from "@/test/mailer";
 import { paidBoost, paidClaim } from "@/test/money";
@@ -38,7 +39,9 @@ describe("payment emails", () => {
       expect(confirmation?.subject).toBe("October 7 is yours. For now.");
       expect(confirmation?.text).toContain("You're on the mybday.lol homepage until midnight ET");
       expect(confirmation?.text).toMatch(/Share your link: https:\/\/mybday\.lol\/october-7\/sam-rivera$/m);
-      expect(confirmation?.text).toContain("Reference: pi_test");
+      // A short receipt number from our payment id (Stripe holds the full id as metadata.paymentId).
+      expect(confirmation?.text).toContain(`RECEIPT No. ${receiptNumber(sam.paymentId)}`);
+      expect(confirmation?.text).toContain("Total paid: $241");
       // The photo is absolute, so it loads in the inbox.
       expect(confirmation?.html).toContain('src="https://mybday.lol/uploads/sam.jpg"');
 

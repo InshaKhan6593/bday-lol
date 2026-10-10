@@ -42,7 +42,37 @@ export type Receipt = {
   reference: string | null;
   /** "Claim October 7, 2026 on mybday.lol" */
   item: string;
+  /** Short receipt number people can quote ("MB-4F7K2A9C"), from our payment id. */
+  number: string;
+  /** "Visa •••• 4242", when Stripe tells us the card. */
+  method: string | null;
 };
+
+/** "MB-4F7K2A9C": the start of our payment id, which Stripe also holds as metadata.paymentId. */
+export function receiptNumber(paymentId: string): string {
+  return `MB-${paymentId.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
+}
+
+/** The receipt panel: one line, a total, and the payment details underneath. */
+function receiptPanel(r: Receipt, line: { label: string; note: string }, timeZone: string): EmailBlock {
+  const paidOn = r.paidAt.toLocaleDateString("en-US", { timeZone, month: "short", day: "numeric", year: "numeric" });
+  const usd = formatUsd(r.amountCents);
+  return {
+    kind: "receipt",
+    title: "Receipt",
+    number: r.number,
+    lines: [{ ...line, amount: usd }],
+    total: { label: "Total paid", amount: usd },
+    details: [
+      ["Paid on", paidOn],
+      ...(r.method ? ([["Payment", r.method]] as Array<[string, string]>) : []),
+      // Adaptive Pricing: what their card was actually charged.
+      ...(r.presentment
+        ? ([["Charged", formatMinorUnits(r.presentment.amount, r.presentment.currency)]] as Array<[string, string]>)
+        : []),
+    ],
+  };
+}
 
 function receiptRows(r: Receipt, timeZone: string): EmailBlock {
   const paid = r.presentment
@@ -98,7 +128,7 @@ export function claimConfirmationEmail(i: ClaimConfirmationInput): EmailContent 
         { kind: "person", name: i.name, line: `${total} · #${i.rank} on ${day}`, photoUrl: i.photoUrl },
         { kind: "p", text: `Someone bid more while you were paying. ${toTop}Share your link and friends and followers can boost you there.` },
         { kind: "button", label: "Share your link", url: i.shareUrl },
-        receiptRows(i.receipt, i.timeZone),
+        receiptPanel(i.receipt, { label: `Claim · ${formatLong(i.md)}, ${i.year}`, note: "Your spot on the birthday board" }, i.timeZone),
         { kind: "fine", text: "Bids are final. Questions? Just reply to this email." },
       ],
       reason: `You're getting this because you claimed ${day} on mybday.lol.`,
@@ -118,7 +148,7 @@ export function claimConfirmationEmail(i: ClaimConfirmationInput): EmailContent 
       { kind: "person", name: i.name, line: `${total} · #1 on ${day}`, photoUrl: i.photoUrl },
       { kind: "p", text: lead },
       { kind: "button", label: "Share your link", url: i.shareUrl },
-      receiptRows(i.receipt, i.timeZone),
+      receiptPanel(i.receipt, { label: `Claim · ${formatLong(i.md)}, ${i.year}`, note: "Your spot on the birthday board" }, i.timeZone),
       { kind: "fine", text: "Bids are final. Questions? Just reply to this email." },
     ],
     reason: `You're getting this because you claimed ${day} on mybday.lol.`,

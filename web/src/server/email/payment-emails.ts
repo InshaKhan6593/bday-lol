@@ -3,7 +3,7 @@ import type { Executor } from "@/db";
 import { payments } from "@/db/schema";
 import { formatLong } from "@/lib/birthday";
 import { takeTopBoost } from "@/lib/boost";
-import { adminClaimEmail, boostReceiptEmail, claimConfirmationEmail, type Receipt } from "@/lib/email-templates";
+import { adminClaimEmail, boostReceiptEmail, claimConfirmationEmail, receiptNumber, type Receipt } from "@/lib/email-templates";
 import type { EventOutcome } from "../stripe-events";
 import { loadEntryContext } from "./context";
 import type { Mailer } from "./mailer";
@@ -38,6 +38,9 @@ export async function sendPaymentEmails(db: Executor, mailer: Mailer, sessionId:
     paidAt: payment.paidAt ?? instant,
     reference: payment.stripePaymentIntentId,
     item: payment.kind === "claim" ? `Claim ${day}, ${year} on mybday.lol` : `Boost ${entry.name} on mybday.lol`,
+    number: receiptNumber(payment.id),
+    // The card isn't stored yet; it comes from Stripe in the rollout of the new receipt.
+    method: null,
   };
   const person = { name: entry.name, bio: entry.bio, photoUrl: entry.photoUrl, theme: entry.theme };
 

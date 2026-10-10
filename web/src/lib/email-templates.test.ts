@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { escapeHtml, formatMinorUnits, renderEmail } from "./email-render";
 import { sampleEmails } from "./email-samples";
-import { adminClaimEmail, claimConfirmationEmail, outbidAlertEmail, reminderEmail, yourDayEmail } from "./email-templates";
+import {
+  adminClaimEmail,
+  claimConfirmationEmail,
+  outbidAlertEmail,
+  receiptNumber,
+  reminderEmail,
+  yourDayEmail,
+} from "./email-templates";
 
 const ORIGIN = "https://mybday.lol";
 const md = { month: 10, day: 7 };
@@ -24,6 +31,13 @@ describe("email rendering", () => {
     );
     expect(email.html).not.toContain("<script>");
     expect(email.html).toContain("&lt;script&gt;");
+  });
+
+  it("pads the preview line so inboxes don't show the body after it, and links the site's FAQ, Terms and Privacy", () => {
+    const email = renderEmail(sampleEmails(ORIGIN)[0]!.content, { origin: ORIGIN });
+    expect(email.html).toMatch(/You&#39;re on the homepage with \$241\.(&#847;&zwnj;&nbsp;){90}<\/div>/);
+    for (const path of ["/how-it-works", "/terms", "/privacy"]) expect(email.html).toContain(`href="${ORIGIN}${path}"`);
+    expect(email.text).toContain(`Terms: ${ORIGIN}/terms`);
   });
 
   it("only links to http(s) addresses", () => {
@@ -79,7 +93,7 @@ describe("email rendering", () => {
 });
 
 describe("email wording", () => {
-  const receipt = { amountCents: 24_100, presentment: null, paidAt: new Date("2026-10-07T18:40:00Z"), reference: null, item: "Claim" };
+  const receipt = { amountCents: 24_100, presentment: null, paidAt: new Date("2026-10-07T18:40:00Z"), reference: null, item: "Claim", number: "MB-4F7K2A9C", method: null };
   const person = { name: "Sam Rivera", bio: "", photoUrl: null, theme: "sky" as const };
 
   it("keeps every subject short enough for a phone inbox (~50 characters)", () => {
@@ -107,6 +121,31 @@ describe("email wording", () => {
     expect(JSON.stringify(third.blocks)).not.toContain("we'll email you right away");
     // One button per email.
     expect(third.blocks.filter((b) => b.kind === "button" || b.kind === "bar")).toHaveLength(1);
+  });
+
+  it("claim receipt: one line, a total, and the payment details", () => {
+    const base = { ...person, md, year: 2026, currentYear: 2026, totalCents: 24_100, shareUrl: `${ORIGIN}/october-7`, timeZone: "America/New_York" };
+    const paid = { ...receipt, amountCents: 24_100, method: "Visa •••• 4242", presentment: { currency: "gbp", amount: 19_200 } };
+    const email = claimConfirmationEmail({ ...base, rank: 1, toTopCents: null, isToday: true, receipt: paid });
+    expect(email.blocks).toContainEqual({
+      kind: "receipt",
+      title: "Receipt",
+      number: "MB-4F7K2A9C",
+      lines: [{ label: "Claim · October 7, 2026", note: "Your spot on the birthday board", amount: "$241" }],
+      total: { label: "Total paid", amount: "$241" },
+      details: [
+        ["Paid on", "Oct 7, 2026"],
+        ["Payment", "Visa •••• 4242"],
+        ["Charged", "GBP 192.00"],
+      ],
+    });
+    // Paid in dollars, card unknown: just the date.
+    const plain = claimConfirmationEmail({ ...base, rank: 1, toTopCents: null, isToday: true, receipt });
+    expect(plain.blocks.find((b) => b.kind === "receipt")).toMatchObject({ details: [["Paid on", "Oct 7, 2026"]] });
+  });
+
+  it("receipt numbers are short and stable", () => {
+    expect(receiptNumber("4f7k2a9c-1111-2222-3333-444455556666")).toBe("MB-4F7K2A9C");
   });
 
   it("outbid alert shows who's #1, what you have, and the amount that wins it back", () => {
