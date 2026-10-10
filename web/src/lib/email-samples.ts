@@ -18,7 +18,7 @@ export function sampleEmails(origin: string): Array<{ id: string; label: string;
   const sam = { name: "Sam Rivera", bio: "Turning 25 today. Tacos over cake, always and forever.", photoUrl: null, theme: "sky" as const };
   const jess = { name: "Jess Moreno", bio: "30 and still can't cook. Pizza money appreciated.", photoUrl: null, theme: "lime" as const };
   // A child added by a parent (07 D4): first name only, no gift links.
-  const maya = { name: "Maya", bio: "Our girl turns 7 today! (Added by her mom)", photoUrl: null, theme: "bubblegum" as const };
+  const maya = { name: "Maya", bio: "Our girl turns 7 today!", photoUrl: null, theme: "bubblegum" as const };
 
   return [
     {

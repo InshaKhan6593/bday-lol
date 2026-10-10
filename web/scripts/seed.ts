@@ -47,7 +47,7 @@ const TODAY_PEOPLE: Person[] = [
   { name: "Ana Reyes", bio: "Birthday twins with my grandma.", theme: "apricot", totalUsd: 150, gifts: [{ service: "amazon", url: "https://www.amazon.com/hz/wishlist/ls/ANAREYES123" }] },
   { name: "Chris Wu", bio: "Send tacos.", theme: "mint", totalUsd: 60, gifts: [{ service: "venmo", url: "https://venmo.com/u/chriswu" }] },
   // A child, added by a parent: first name only and no gift links (handoff v2 §8).
-  { name: "Maya", bio: "Our girl turns 7 today! (Added by her mom)", theme: "bubblegum", totalUsd: 40, minor: true },
+  { name: "Maya", bio: "Our girl turns 7 today!", theme: "bubblegum", totalUsd: 40, minor: true },
   { name: "Jordan Lee", bio: "Quarter century. Feeling ancient.", theme: "butter", totalUsd: 25, gifts: [{ service: "cashapp", url: "https://cash.app/$jordanlee" }] },
   { name: "Sam Ortiz", bio: "Just happy to be here.", theme: "seafoam", totalUsd: 10 },
   { name: "Riley Kim", bio: "Low budget, high spirits.", theme: "orchid", totalUsd: 5, gifts: [{ service: "throne", url: "https://throne.com/rileykim" }] },
