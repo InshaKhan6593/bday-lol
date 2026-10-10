@@ -22,6 +22,13 @@
       "when": 1791607484644,
       "tag": "0002_personal_links",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791608465877,
+      "tag": "0003_site_pages",
+      "breakpoints": true
     }
   ]
 }

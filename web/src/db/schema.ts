@@ -283,6 +283,18 @@ export const emailLog = pgTable(
 );
 
 // ---------------------------------------------------------------------------
+// Editable pages (handoff v2 §11): Terms and Privacy, edited in the admin
+// ---------------------------------------------------------------------------
+
+/** Markdown for pages the client edits without a deploy. A missing row means "use the built-in text". */
+export const sitePages = pgTable("site_pages", {
+  /** "terms", "privacy" (and the FAQ later). */
+  slug: text("slug").primaryKey(),
+  body: text("body").notNull(),
+  updatedAt: tstz("updated_at").notNull().defaultNow(),
+});
+
+// ---------------------------------------------------------------------------
 // "About [date] birthdays": famous people (refreshed monthly)
 // ---------------------------------------------------------------------------
 

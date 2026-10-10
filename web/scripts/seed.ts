@@ -98,7 +98,7 @@ const today = zonedDate(at, tz);
 
 await db.transaction(async (tx) => {
   await tx.execute(sql`TRUNCATE board_types, boards, entries, payments, leader_log, alert_subscriptions,
-    outbid_alerts, reminders, email_suppressions, email_log, famous_people, famous_hidden RESTART IDENTITY CASCADE`);
+    outbid_alerts, reminders, email_suppressions, email_log, famous_people, famous_hidden, site_pages RESTART IDENTITY CASCADE`);
 
   const [type] = await tx.insert(boardTypes).values(BIRTHDAY_BOARD_TYPE).returning();
 

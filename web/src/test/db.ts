@@ -22,7 +22,7 @@ export async function inRollback(fn: (tx: Tx) => Promise<void>): Promise<void> {
   await db
     .transaction(async (tx) => {
       await tx.execute(sql`TRUNCATE board_types, boards, entries, payments, leader_log, alert_subscriptions,
-        outbid_alerts, reminders, email_suppressions, email_log, famous_people, famous_hidden RESTART IDENTITY CASCADE`);
+        outbid_alerts, reminders, email_suppressions, email_log, famous_people, famous_hidden, site_pages RESTART IDENTITY CASCADE`);
       await fn(tx);
       throw ROLLBACK;
     })
