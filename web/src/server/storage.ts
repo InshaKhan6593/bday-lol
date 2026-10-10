@@ -18,7 +18,7 @@ export async function savePhoto(bytes: Uint8Array): Promise<string> {
 
   const driver = process.env.STORAGE_DRIVER ?? "local";
   if (driver !== "local") {
-    // Vercel Blob is wired in the deploy step (11), together with the client's Blob store.
+    // Supabase Storage is wired in the deploy step (11), together with the client's Supabase project.
     throw new Error(`STORAGE_DRIVER "${driver}" is not set up yet.`);
   }
   const name = `${randomUUID()}.${ext}`;

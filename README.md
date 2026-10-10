@@ -70,7 +70,7 @@ Known conflicts are listed in [07-open-questions.md](07-open-questions.md).
 
 **Stack:** Next.js 16 (App Router) + TypeScript, Postgres via Drizzle ORM, CSS Modules on design tokens,
 Radix UI (dropdowns and popups), Phosphor icons, Vitest. Local services run in Docker (Postgres on :5440,
-Mailpit on :8030). Production plan: Vercel Pro + Neon Postgres + Vercel Blob + Stripe Checkout + Resend.
+Mailpit on :8030). Production plan: Vercel Pro + Supabase (Postgres + Storage for photos, decided 2026-10-10 to match the Privacy Policy) + Stripe Checkout + Resend.
 
 | Step | Status |
 |---|---|
@@ -87,9 +87,10 @@ Mailpit on :8030). Production plan: Vercel Pro + Neon Postgres + Vercel Blob + S
 | 6. Money path: claim → Stripe Checkout (USD + Adaptive Pricing, 30-min sessions) → signed webhook → entry live in a board-locked transaction (idempotent, #1 log updated) → Success page | ✅ Done for claims (`web/src/server/actions/claim.ts`, `web/src/server/claims.ts`, `web/src/app/api/stripe/webhook/route.ts`). Boost payments come with step 7 |
 | 7. Boosts, #1 log and outbid alerts (Boost box → Stripe → total + #1 log; "Email me if X gets passed" list; alerts queued for the passed #1 + their list, ≤1 per person per 15 min, none after the day ends; email deep link opens the Boost box pre-filled; "Today ends in 12 min" warning) | ✅ Done (`web/src/server/actions/boost.ts`, `web/src/server/payments.ts`, `web/src/server/outbid.ts`) |
 | 8. The 8 emails: designed in the app's look, sent once each (dedupe log), receipts + admin alert from the Stripe webhook, outbid alerts within seconds, a cron every minute for the hourly boost digest, "Your day is here" (8 AM ET) and reminders (a week before; claimers auto-added), signed unsubscribe page + one-click | ✅ Done (`web/src/lib/email-templates.ts`, `web/src/server/email/`, `web/src/app/api/cron/emails/route.ts`, `web/src/app/unsubscribe/`) |
-| 9. SEO: month pages, About section data, OG images, sitemap | ⏭️ Next |
+| 8b. Child listings (07 D4): `is_minor` flag + "This is my child (under 18)" checkbox on Claim (first name only, gift links locked), server check, no gift menu / "Gifts open" pill / homepage gift panel for children, your-day email + admin alert wording, tests. Also decide: hide "Gifts open" for any listing with no gift links | ⏭️ Next (before step 9) |
+| 9. SEO: month pages, About section data, OG images, sitemap | ⬜ |
 | 10. Admin | ⬜ |
-| 11. Deploy to Vercel + Neon, test live | ⬜ |
+| 11. Deploy to Vercel + Supabase, test live | ⬜ |
 
 **Tests:** every feature ships with tests (`pnpm test`, 215 so far): pure rules in `web/src/lib/*.test.ts` and
 database tests in `*.db.test.ts`, which run against the local Docker Postgres inside a rolled-back transaction.
