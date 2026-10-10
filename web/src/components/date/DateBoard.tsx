@@ -152,7 +152,7 @@ export function DateBoard({
           <p className={styles.noMatchText}>Know it’s their birthday? Send them the link so they can join.</p>
           <InviteButtons
             url={shareUrl}
-            message={`Is your birthday ${formatLong(md)}? Claim it on bday.lol`}
+            message={`Is your birthday ${formatLong(md)}? Claim it on mybday.lol`}
             className={styles.noMatchActions}
           />
           <Link href={routes.claim(md)} className={styles.claimForThem}>

@@ -29,18 +29,18 @@ export const routes = {
   unsubscribeOneClick: (token: string) => `/api/unsubscribe?t=${encodeURIComponent(token)}`,
 };
 
-/** The site's origin, e.g. https://bday.lol (no trailing slash). */
+/** The site's origin, e.g. https://mybday.lol (no trailing slash). */
 export function siteOrigin(): string {
   return new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").origin;
 }
 
-/** Absolute URL for sharing, e.g. https://bday.lol/october-7. */
+/** Absolute URL for sharing, e.g. https://mybday.lol/october-7. */
 export function absoluteUrl(path: string): string {
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   return new URL(path, base).toString();
 }
 
-/** The share URL as shown on the page, without the protocol: "bday.lol/october-7". */
+/** The share URL as shown on the page, without the protocol: "mybday.lol/october-7". */
 export function displayUrl(url: string): string {
   return url.replace(/^https?:\/\//, "").replace(/\/$/, "");
 }

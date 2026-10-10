@@ -9,7 +9,7 @@ export function smsShareUrl(message: string, url: string): string {
   return `sms:?&body=${encodeURIComponent(`${message} ${url}`)}`;
 }
 
-/** "It's Jess's birthday on bday.lol" (copy from the OG card). */
+/** "It's Jess's birthday on mybday.lol" (copy from the OG card). */
 export function birthdayShareText(firstName: string): string {
-  return `It's ${firstName}'s birthday on bday.lol`;
+  return `It's ${firstName}'s birthday on mybday.lol`;
 }

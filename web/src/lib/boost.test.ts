@@ -12,7 +12,7 @@ describe("boost checkout session", () => {
     name: "Jess Moreno",
     amountCents: 1_600,
     metadata,
-    origin: "https://bday.lol",
+    origin: "https://mybday.lol",
     returnPath: "/october-7",
     now: NOW,
   });
@@ -27,8 +27,8 @@ describe("boost checkout session", () => {
           currency: "usd",
           unit_amount: 1_600,
           product_data: {
-            name: "Boost Jess Moreno on bday.lol",
-            description: "Boosts are final and add to Jess's total. They're paid to bday.lol, not to Jess.",
+            name: "Boost Jess Moreno on mybday.lol",
+            description: "Boosts are final and add to Jess's total. They're paid to mybday.lol, not to Jess.",
           },
         },
       },
@@ -43,8 +43,8 @@ describe("boost checkout session", () => {
   });
 
   it("returns to the page the box was opened on", () => {
-    expect(params.success_url).toBe("https://bday.lol/october-7?boosted={CHECKOUT_SESSION_ID}");
-    expect(params.cancel_url).toBe("https://bday.lol/october-7");
+    expect(params.success_url).toBe("https://mybday.lol/october-7?boosted={CHECKOUT_SESSION_ID}");
+    expect(params.cancel_url).toBe("https://mybday.lol/october-7");
   });
 });
 

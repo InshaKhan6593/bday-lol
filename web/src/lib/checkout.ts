@@ -26,7 +26,7 @@ type ClaimCheckoutInput = {
   amountCents: number;
   email: string;
   metadata: CheckoutMetadata;
-  /** Site origin, e.g. https://bday.lol. */
+  /** Site origin, e.g. https://mybday.lol. */
   origin: string;
   /** Where "back" on Stripe's page goes: the Claim page for the same date. */
   cancelPath: string;
@@ -45,8 +45,8 @@ export function claimCheckoutParams(input: ClaimCheckoutInput): Stripe.Checkout.
           currency: "usd",
           unit_amount: input.amountCents,
           product_data: {
-            name: `Claim ${label} on bday.lol`,
-            description: "Bids are final. If someone outbids you, you stay on this day's birthday list.",
+            name: `Claim ${label} on mybday.lol`,
+            description: "Bids are final. If someone outbids you, you stay on this day's birthday board.",
           },
         },
       },
@@ -90,8 +90,8 @@ export function boostCheckoutParams(input: BoostCheckoutInput): Stripe.Checkout.
           currency: "usd",
           unit_amount: input.amountCents,
           product_data: {
-            name: `Boost ${input.name} on bday.lol`,
-            description: `Boosts are final and add to ${first}'s total. They're paid to bday.lol, not to ${first}.`,
+            name: `Boost ${input.name} on mybday.lol`,
+            description: `Boosts are final and add to ${first}'s total. They're paid to mybday.lol, not to ${first}.`,
           },
         },
       },

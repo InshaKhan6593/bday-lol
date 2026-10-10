@@ -12,7 +12,7 @@ import { routes } from "@/lib/routes";
 export const metadata: Metadata = {
   title: "How it works",
   description:
-    "Every day, bday.lol shows one person on its homepage. Whoever bids the most on that date gets the spot, until someone outbids them.",
+    "Every day, mybday.lol shows one person on its homepage. Whoever bids the most on that date gets the spot, until someone outbids them.",
   alternates: { canonical: routes.howItWorks },
 };
 
@@ -37,7 +37,7 @@ export default async function HowItWorksPage() {
             The whole internet.
           </h1>
           <p className={styles.intro}>
-            Every day, bday.lol shows one person on its homepage. Whoever bids the most on that date gets the spot,
+            Every day, mybday.lol shows one person on its homepage. Whoever bids the most on that date gets the spot,
             until someone outbids them.
           </p>
         </div>

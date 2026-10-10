@@ -8,7 +8,7 @@ export function memoryMailer(): Mailer & { sent: OutgoingEmail[]; to(address: st
     to: (address) => sent.filter((e) => e.to === address),
     async send(email) {
       sent.push(email);
-      return { id: `<test-${sent.length}@bday.lol>` };
+      return { id: `<test-${sent.length}@mybday.lol>` };
     },
   };
 }

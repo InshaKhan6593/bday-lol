@@ -35,7 +35,7 @@ let mailer: Mailer | undefined;
 export function getMailer(): Mailer {
   if (mailer) return mailer;
   const transport = smtpTransport();
-  const from = process.env.EMAIL_FROM ?? "bday.lol <hello@bday.lol>";
+  const from = process.env.EMAIL_FROM ?? "mybday.lol <hello@mybday.lol>";
   // "Questions? Just reply": replies go to a real inbox (07 C1: the client's support email).
   const replyTo = process.env.EMAIL_REPLY_TO || undefined;
   mailer = {

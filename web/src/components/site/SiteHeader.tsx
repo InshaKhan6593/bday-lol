@@ -43,7 +43,7 @@ export function SiteHeader({ omit = [], mobile = "menu", back = { href: routes.h
         <IconButton href={back.href} icon="chevronLeft" label={back.label} size="md" iconSize={20} className={styles.back} />
       )}
       <Link href={routes.home} className={styles.logo}>
-        bday.lol
+        mybday.lol
       </Link>
 
       <nav aria-label="Main" className={styles.desktopNav}>

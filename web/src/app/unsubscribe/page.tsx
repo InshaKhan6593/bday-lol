@@ -42,7 +42,7 @@ export default async function UnsubscribePage({ searchParams }: Props) {
                 It may have been cut off when it was copied. Open the Unsubscribe link from the email again.
               </p>
               <Button href={routes.home} variant="paper" size="lg">
-                Go to bday.lol
+                Go to mybday.lol
               </Button>
             </>
           ) : finished ? (
@@ -54,7 +54,7 @@ export default async function UnsubscribePage({ searchParams }: Props) {
                 outbid alerts still arrive.
               </p>
               <Button href={routes.home} variant="ink" size="lg">
-                Back to bday.lol
+                Back to mybday.lol
               </Button>
             </>
           ) : (

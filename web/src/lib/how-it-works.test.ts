@@ -28,9 +28,9 @@ describe("how it works copy", () => {
 
   it("matches the mockup's amounts with the default settings", () => {
     const faq = howItWorksFaq(settings);
-    expect(faq[6]?.a).toBe("$5 for an open date. To pass anyone on the list, bid at least $1 more than they did.");
+    expect(faq[6]?.a).toBe("$5 for an open date. To pass anyone on the board, bid at least $1 more than they did.");
     expect(faq[7]?.a).toBe(
-      "Yes. Tap the ▲ next to anyone’s total to boost it, including your own. Boosts start at $2, add to that person’s total, and are final. Boosts are paid to bday.lol, not to the birthday person.",
+      "Yes. Tap the ▲ next to anyone’s total to boost it, including your own. Boosts start at $2, add to that person’s total, and are final. Boosts are paid to mybday.lol, not to the birthday person.",
     );
   });
 
@@ -38,7 +38,7 @@ describe("how it works copy", () => {
     const rules = { minOpenBidCents: 1_000, minStepCents: 500, minBoostCents: 300 };
     expect(howItWorksSteps(rules)[0]?.body).toMatch(/Bids start at \$10\.$/);
     const faq = howItWorksFaq(rules);
-    expect(faq[6]?.a).toBe("$10 for an open date. To pass anyone on the list, bid at least $5 more than they did.");
+    expect(faq[6]?.a).toBe("$10 for an open date. To pass anyone on the board, bid at least $5 more than they did.");
     expect(faq[7]?.a).toContain("Boosts start at $3,");
   });
 });

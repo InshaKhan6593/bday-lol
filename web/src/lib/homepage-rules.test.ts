@@ -126,17 +126,17 @@ describe("countdown", () => {
 });
 
 describe("share links", () => {
-  const url = "https://bday.lol/october-7";
+  const url = "https://mybday.lol/october-7";
 
   it("builds the Facebook sharer link", () => {
-    expect(facebookShareUrl(url)).toBe("https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fbday.lol%2Foctober-7");
+    expect(facebookShareUrl(url)).toBe("https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fmybday.lol%2Foctober-7");
   });
 
   it("puts the message and link in the text message body", () => {
     const message = birthdayShareText("Jess");
-    expect(message).toBe("It's Jess's birthday on bday.lol");
+    expect(message).toBe("It's Jess's birthday on mybday.lol");
     expect(decodeURIComponent(smsShareUrl(message, url).replace("sms:?&body=", ""))).toBe(
-      "It's Jess's birthday on bday.lol https://bday.lol/october-7",
+      "It's Jess's birthday on mybday.lol https://mybday.lol/october-7",
     );
   });
 });

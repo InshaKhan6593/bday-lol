@@ -14,7 +14,7 @@ const at = (hhmm: string, date = "2026-10-07") => new Date(`${date}T${hhmm}:00-0
 
 beforeEach(() => {
   vi.stubEnv("ADMIN_ALERT_EMAIL", "");
-  vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://bday.lol");
+  vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://mybday.lol");
 });
 afterEach(() => vi.unstubAllEnvs());
 
@@ -41,7 +41,7 @@ describe("outbid alerts", () => {
       expect(owner?.text).toContain("#2 You: $240");
       expect(owner?.text).toContain("Take #1 back for $12");
       expect(owner?.text).toContain("October 7 ends at midnight ET.");
-      expect(owner?.text).toMatch(/Boost \$12: https:\/\/bday\.lol\/october-7\?boost=\w+&amount=12/);
+      expect(owner?.text).toMatch(/Boost \$12: https:\/\/mybday\.lol\/october-7\?boost=\w+&amount=12/);
       const [fan] = mailer.to("fan@example.com");
       expect(fan?.subject).toBe("Jess got passed on October 7");
 
@@ -118,7 +118,7 @@ describe("You got boosted digest", () => {
       expect(digest?.text).toContain("1:12 PM ET: +$5");
       expect(digest?.text).toContain("1:40 PM ET: +$10");
       expect(digest?.text).not.toContain("+$20");
-      expect(digest?.text).toContain("Unsubscribe: https://bday.lol/unsubscribe?t=");
+      expect(digest?.text).toContain("Unsubscribe: https://mybday.lol/unsubscribe?t=");
       expect(digest?.html).not.toContain("a@example.com");
       const pending = await tx.select().from(payments).where(eq(payments.kind, "boost"));
       expect(pending.every((p) => p.digestSentAt?.getTime() === at("13:45").getTime())).toBe(true);
@@ -160,9 +160,9 @@ describe("Your day is here", () => {
       expect(await sendYourDayEmails(tx, mailer, at("08:00"))).toMatchObject({ sent: 2 });
       const [jess] = mailer.to("jess@example.com");
       expect(jess?.subject).toBe("Happy birthday, Jess! 🎂");
-      expect(jess?.text).toContain("You're on the bday.lol homepage today.");
+      expect(jess?.text).toContain("You're on the mybday.lol homepage today.");
       const [sam] = mailer.to("sam@example.com");
-      expect(sam?.text).toContain("You're #2 on today's list.");
+      expect(sam?.text).toContain("You're #2 on today's board.");
       expect(mailer.to("ana@example.com")).toEqual([]);
 
       expect(await sendYourDayEmails(tx, mailer, at("09:00"))).toMatchObject({ sent: 0 });
@@ -192,7 +192,7 @@ describe("reminders", () => {
       expect(signup?.subject).toBe("October 7 is in a week");
       expect(signup?.text).toContain("The top bid is $40.");
       expect(signup?.text).toContain("Own October 7 for $41");
-      expect(signup?.text).toContain("Claim October 7: https://bday.lol/claim?date=october-7");
+      expect(signup?.text).toContain("Claim October 7: https://mybday.lol/claim?date=october-7");
       expect(signup?.headers?.["List-Unsubscribe-Post"]).toBe("List-Unsubscribe=One-Click");
       const [again] = mailer.to("last-year@example.com");
       expect(again?.subject).toBe("Claim October 7 again");

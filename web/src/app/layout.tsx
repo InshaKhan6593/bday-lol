@@ -11,7 +11,7 @@ const bricolage = Bricolage_Grotesque({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: { default: "bday.lol", template: "%s | bday.lol" },
+  title: { default: "mybday.lol", template: "%s | mybday.lol" },
   description: "Bid on your birthday. The highest bid owns the homepage.",
 };
 

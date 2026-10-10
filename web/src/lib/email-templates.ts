@@ -40,7 +40,7 @@ export type Receipt = {
   paidAt: Date;
   /** Stripe payment id, for questions and manual refunds. */
   reference: string | null;
-  /** "Claim October 7, 2026 on bday.lol" */
+  /** "Claim October 7, 2026 on mybday.lol" */
   item: string;
 };
 
@@ -90,24 +90,24 @@ export function claimConfirmationEmail(i: ClaimConfirmationInput): EmailContent 
     const toTop = i.toTopCents ? `${formatUsd(i.toTopCents)} more takes #1. ` : "";
     return {
       subject: `You're #${i.rank} on ${label}`,
-      preheader: `${toTop}Friends can boost you from your page.`,
+      preheader: `${toTop}Friends and followers can boost you from your spot.`,
       kicker: `You're #${i.rank} on`,
       title: label,
       ...colors(i.theme),
       blocks: [
         { kind: "person", name: i.name, line: `${total} · #${i.rank} on ${day}`, photoUrl: i.photoUrl },
-        { kind: "p", text: `Someone bid more while you were paying. ${toTop}Share your link and friends can boost you there.` },
+        { kind: "p", text: `Someone bid more while you were paying. ${toTop}Share your link and friends and followers can boost you there.` },
         { kind: "button", label: "Share your link", url: i.shareUrl },
         receiptRows(i.receipt, i.timeZone),
         { kind: "fine", text: "Bids are final. Questions? Just reply to this email." },
       ],
-      reason: `You're getting this because you claimed ${day} on bday.lol.`,
+      reason: `You're getting this because you claimed ${day} on mybday.lol.`,
     };
   }
 
   const lead = i.isToday
-    ? "You're on the bday.lol homepage until midnight ET, unless someone outbids you. If they do, we'll email you right away."
-    : `Stay on top and the bday.lol homepage is yours all day on ${day}. If someone outbids you, we'll email you right away.`;
+    ? "You're on the mybday.lol homepage until midnight ET, unless someone outbids you. If they do, we'll email you right away."
+    : `Stay on top and the mybday.lol homepage is yours all day on ${day}. If someone outbids you, we'll email you right away.`;
   return {
     subject: `${label} is yours. For now.`,
     preheader: i.isToday ? `You're on the homepage with ${total}.` : `You're #1 with ${total}. Share it so friends know it's coming.`,
@@ -121,7 +121,7 @@ export function claimConfirmationEmail(i: ClaimConfirmationInput): EmailContent 
       receiptRows(i.receipt, i.timeZone),
       { kind: "fine", text: "Bids are final. Questions? Just reply to this email." },
     ],
-    reason: `You're getting this because you claimed ${day} on bday.lol.`,
+    reason: `You're getting this because you claimed ${day} on mybday.lol.`,
   };
 }
 
@@ -155,9 +155,9 @@ export function boostReceiptEmail(i: BoostReceiptInput): EmailContent {
       { kind: "p", text: `Nice one. ${standing}${i.alertOptIn ? ` We'll email you if ${first} gets passed.` : ""}` },
       { kind: "button", label: `Share ${first}'s day`, url: i.dateUrl },
       receiptRows(i.receipt, i.timeZone),
-      { kind: "fine", text: `Boosts are final and paid to bday.lol, not to ${first}. Gifts still go straight to them.` },
+      { kind: "fine", text: `Boosts are final and paid to mybday.lol, not to ${first}. Gifts still go straight to them.` },
     ],
-    reason: `You're getting this because you boosted ${i.name} on bday.lol.`,
+    reason: `You're getting this because you boosted ${i.name} on mybday.lol.`,
   };
 }
 
@@ -211,7 +211,7 @@ export function outbidAlertEmail(i: OutbidAlertInput): EmailContent {
       { kind: "fine", text: "Getting outbid is part of the game. Boosts add to the total and are final." },
     ],
     reason: i.isOwner
-      ? `You're getting this because you claimed ${day} on bday.lol.`
+      ? `You're getting this because you claimed ${day} on mybday.lol.`
       : `You're getting this because you asked us to email you if ${first} gets passed.`,
   };
 }
@@ -248,12 +248,12 @@ export function reminderEmail(i: ReminderInput): EmailContent {
         kind: "p",
         text: again
           ? `Last year you claimed ${day}. Every year starts fresh, so it's up for grabs again.`
-          : "Claim your birthday before someone else does. The highest bid gets the bday.lol homepage all day.",
+          : "Claim your birthday before someone else does. The highest bid gets the mybday.lol homepage all day.",
       },
       { kind: "bar", title: `Own ${day} for ${formatUsd(i.minCents)}`, sub: state, label: `Claim ${day}`, url: i.claimUrl },
     ],
     reason: again
-      ? `You're getting this because you claimed ${day} on bday.lol last year. One email a year.`
+      ? `You're getting this because you claimed ${day} on mybday.lol last year. One email a year.`
       : `You asked us to remind you a week before ${day}. One email a year.`,
   };
 }
@@ -273,7 +273,7 @@ export type YourDayInput = Person & {
 export function yourDayEmail(i: YourDayInput): EmailContent {
   const first = firstName(i.name);
   const day = formatLong(i.md);
-  const where = i.rank === 1 ? "You're on the bday.lol homepage today." : `You're #${i.rank} on today's list.`;
+  const where = i.rank === 1 ? "You're on the mybday.lol homepage today." : `You're #${i.rank} on today's board.`;
   const gifts = i.hasGiftLinks
     ? "Your gift buttons are live, so share your link and let people celebrate you."
     : "Share your link so everyone knows it's your day.";
@@ -288,7 +288,7 @@ export function yourDayEmail(i: YourDayInput): EmailContent {
       { kind: "p", text: `${where} ${gifts}` },
       { kind: "button", label: "Share your link", url: i.dateUrl },
     ],
-    reason: `You're getting this because you're on ${possessive(i.md)} birthday list on bday.lol.`,
+    reason: `You're getting this because you're on ${possessive(i.md)} birthday board on mybday.lol.`,
   };
 }
 
@@ -323,7 +323,7 @@ export function boostDigestEmail(i: BoostDigestInput): EmailContent {
       { kind: "rows", strong: true, rows: i.boosts.map((b) => [`${time(b.at)} ET`, `+${formatUsd(b.amountCents)}`] as [string, string]) },
       { kind: "button", label: "Share your link", url: i.dateUrl },
     ],
-    reason: `You're getting this because you're on ${possessive(i.md)} birthday list on bday.lol.`,
+    reason: `You're getting this because you're on ${possessive(i.md)} birthday board on mybday.lol.`,
   };
 }
 
@@ -363,9 +363,9 @@ export function adminClaimEmail(i: AdminClaimInput): EmailContent {
           ...(i.photoUrl ? ([["Photo", i.photoUrl]] as Array<[string, string]>) : []),
         ],
       },
-      { kind: "button", label: `Open ${possessive(i.md)} list`, url: i.dateUrl },
+      { kind: "button", label: `Open ${possessive(i.md)} board`, url: i.dateUrl },
       { kind: "fine", text: "Offensive photo, name or bio? Remove it from the admin view." },
     ],
-    reason: "You're getting this because you're the bday.lol admin.",
+    reason: "You're getting this because you're the mybday.lol admin.",
   };
 }

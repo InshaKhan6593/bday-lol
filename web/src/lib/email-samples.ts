@@ -39,7 +39,7 @@ export function sampleEmails(origin: string): Array<{ id: string; label: string;
           presentment: { currency: "gbp", amount: 19_200 },
           paidAt,
           reference: "pi_3UOgwH…P2W",
-          item: "Claim October 7, 2026 on bday.lol",
+          item: "Claim October 7, 2026 on mybday.lol",
         },
       }),
     },
@@ -58,7 +58,7 @@ export function sampleEmails(origin: string): Array<{ id: string; label: string;
         isToday: true,
         shareUrl: dateUrl,
         timeZone: tz,
-        receipt: { amountCents: 15_000, presentment: null, paidAt, reference: null, item: "Claim October 7, 2026 on bday.lol" },
+        receipt: { amountCents: 15_000, presentment: null, paidAt, reference: null, item: "Claim October 7, 2026 on mybday.lol" },
       }),
     },
     {
@@ -73,7 +73,7 @@ export function sampleEmails(origin: string): Array<{ id: string; label: string;
         alertOptIn: true,
         dateUrl,
         timeZone: tz,
-        receipt: { amountCents: 500, presentment: { currency: "pkr", amount: 143_994 }, paidAt, reference: null, item: "Boost Jess Moreno on bday.lol" },
+        receipt: { amountCents: 500, presentment: { currency: "pkr", amount: 143_994 }, paidAt, reference: null, item: "Boost Jess Moreno on mybday.lol" },
       }),
     },
     {

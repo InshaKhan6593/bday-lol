@@ -164,7 +164,7 @@ function BoostBox({
           {dayEnd && <EndingSoon endsAt={dayEnd.endsAt} serverNow={dayEnd.serverNow} className={styles.notice} />}
 
           <p className={styles.fine}>
-            Boosts are final and add to {first}’s total. They’re paid to bday.lol, not to {first}. Gifts still go
+            Boosts are final and add to {first}’s total. They’re paid to mybday.lol, not to {first}. Gifts still go
             straight to them.
           </p>
         </Dialog.Content>

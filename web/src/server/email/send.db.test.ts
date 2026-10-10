@@ -39,7 +39,7 @@ describe("sendEmail", () => {
       expect(mailer.sent[0]).toMatchObject({ to: "sam@example.com", subject: "October 7 is in a week" });
       const log = await tx.select().from(emailLog);
       expect(log).toEqual([
-        expect.objectContaining({ type: "reminder", to: "sam@example.com", dedupeKey: "reminder:1:2026", providerId: "<test-1@bday.lol>" }),
+        expect.objectContaining({ type: "reminder", to: "sam@example.com", dedupeKey: "reminder:1:2026", providerId: "<test-1@mybday.lol>" }),
       ]);
     });
   });

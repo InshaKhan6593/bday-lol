@@ -34,7 +34,7 @@ const TYPE_ROLES = [
   ["--text-title-sm", "Title small", "Send a birthday gift", 800],
   ["--text-action", "Action", "Claim the top spot", 800],
   ["--text-lead", "Lead", "30 and still can't cook. Pizza money appreciated.", 400],
-  ["--text-body", "Body", "Gifts go straight to them. bday.lol never touches the money.", 400],
+  ["--text-body", "Body", "Gifts go straight to them. mybday.lol never touches the money.", 400],
   ["--text-note", "Note", "For your receipt and outbid alerts. Never shown.", 400],
   ["--text-caption", "Caption", "Under each date: the current top bid.", 400],
   ["--text-fine", "Fine", "Boosts are final and add to Jess's total.", 400],
@@ -55,7 +55,7 @@ export function StyleGuide() {
     <ThemeScope theme={theme} paint>
       <main className={styles.page}>
         <header className={styles.intro}>
-          <Kicker size="lg">bday.lol design language</Kicker>
+          <Kicker size="lg">mybday.lol design language</Kicker>
           <h1 className={styles.display}>Neo-brutalist.</h1>
           <p className={styles.lead}>
             Ink outlines, hard shadows, one typeface, and color that only comes from the theme. Pick a
@@ -142,7 +142,7 @@ export function StyleGuide() {
               <Button variant="ink" size="xl" iconEnd={<Icon name="arrowUpRight" />}>
                 Send on Venmo
               </Button>
-              <span className={styles.note}>Gifts go straight to them. bday.lol never touches the money.</span>
+              <span className={styles.note}>Gifts go straight to them. mybday.lol never touches the money.</span>
             </Surface>
           </Surface>
 

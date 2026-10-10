@@ -21,7 +21,7 @@ export function NobodyYetCard({ shareUrl }: { shareUrl: string }) {
         </div>
         <InviteButtons
           url={shareUrl}
-          message="Is today your birthday? Claim it on bday.lol"
+          message="Is today your birthday? Claim it on mybday.lol"
           className={styles.inviteActions}
         />
       </Surface>

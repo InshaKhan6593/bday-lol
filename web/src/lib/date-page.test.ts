@@ -49,10 +49,10 @@ describe("status line", () => {
   });
 
   it("words it like the mockup", () => {
-    expect(statusText({ month: 10, day: 10 }, { kind: "soon", days: 3 })).toBe("In 3 days · bidding is open");
-    expect(statusText({ month: 10, day: 8 }, { kind: "soon", days: 1 })).toBe("In 1 day · bidding is open");
+    expect(statusText({ month: 10, day: 10 }, { kind: "soon", days: 3 })).toBe("In 3 days · Bidding is open");
+    expect(statusText({ month: 10, day: 8 }, { kind: "soon", days: 1 })).toBe("In 1 day · Bidding is open");
     expect(statusText({ month: 10, day: 1 }, { kind: "next", year: 2027 })).toBe(
-      "Next one: Oct 1, 2027 · bidding is open",
+      "Next one: Oct 1, 2027 · Bidding is open",
     );
   });
 

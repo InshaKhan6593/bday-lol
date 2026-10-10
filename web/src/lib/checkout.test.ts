@@ -11,7 +11,7 @@ function params() {
     amountCents: 24_100,
     email: "sam@example.com",
     metadata,
-    origin: "https://bday.lol",
+    origin: "https://mybday.lol",
     cancelPath: "/claim?date=october-1&rank=2",
     now: NOW,
   });
@@ -29,8 +29,8 @@ describe("claim checkout session", () => {
           currency: "usd",
           unit_amount: 24_100,
           product_data: {
-            name: "Claim October 1, 2027 on bday.lol",
-            description: "Bids are final. If someone outbids you, you stay on this day's birthday list.",
+            name: "Claim October 1, 2027 on mybday.lol",
+            description: "Bids are final. If someone outbids you, you stay on this day's birthday board.",
           },
         },
       },
@@ -52,8 +52,8 @@ describe("claim checkout session", () => {
 
   it("returns to the Success page with Stripe's placeholder left unencoded", () => {
     const p = params();
-    expect(p.success_url).toBe("https://bday.lol/claim/success?session_id={CHECKOUT_SESSION_ID}");
-    expect(p.cancel_url).toBe("https://bday.lol/claim?date=october-1&rank=2");
+    expect(p.success_url).toBe("https://mybday.lol/claim/success?session_id={CHECKOUT_SESSION_ID}");
+    expect(p.cancel_url).toBe("https://mybday.lol/claim?date=october-1&rank=2");
   });
 
   it("reads our metadata back and ignores sessions this app didn't create", () => {

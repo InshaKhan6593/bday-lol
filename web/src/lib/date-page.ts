@@ -45,9 +45,9 @@ export function dateStatus(md: MonthDay, instant: Date, timeZone: string): DateS
 /** Status line for any day but today (today shows the live countdown instead). */
 export function statusText(md: MonthDay, status: Exclude<DateStatus, { kind: "today" }>): string {
   if (status.kind === "soon") {
-    return `In ${status.days} ${status.days === 1 ? "day" : "days"} · bidding is open`;
+    return `In ${status.days} ${status.days === 1 ? "day" : "days"} · Bidding is open`;
   }
-  return `Next one: ${formatShort(md)}, ${status.year} · bidding is open`;
+  return `Next one: ${formatShort(md)}, ${status.year} · Bidding is open`;
 }
 
 /** Dashed pill on other days: "Gifts open Oct 7", with the year when it's not this year. */

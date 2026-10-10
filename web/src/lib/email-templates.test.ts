@@ -3,7 +3,7 @@ import { escapeHtml, formatMinorUnits, renderEmail } from "./email-render";
 import { sampleEmails } from "./email-samples";
 import { claimConfirmationEmail, outbidAlertEmail, reminderEmail } from "./email-templates";
 
-const ORIGIN = "https://bday.lol";
+const ORIGIN = "https://mybday.lol";
 const md = { month: 10, day: 7 };
 
 describe("email rendering", () => {
@@ -102,7 +102,7 @@ describe("email wording", () => {
 
     const third = claimConfirmationEmail({ ...base, rank: 3, toTopCents: 9_100, isToday: true });
     expect(third.subject).toBe("You're #3 on October 7");
-    expect(third.preheader).toBe("$91 more takes #1. Friends can boost you from your page.");
+    expect(third.preheader).toBe("$91 more takes #1. Friends and followers can boost you from your spot.");
     // Lower ranks don't get the outbid promise (alerts only fire on losing #1).
     expect(JSON.stringify(third.blocks)).not.toContain("we'll email you right away");
     // One button per email.

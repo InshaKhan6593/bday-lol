@@ -13,7 +13,7 @@ const at = (hhmm: string) => new Date(`2026-10-07T${hhmm}:00-04:00`);
 
 beforeEach(() => {
   vi.stubEnv("ADMIN_ALERT_EMAIL", "admin@example.com");
-  vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://bday.lol");
+  vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://mybday.lol");
 });
 afterEach(() => vi.unstubAllEnvs());
 
@@ -36,11 +36,11 @@ describe("payment emails", () => {
       expect(run).toMatchObject({ sent: 2, failed: 0 });
       const [confirmation] = mailer.to("sam@example.com");
       expect(confirmation?.subject).toBe("October 7 is yours. For now.");
-      expect(confirmation?.text).toContain("You're on the bday.lol homepage until midnight ET");
-      expect(confirmation?.text).toContain("Share your link: https://bday.lol/october-7");
+      expect(confirmation?.text).toContain("You're on the mybday.lol homepage until midnight ET");
+      expect(confirmation?.text).toContain("Share your link: https://mybday.lol/october-7");
       expect(confirmation?.text).toContain("Reference: pi_test");
       // The photo is absolute, so it loads in the inbox.
-      expect(confirmation?.html).toContain('src="https://bday.lol/uploads/sam.jpg"');
+      expect(confirmation?.html).toContain('src="https://mybday.lol/uploads/sam.jpg"');
 
       const [admin] = mailer.to("admin@example.com");
       expect(admin?.subject).toBe("New claim: Sam Rivera, Oct 7, $241");
@@ -137,7 +137,7 @@ describe("payment emails", () => {
       expect(out?.alerts.sent).toBe(1);
       const [alert] = mailer.to("jess@example.com");
       expect(alert?.subject).toBe("You got passed on October 7");
-      expect(alert?.text).toContain("Boost $2: https://bday.lol/october-7?boost=");
+      expect(alert?.text).toContain("Boost $2: https://mybday.lol/october-7?boost=");
       const [row] = await tx.select().from(outbidAlerts).where(eq(outbidAlerts.entryId, jess.entryId));
       expect(row?.sentAt).toEqual(at("14:40"));
     });

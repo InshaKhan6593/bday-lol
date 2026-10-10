@@ -11,7 +11,7 @@ type Props = {
   person: { name: string; photoUrl: string | null; theme: ThemeKey };
   /** "TODAY'S BIRTHDAY" / "TOP BID". */
   kicker: string;
-  /** Shown under the card, e.g. "bday.lol/october-7". */
+  /** Shown under the card, e.g. "mybday.lol/october-7". */
   displayUrl: string;
 };
 

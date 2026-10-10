@@ -37,7 +37,7 @@ export async function sendPaymentEmails(db: Executor, mailer: Mailer, sessionId:
         : null,
     paidAt: payment.paidAt ?? instant,
     reference: payment.stripePaymentIntentId,
-    item: payment.kind === "claim" ? `Claim ${day}, ${year} on bday.lol` : `Boost ${entry.name} on bday.lol`,
+    item: payment.kind === "claim" ? `Claim ${day}, ${year} on mybday.lol` : `Boost ${entry.name} on mybday.lol`,
   };
   const person = { name: entry.name, bio: entry.bio, photoUrl: entry.photoUrl, theme: entry.theme };
 

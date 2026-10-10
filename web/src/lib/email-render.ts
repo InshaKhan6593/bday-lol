@@ -158,7 +158,7 @@ export function renderEmail(content: EmailContent, options: RenderOptions): Rend
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">${escapeHtml(content.preheader)}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${ground}"><tr><td align="center" style="padding:28px 16px 36px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
-<tr><td style="padding:0 4px 26px"><a href="${safeUrl(options.origin)}" style="font-family:${FONT};font-size:26px;font-weight:800;letter-spacing:-0.02em;color:${INK};text-decoration:none">bday.lol</a></td></tr>
+<tr><td style="padding:0 4px 26px"><a href="${safeUrl(options.origin)}" style="font-family:${FONT};font-size:26px;font-weight:800;letter-spacing:-0.02em;color:${INK};text-decoration:none">mybday.lol</a></td></tr>
 <tr><td align="center" style="padding:0 4px 26px">
 <p style="margin:0 0 6px;font-size:14px;font-weight:800;letter-spacing:0.18em;text-transform:uppercase;color:${INK}">${escapeHtml(content.kicker)}</p>
 <h1 class="hero-title" style="margin:0;font-family:${FONT};font-size:64px;line-height:0.95;font-weight:800;letter-spacing:-0.045em;color:${INK}">${escapeHtml(content.title)}</h1>
@@ -171,7 +171,7 @@ ${content.blocks.map((b) => blockHtml(b, accent)).join("\n")}
 </body></html>`;
 
   const text = [
-    "bday.lol",
+    "mybday.lol",
     "",
     content.kicker.toUpperCase(),
     content.title,

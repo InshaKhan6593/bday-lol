@@ -66,7 +66,7 @@ export function LeaderCard({ leader, shareUrl, dateLabel, theme, otherTotalsCent
                 </Button>
               ))}
             </div>
-            <p className={styles.note}>Gifts go straight to them. bday.lol never touches the money.</p>
+            <p className={styles.note}>Gifts go straight to them. mybday.lol never touches the money.</p>
           </Surface>
         )}
 

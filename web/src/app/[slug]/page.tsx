@@ -67,7 +67,7 @@ export default async function DatePage({ params, searchParams }: Props) {
           <p className={styles.status}>
             {status.kind === "today" ? (
               <>
-                Today · day ends in{" "}
+                Today · Ends in{" "}
                 <Countdown endsAt={page.dayEndsAt} serverNow={page.serverNow} className={styles.countdown} />
               </>
             ) : (

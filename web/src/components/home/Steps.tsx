@@ -4,7 +4,7 @@ import styles from "./home.module.css";
 const STEPS = [
   ["Bid on your birthday", "Let everyone know it's your day, and make it easy for them to celebrate you."],
   ["Highest bid owns the homepage", "Until someone claims it with a higher bid. Yes, even on the day itself."],
-  ["Get birthday gifts", "Friends and fans send gifts to your Venmo, Cash App, Amazon, or Throne."],
+  ["Get birthday gifts", "Friends and followers send gifts to your Venmo, Cash App, Amazon, or Throne."],
 ] as const;
 
 export function Steps() {

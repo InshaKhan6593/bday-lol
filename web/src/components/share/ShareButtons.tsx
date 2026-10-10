@@ -9,7 +9,7 @@ import { useShare } from "./useShare";
 
 type Props = {
   url: string;
-  /** Message that goes with the link, e.g. "It's Jess's birthday on bday.lol". */
+  /** Message that goes with the link, e.g. "It's Jess's birthday on mybday.lol". */
   message: string;
   /** Success page: taller buttons, Share and Facebook in ink. */
   large?: boolean;

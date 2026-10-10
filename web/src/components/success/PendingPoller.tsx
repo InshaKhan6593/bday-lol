@@ -26,7 +26,7 @@ export function PendingPoller() {
     <p role="status" className={styles.sub}>
       {slow
         ? "This is taking longer than usual. Your payment went through, and we'll email your receipt as soon as your spot is live."
-        : "Your payment went through. Putting you on the list. This takes a few seconds."}
+        : "Your payment went through. Putting you on the board. This takes a few seconds."}
     </p>
   );
 }
