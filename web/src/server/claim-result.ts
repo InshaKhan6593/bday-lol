@@ -8,7 +8,13 @@ import type { Placement } from "@/lib/success";
 import { getBirthdaySettings, getRankedEntries } from "./leaderboard";
 
 /** A person as the Success page shows them. Public fields only: this goes to the browser. */
-export type CardPerson = { name: string; photoUrl: string | null; theme: ThemeKey };
+export type CardPerson = {
+  name: string;
+  photoUrl: string | null;
+  theme: ThemeKey;
+  /** Personal link name: mybday.lol/october-7/sam-rivera. */
+  slug: string | null;
+};
 
 export type ClaimOutcome =
   /** No claim with this Stripe session (or it was removed by the admin). */
@@ -68,7 +74,7 @@ export async function getClaimOutcome(db: Executor, sessionId: string, instant: 
       : row.key === toKey(today) && year === today.year
         ? "today"
         : "upcoming";
-  const person = (e: typeof first): CardPerson => ({ name: e.name, photoUrl: e.photoUrl, theme: e.theme });
+  const person = (e: typeof first): CardPerson => ({ name: e.name, photoUrl: e.photoUrl, theme: e.theme, slug: e.slug });
 
   return {
     status: "done",

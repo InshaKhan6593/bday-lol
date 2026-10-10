@@ -70,6 +70,71 @@
 }
 
 /* Right column: "How your link looks when shared". */
+/* ---------- Your personal link (handoff v2) ---------- */
+
+.personal {
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px var(--space-lg);
+  border-radius: var(--radius-panel);
+}
+
+.personalKicker {
+  letter-spacing: 0.1em;
+}
+
+.personalRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.personalUrl {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--control-md);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-md);
+  background: var(--ground);
+  border: var(--border);
+  border-radius: var(--radius-small);
+  font-size: var(--text-label);
+  font-weight: var(--weight-link);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.copy {
+  flex-shrink: 0;
+  min-height: var(--control-md);
+  padding: 0 18px;
+  background: var(--accent);
+  border: var(--border);
+  border-radius: var(--radius-small);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: var(--text-label);
+  font-weight: var(--weight-bold);
+  cursor: pointer;
+}
+
+.personalHelp {
+  font-size: var(--text-note);
+  line-height: var(--leading-fine);
+  color: var(--color-text-secondary);
+}
+
+.seeSpot {
+  align-self: flex-start;
+  padding: var(--space-2xs) 0;
+  font-size: var(--text-label);
+  font-weight: var(--weight-bold);
+}
+
 .preview {
   flex: 1 1 480px;
   max-width: 560px;
@@ -103,19 +168,24 @@
     gap: var(--space-xs);
   }
 
-  .preview {
+  .personal {
     order: 2;
+    max-width: none;
+  }
+
+  .preview {
+    order: 3;
     flex: none;
     gap: var(--space-sm);
   }
 
   .share {
-    order: 3;
+    order: 4;
     max-width: none;
   }
 
   .note {
-    order: 4;
+    order: 5;
     max-width: none;
     padding: 14px var(--space-lg);
     border-radius: var(--radius-button);
@@ -125,7 +195,7 @@
 
   .seeLink,
   .retry {
-    order: 5;
+    order: 6;
   }
 
   .seeLink {

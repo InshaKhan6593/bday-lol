@@ -7,9 +7,9 @@ import styles from "./LinkCard.module.css";
 
 type Props = {
   md: MonthDay;
-  /** The person the date's link shows: its #1. */
+  /** The person the link shows (the claimer on the Success page). */
   person: { name: string; photoUrl: string | null; theme: ThemeKey };
-  /** "TODAY'S BIRTHDAY" / "TOP BID". */
+  /** "TODAY'S BIRTHDAY" / "BIRTHDAY". */
   kicker: string;
   /** Shown under the card, e.g. "mybday.lol/october-7". */
   displayUrl: string;

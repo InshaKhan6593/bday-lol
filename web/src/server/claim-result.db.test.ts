@@ -43,8 +43,8 @@ describe("claim outcome (Success page)", () => {
       expect(out).toEqual({
         status: "done",
         placement: { md: oct7, year: 2026, rank: 1, when: "today", currentYear: 2026, toTopCents: null },
-        you: { name: "Sam Rivera", photoUrl: null, theme: "sky" },
-        top: { name: "Sam Rivera", photoUrl: null, theme: "sky" },
+        you: { name: "Sam Rivera", photoUrl: null, theme: "sky", slug: "sam-rivera" },
+        top: { name: "Sam Rivera", photoUrl: null, theme: "sky", slug: "sam-rivera" },
       });
     });
   });

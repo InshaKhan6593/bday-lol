@@ -1,9 +1,7 @@
 import { formatLong, MONTHS, type MonthDay } from "./birthday";
-import { formatUsd } from "./money";
 
 /**
- * Success page copy. The mockup only shows "today's #1"; the other cases keep
- * the same layout and change the top text (decided, 07 B1). The page reads
+ * Success page copy, from handoff v2 (SuccessDesktop.dc.html). The page reads
  * the real result from the database, so a bid that got passed while paying
  * shows its real rank (07 B6).
  */
@@ -43,7 +41,7 @@ function possessive(md: MonthDay): string {
 
 export function successCopy(p: Placement): SuccessCopy {
   const day = formatLong(p.md);
-  const outbidNote = `If someone outbids you, we'll email you right away so you can bid back. Either way, you stay on ${possessive(p.md)} birthday list.`;
+  const passedNote = `If someone passes you, we'll email you right away so you can take it back. Either way, you stay on ${possessive(p.md)} birthday board.`;
   const share = "Share it so everyone knows it's your day.";
 
   if (p.rank === 1 && p.when === "today") {
@@ -51,34 +49,33 @@ export function successCopy(p: Placement): SuccessCopy {
       kicker: "You're on the homepage",
       title: [`${day} is yours.`, "For now."],
       sub: share,
-      note: outbidNote,
+      note: passedNote,
       link: { label: "See the homepage", to: "home" },
     };
   }
   if (p.rank === 1 && p.when === "upcoming") {
     return {
-      kicker: `You're #1 for ${dateLabel(p)}`,
+      kicker: `You're #1 on ${dateLabel(p)}`,
       title: [`${day} is yours.`, "For now."],
       sub: share,
-      note: outbidNote,
-      link: { label: `See ${possessive(p.md)} list`, to: "date" },
+      note: passedNote,
+      link: { label: `See ${possessive(p.md)} board`, to: "date" },
     };
   }
-  // Rank 2+, or a board whose day ended while the payment landed (07 B5).
-  const toTop = p.when !== "closed" && p.rank > 1 && p.toTopCents !== null;
+  // Rank 2+, or a board whose day ended while the payment landed (07 B5): nothing left to boost on a closed one.
   return {
-    kicker: "You're on the list",
-    title: [`You're #${p.rank} on ${day}.`],
-    sub: toTop ? `${formatUsd(p.toTopCents!)} more takes #1. Share it so friends can boost you.` : share,
-    // Outbid emails only go out when someone loses #1, so don't promise one here.
-    note: `You stay on ${possessive(p.md)} birthday list, where friends can find you, boost you and send gifts.`,
-    link: { label: `See ${possessive(p.md)} list`, to: "date" },
+    kicker: "You're on the board",
+    title: p.when === "closed" ? [`You're #${p.rank} on ${day}.`] : [`You're #${p.rank} on ${day}.`, "Boost to climb."],
+    sub: share,
+    // Outbid emails only go out when someone loses #1, so this note doesn't promise one.
+    note: `You stay on ${possessive(p.md)} birthday board, where friends and followers can find you, boost you and send gifts.`,
+    link: { label: `See ${possessive(p.md)} board`, to: "date" },
   };
 }
 
-/** Kicker on the shared link's card: "TODAY'S BIRTHDAY" on the day itself, "TOP BID" before it (the date page's badge). */
+/** Kicker on the shared link's card: "TODAY'S BIRTHDAY" on the day itself, "BIRTHDAY" before it (handoff v2). */
 export function linkCardKicker(isToday: boolean): string {
-  return isToday ? "Today's birthday" : "Top bid";
+  return isToday ? "Today's birthday" : "Birthday";
 }
 
 /** Stripe Checkout session ids look like "cs_test_a1B2…" / "cs_live_…". Anything else never reaches the database. */

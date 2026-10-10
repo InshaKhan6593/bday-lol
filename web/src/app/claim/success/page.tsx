@@ -5,6 +5,7 @@ import { LinkCard } from "@/components/share/LinkCard";
 import { ShareButtons } from "@/components/share/ShareButtons";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
+import { PersonalLink } from "@/components/success/PersonalLink";
 import { PendingPoller } from "@/components/success/PendingPoller";
 import styles from "@/components/success/success.module.css";
 import { Button, Kicker, ThemeScope } from "@/components/ui";
@@ -17,7 +18,7 @@ import { isCheckoutSessionId, linkCardKicker, successCopy } from "@/lib/success"
 import { getClaimOutcome } from "@/server/claim-result";
 
 export const metadata: Metadata = {
-  title: "You’re on the list",
+  title: "You’re on the board",
   robots: { index: false, follow: false },
 };
 
@@ -73,9 +74,10 @@ export default async function ClaimSuccessPage({ searchParams }: Props) {
     );
   }
 
-  const { placement, you, top } = outcome;
+  const { placement, you } = outcome;
   const copy = successCopy(placement);
-  const dateUrl = absoluteUrl(routes.date(placement.md));
+  const personPath = routes.person(placement.md, you.slug);
+  const personUrl = absoluteUrl(personPath);
 
   return (
     <ThemeScope theme={you.theme} paint>
@@ -97,9 +99,11 @@ export default async function ClaimSuccessPage({ searchParams }: Props) {
             <p className={styles.sub}>{copy.sub}</p>
           </div>
 
+          <PersonalLink url={personUrl} path={personPath} />
+
           <ShareButtons
             large
-            url={dateUrl}
+            url={personUrl}
             message={birthdayShareText(firstName(you.name))}
             className={styles.share}
           />
@@ -113,11 +117,12 @@ export default async function ClaimSuccessPage({ searchParams }: Props) {
 
         <div className={styles.preview}>
           <Kicker className={styles.previewKicker}>How your link looks when shared</Kicker>
+          {/* Handoff v2: the card is the claimer's own link, whatever their rank. */}
           <LinkCard
             md={placement.md}
-            person={top}
+            person={you}
             kicker={linkCardKicker(placement.when === "today")}
-            displayUrl={displayUrl(dateUrl)}
+            displayUrl={displayUrl(personUrl)}
           />
         </div>
       </main>

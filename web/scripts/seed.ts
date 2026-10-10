@@ -89,7 +89,8 @@ const UPCOMING: Array<Person | null> = [
 const cents = (usd: number) => usd * 100;
 const emailFor = (name: string) => `${name.toLowerCase().replace(/[^a-z]+/g, ".")}@example.com`;
 let sessionCounter = 0;
-const fakeSession = () => `cs_test_seed_${String(++sessionCounter).padStart(4, "0")}`;
+// Letters and digits only, like real Stripe ids, so /claim/success?session_id=… works for seeded claims too.
+const fakeSession = () => `cs_test_seed${String(++sessionCounter).padStart(4, "0")}`;
 
 const at = now();
 const tz = BIRTHDAY_BOARD_TYPE.settings.timezone;
