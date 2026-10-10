@@ -37,7 +37,7 @@ describe("payment emails", () => {
       expect(run).toMatchObject({ sent: 2, failed: 0 });
       const [confirmation] = mailer.to("sam@example.com");
       expect(confirmation?.subject).toBe("October 7 is yours. For now.");
-      expect(confirmation?.text).toContain("You're on the mybday.lol homepage until midnight ET");
+      expect(confirmation?.text).toContain("It's yours until midnight ET");
       expect(confirmation?.text).toMatch(/Share your link: https:\/\/mybday\.lol\/october-7\/sam-rivera$/m);
       // A short receipt number from our payment id (Stripe holds the full id as metadata.paymentId).
       expect(confirmation?.text).toContain(`RECEIPT No. ${receiptNumber(sam.paymentId)}`);

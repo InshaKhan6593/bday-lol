@@ -6,17 +6,14 @@
  *
  * The look is the app's design language: the person's theme ground as the
  * background, a kicker over a giant date (the homepage hero), a white card
- * with ink outlines and a hard shadow, the black claim bar with an accent
- * button, avatar circles. Gmail strips box-shadow, so the card's shadow is a
+ * with ink outlines and a hard shadow, receipt-style panels, avatar circles. Gmail strips box-shadow, so the card's shadow is a
  * thick bottom-right border, which renders the same everywhere.
  */
 
 export type EmailBlock =
   | { kind: "p"; text: string }
-  /** A black button (the main action). "wide" fills the card's width. */
-  | { kind: "button"; label: string; url: string; wide?: boolean }
-  /** The homepage's black claim bar: title + small line on the left, accent button. */
-  | { kind: "bar"; title: string; sub?: string; label: string; url: string }
+  /** The main action: a full-width black button (easy to tap on a phone, the same in every email). */
+  | { kind: "button"; label: string; url: string }
   /** Avatar circle + name + an optional line under it. */
   | { kind: "person"; name: string; line?: string; photoUrl?: string | null }
   /**
@@ -71,7 +68,7 @@ export type RenderedEmail = { subject: string; html: string; text: string };
 
 const INK = "#141414";
 /**
- * A thin grey edge on black buttons and the black bar. In light mode it
+ * A thin grey edge on black buttons. In light mode it
  * disappears into the black; when an app forces dark mode on the email
  * (Gmail on Android ignores "light only") the card turns black too, and this
  * edge is what keeps the button visible.
@@ -168,23 +165,16 @@ function blockHtml(block: EmailBlock, accent: string, ground: string): string {
     case "p":
       return `<p style="margin:0 0 16px;font-size:17px;line-height:1.5;color:#333333">${escapeHtml(block.text)}</p>`;
     case "button":
-      return `<table role="presentation" cellpadding="0" cellspacing="0"${block.wide ? ' width="100%"' : ""} style="margin:4px 0 20px"><tr><td${block.wide ? ' align="center"' : ""} style="background:${INK};border:2px solid ${EDGE};border-radius:16px"><a href="${safeUrl(block.url)}" style="display:${block.wide ? "block" : "inline-block"};padding:16px 26px;font-family:${FONT};font-size:17px;font-weight:800;color:#ffffff;text-decoration:none;text-align:center">${escapeHtml(block.label)}</a></td></tr></table>`;
+      return `<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:4px 0 20px"><tr><td align="center" style="background:${INK};border:2px solid ${EDGE};border-radius:16px"><a href="${safeUrl(block.url)}" style="display:block;padding:16px 26px;font-family:${FONT};font-size:17px;font-weight:800;color:#ffffff;text-decoration:none;text-align:center">${escapeHtml(block.label)}</a></td></tr></table>`;
     case "versus": {
       const tile = (t: VersusTile, filled: boolean) =>
         `<td width="50%" style="padding:16px 16px 14px;vertical-align:top;border:3px ${filled ? "solid" : "dashed"} ${INK};border-radius:18px;background:${filled ? ground : "#ffffff"}"><p style="margin:0;font-size:12px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:${INK}">${escapeHtml(t.kicker)}</p><p style="margin:6px 0 0;font-size:17px;line-height:1.25;font-weight:700;color:${INK};word-break:break-word">${escapeHtml(t.name)}</p><p style="margin:8px 0 0;font-size:30px;line-height:1;font-weight:800;letter-spacing:-0.02em;color:${INK}">${escapeHtml(t.amount)}</p></td>`;
       return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border-collapse:separate;border-spacing:0"><tr>${tile(block.left, true)}<td width="12" style="font-size:0;line-height:0">&nbsp;</td>${tile(block.right, false)}</tr></table>`;
     }
     case "callout":
-      return `<div style="margin:0 0 16px;text-align:center"><p style="margin:0;font-size:30px;line-height:1.1;font-weight:800;letter-spacing:-0.02em;color:${INK}">${escapeHtml(block.title)}</p>${
+      return `<div style="margin:8px 0 18px;text-align:center"><p style="margin:0;font-size:30px;line-height:1.1;font-weight:800;letter-spacing:-0.02em;color:${INK}">${escapeHtml(block.title)}</p>${
         block.sub ? `<p style="margin:8px 0 0;font-size:15px;line-height:1.45;color:#4a4a4a">${escapeHtml(block.sub)}</p>` : ""
       }</div>`;
-    case "bar":
-      return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 20px;background:${INK};border:2px solid ${EDGE};border-radius:20px"><tr><td style="padding:18px 20px">
-<p style="margin:0;font-size:20px;line-height:1.2;font-weight:800;color:#ffffff">${escapeHtml(block.title)}</p>${
-        block.sub ? `<p style="margin:4px 0 0;font-size:14px;line-height:1.4;color:#d6d6d6">${escapeHtml(block.sub)}</p>` : ""
-      }
-<table role="presentation" cellpadding="0" cellspacing="0" style="margin:14px 0 0"><tr><td style="background:${accent};border-radius:14px"><a href="${safeUrl(block.url)}" style="display:inline-block;padding:14px 22px;font-family:${FONT};font-size:17px;font-weight:800;color:${INK};text-decoration:none">${escapeHtml(block.label)}</a></td></tr></table>
-</td></tr></table>`;
     case "person": {
       const avatar = block.photoUrl
         ? `<img src="${safeUrl(block.photoUrl)}" alt="" width="56" height="56" style="display:block;width:56px;height:56px;border-radius:999px;border:3px solid ${INK};object-fit:cover">`
@@ -210,8 +200,6 @@ function blockText(block: EmailBlock): string {
       return block.text;
     case "button":
       return `${block.label}: ${block.url}`;
-    case "bar":
-      return [block.title, block.sub, `${block.label}: ${block.url}`].filter(Boolean).join("\n");
     case "person":
       return [block.name, block.line].filter(Boolean).join("\n");
     case "versus":

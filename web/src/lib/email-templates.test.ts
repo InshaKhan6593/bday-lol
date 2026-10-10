@@ -96,6 +96,12 @@ describe("email wording", () => {
   const receipt = { amountCents: 24_100, presentment: null, paidAt: new Date("2026-10-07T18:40:00Z"), reference: null, item: "Claim", number: "MB-4F7K2A9C", method: null };
   const person = { name: "Sam Rivera", bio: "", photoUrl: null, theme: "sky" as const };
 
+  it("has exactly one button in every email", () => {
+    for (const { label, content } of sampleEmails(ORIGIN)) {
+      expect(content.blocks.filter((b) => b.kind === "button"), label).toHaveLength(1);
+    }
+  });
+
   it("keeps every subject short enough for a phone inbox (~50 characters)", () => {
     for (const { content } of sampleEmails(ORIGIN)) {
       expect(content.subject.length, content.subject).toBeLessThanOrEqual(50);
@@ -120,7 +126,7 @@ describe("email wording", () => {
     // Lower ranks don't get the outbid promise (alerts only fire on losing #1).
     expect(JSON.stringify(third.blocks)).not.toContain("we'll email you right away");
     // One button per email.
-    expect(third.blocks.filter((b) => b.kind === "button" || b.kind === "bar")).toHaveLength(1);
+    expect(third.blocks.filter((b) => b.kind === "button")).toHaveLength(1);
   });
 
   it("claim receipt: one line, a total, and the payment details", () => {
@@ -171,7 +177,7 @@ describe("email wording", () => {
         right: { kicker: "#2 now", name: "You", amount: "$240" },
       },
       { kind: "callout", title: "$2 takes #1 back", sub: "Bidding on October 7 closes tonight at midnight ET." },
-      { kind: "button", label: "Boost $2 and retake #1", url: base.boostUrl, wide: true },
+      { kind: "button", label: "Boost $2 and retake #1", url: base.boostUrl },
       { kind: "fine", text: "Getting outbid is part of the game. Boosts add to the total and are final." },
     ]);
     const later = outbidAlertEmail({ ...base, isOwner: true, isToday: false });
@@ -194,6 +200,10 @@ describe("email wording", () => {
     const again = reminderEmail({ md, source: "claim", topTotalCents: 4_000, minCents: 4_100, claimUrl: `${ORIGIN}/claim?date=october-7` });
     expect(again.subject).toBe("Claim October 7 again");
     expect(again.preheader).toBe("It's a week away and the board starts fresh. The top bid is $40.");
+    // A big line with the price, then one button (no black bar inside the card any more).
+    expect(signup.blocks).toContainEqual({ kind: "callout", title: "$5 makes it yours", sub: "Nobody has claimed it yet." });
+    expect(again.blocks).toContainEqual({ kind: "callout", title: "$41 takes the top spot", sub: "The top bid right now is $40." });
+    expect(again.blocks).toContainEqual({ kind: "button", label: "Claim October 7", url: `${ORIGIN}/claim?date=october-7` });
   });
 
   it("your day is here: talks to the parent about a child, and never mentions gifts (07 D4)", () => {
@@ -202,8 +212,9 @@ describe("email wording", () => {
     expect(child.subject).toBe("Happy birthday to Maya! 🎂");
     expect(child.preheader).toBe("Maya is #3 on today's board.");
     expect(child.blocks).toContainEqual({
-      kind: "p",
-      text: "Maya is #3 on today's board. Share the link so family and friends can celebrate with Maya.",
+      kind: "callout",
+      title: "Maya is #3 today",
+      sub: "Share the link so family and friends can celebrate with Maya.",
     });
     expect(child.reason).toBe("You're getting this because you added Maya to October 7's birthday board on mybday.lol.");
     expect(JSON.stringify(child).toLowerCase()).not.toContain("gift");

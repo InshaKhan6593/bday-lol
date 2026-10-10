@@ -119,7 +119,7 @@ export function claimConfirmationEmail(i: ClaimConfirmationInput): EmailContent 
   }
 
   const lead = i.isToday
-    ? "You're on the mybday.lol homepage until midnight ET, unless someone outbids you. If they do, we'll email you right away."
+    ? "It's yours until midnight ET, unless someone outbids you. If they do, we'll email you right away."
     : `Stay on top and the mybday.lol homepage is yours all day on ${day}. If someone outbids you, we'll email you right away.`;
   return {
     subject: `${label} is yours. For now.`,
@@ -223,7 +223,7 @@ export function outbidAlertEmail(i: OutbidAlertInput): EmailContent {
           ? `Bidding on ${day} closes tonight at midnight ET.`
           : `Bidding stays open until ${day} ends at midnight ET.`,
       },
-      { kind: "button", label: i.isOwner ? `Boost ${amount} and retake #1` : `Boost ${first} ${amount}`, url: i.boostUrl, wide: true },
+      { kind: "button", label: i.isOwner ? `Boost ${amount} and retake #1` : `Boost ${first} ${amount}`, url: i.boostUrl },
       { kind: "fine", text: "Getting outbid is part of the game. Boosts add to the total and are final." },
     ],
     reason: i.isOwner
@@ -266,7 +266,12 @@ export function reminderEmail(i: ReminderInput): EmailContent {
           ? `Last year you claimed ${day}. Every year starts fresh, so it's up for grabs again.`
           : "Claim your birthday before someone else does. The highest bid gets the mybday.lol homepage all day.",
       },
-      { kind: "bar", title: `Own ${day} for ${formatUsd(i.minCents)}`, sub: state, label: `Claim ${day}`, url: i.claimUrl },
+      {
+        kind: "callout",
+        title: open ? `${formatUsd(i.minCents)} makes it yours` : `${formatUsd(i.minCents)} takes the top spot`,
+        sub: open ? "Nobody has claimed it yet." : `The top bid right now is ${formatUsd(i.topTotalCents!)}.`,
+      },
+      { kind: "button", label: `Claim ${day}`, url: i.claimUrl },
     ],
     reason: again
       ? `You're getting this because you claimed ${day} on mybday.lol last year. One email a year.`
@@ -301,7 +306,11 @@ export function yourDayEmail(i: YourDayInput): EmailContent {
       ...colors(i.theme),
       blocks: [
         { kind: "person", name: i.name, line: i.bio, photoUrl: i.photoUrl },
-        { kind: "p", text: `${where} Share the link so family and friends can celebrate with ${first}.` },
+        {
+          kind: "callout",
+          title: i.rank === 1 ? `${first} is on the homepage` : `${first} is #${i.rank} today`,
+          sub: `Share the link so family and friends can celebrate with ${first}.`,
+        },
         { kind: "button", label: `Share ${first}'s link`, url: i.dateUrl },
       ],
       reason: `You're getting this because you added ${first} to ${possessive(i.md)} birthday board on mybday.lol.`,
@@ -319,7 +328,7 @@ export function yourDayEmail(i: YourDayInput): EmailContent {
     ...colors(i.theme),
     blocks: [
       { kind: "person", name: i.name, line: i.bio, photoUrl: i.photoUrl },
-      { kind: "p", text: `${where} ${gifts}` },
+      { kind: "callout", title: i.rank === 1 ? "You're on the homepage" : `You're #${i.rank} today`, sub: gifts },
       { kind: "button", label: "Share your link", url: i.dateUrl },
     ],
     reason: `You're getting this because you're on ${possessive(i.md)} birthday board on mybday.lol.`,

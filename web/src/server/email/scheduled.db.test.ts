@@ -160,9 +160,9 @@ describe("Your day is here", () => {
       expect(await sendYourDayEmails(tx, mailer, at("08:00"))).toMatchObject({ sent: 2 });
       const [jess] = mailer.to("jess@example.com");
       expect(jess?.subject).toBe("Happy birthday, Jess! 🎂");
-      expect(jess?.text).toContain("You're on the mybday.lol homepage today.");
+      expect(jess?.text).toContain("You're on the homepage");
       const [sam] = mailer.to("sam@example.com");
-      expect(sam?.text).toContain("You're #2 on today's board.");
+      expect(sam?.text).toContain("You're #2 today");
       expect(mailer.to("ana@example.com")).toEqual([]);
 
       expect(await sendYourDayEmails(tx, mailer, at("09:00"))).toMatchObject({ sent: 0 });
@@ -190,8 +190,8 @@ describe("reminders", () => {
 
       const [signup] = mailer.to("new@example.com");
       expect(signup?.subject).toBe("October 7 is in a week");
-      expect(signup?.text).toContain("The top bid is $40.");
-      expect(signup?.text).toContain("Own October 7 for $41");
+      expect(signup?.text).toContain("The top bid right now is $40.");
+      expect(signup?.text).toContain("$41 takes the top spot");
       expect(signup?.text).toContain("Claim October 7: https://mybday.lol/claim?date=october-7");
       expect(signup?.headers?.["List-Unsubscribe-Post"]).toBe("List-Unsubscribe=One-Click");
       const [again] = mailer.to("last-year@example.com");
