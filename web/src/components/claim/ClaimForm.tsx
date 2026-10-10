@@ -35,6 +35,8 @@ function dayOptions(month: number) {
 type Props = {
   /** The site header (a server component), rendered inside the page's theme. */
   header: ReactNode;
+  /** The site footer (a server component). */
+  footer: ReactNode;
   settings: BoardTypeSettings;
   /** Date, target and minimum from the server for the date in the URL. */
   md: MonthDay;
@@ -49,7 +51,7 @@ type Props = {
  * another month or day replaces the URL, the server sends that date's leader
  * and minimum, and everything else typed so far stays put.
  */
-export function ClaimForm({ header, settings, md: serverMd, target, minCents, dayEnd }: Props) {
+export function ClaimForm({ header, footer, settings, md: serverMd, target, minCents, dayEnd }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [md, setMd] = useState(serverMd);
@@ -294,6 +296,7 @@ export function ClaimForm({ header, settings, md: serverMd, target, minCents, da
           </aside>
         </div>
       </main>
+      {footer}
     </ThemeScope>
   );
 }

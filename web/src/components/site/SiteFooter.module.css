@@ -1,0 +1,37 @@
+/* Footer from every *.dc.html board in handoff v2: no top border, no underlines. */
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md) 28px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px var(--gutter);
+  font-size: var(--text-note);
+}
+
+.copy {
+  font-weight: var(--weight-bold);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-xl);
+  font-weight: var(--weight-medium);
+}
+
+.links a {
+  padding: var(--space-xs) 0;
+  text-decoration: none;
+}
+
+/*
+ * On phones the mockup puts the footer inside <main>: the page's bottom padding
+ * already spaces it from the content, and the same space sits under it.
+ */
+@media (max-width: 640px) {
+  .footer {
+    padding: 0 var(--space-lg) var(--space-5xl);
+  }
+}

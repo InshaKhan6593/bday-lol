@@ -24,7 +24,9 @@
   --color-on-ink-tertiary: #bdbdbd;
   --color-divider: #efefef;
   --color-fill-muted: #f0f0f0;
-  --color-error: #b3132b;
+  --color-fill-current: #f2f2f2; /* "you are here" row in the mobile menu, open menu button */
+  --color-error: #b3132b;         /* invalid gift link */
+  --color-error-strong: #c8102e;  /* required field: "Add a name to continue." + its border */
   --color-overlay: rgb(20 20 20 / 0.55);
 
   /* ---------- Color: theme (overridden by <ThemeScope>) ---------- */

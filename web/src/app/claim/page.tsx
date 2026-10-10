@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { ClaimForm } from "@/components/claim/ClaimForm";
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { db } from "@/db";
 import { parseClaimParams } from "@/lib/claim";
@@ -24,6 +25,7 @@ export default async function ClaimPage({ searchParams }: Props) {
   return (
     <ClaimForm
       header={<SiteHeader omit={["claim"]} mobile="back" />}
+      footer={<SiteFooter />}
       settings={page.settings}
       md={page.md}
       target={page.target}

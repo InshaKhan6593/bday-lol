@@ -8,6 +8,7 @@ import { OthersBar } from "@/components/home/OthersBar";
 import { ReminderSignup } from "@/components/home/ReminderSignup";
 import { Steps } from "@/components/home/Steps";
 import styles from "@/components/home/home.module.css";
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Kicker, ThemeScope } from "@/components/ui";
 import { db } from "@/db";
@@ -29,7 +30,7 @@ export default async function HomePage({ searchParams }: Props) {
 
   return (
     <ThemeScope theme={home.theme} paint>
-      <SiteHeader />
+      <SiteHeader current="home" />
       <main className={styles.main}>
         <BoostNotice sessionId={(await searchParams).boosted} path={routes.home} />
         <div className={styles.hero}>
@@ -70,6 +71,7 @@ export default async function HomePage({ searchParams }: Props) {
         <Steps />
         <ReminderSignup />
       </main>
+      <SiteFooter />
     </ThemeScope>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import styles from "@/components/how/how.module.css";
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Button, Icon, Surface, ThemeScope } from "@/components/ui";
 import { BIRTHDAY_BOARD_TYPE } from "@/config/board-types";
@@ -28,7 +29,7 @@ export default async function HowItWorksPage() {
   return (
     <ThemeScope theme={settings.defaultTheme} paint>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(faqJsonLd(faq)) }} />
-      <SiteHeader omit={["how"]} />
+      <SiteHeader omit={["how"]} current="how" />
       <main className={styles.main}>
         <div className={styles.hero}>
           <h1 className={styles.h1}>
@@ -76,6 +77,7 @@ export default async function HowItWorksPage() {
           </Button>
         </Surface>
       </main>
+      <SiteFooter />
     </ThemeScope>
   );
 }

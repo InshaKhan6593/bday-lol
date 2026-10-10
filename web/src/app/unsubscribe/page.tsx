@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Button, Kicker, Surface, ThemeScope } from "@/components/ui";
 import { BIRTHDAY_BOARD_TYPE } from "@/config/board-types";
@@ -77,6 +78,7 @@ export default async function UnsubscribePage({ searchParams }: Props) {
           )}
         </Surface>
       </main>
+      <SiteFooter />
     </ThemeScope>
   );
 }

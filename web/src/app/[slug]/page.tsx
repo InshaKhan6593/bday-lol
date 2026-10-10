@@ -7,6 +7,7 @@ import { DateBoard } from "@/components/date/DateBoard";
 import { DateNav } from "@/components/date/DateNav";
 import styles from "@/components/date/date.module.css";
 import { Countdown } from "@/components/site/Countdown";
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { ThemeScope } from "@/components/ui";
 import { db } from "@/db";
@@ -58,7 +59,7 @@ export default async function DatePage({ params, searchParams }: Props) {
 
   return (
     <ThemeScope theme={page.theme} paint>
-      <SiteHeader omit={["find"]} />
+      <SiteHeader omit={["find"]} current="find" />
       <main className={styles.main}>
         <BoostNotice sessionId={query.boosted} path={routes.date(md)} />
         <div className={styles.top}>
@@ -96,6 +97,7 @@ export default async function DatePage({ params, searchParams }: Props) {
 
         <About md={md} famous={page.famous} />
       </main>
+      <SiteFooter />
     </ThemeScope>
   );
 }

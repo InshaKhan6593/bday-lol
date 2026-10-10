@@ -8,6 +8,8 @@ import { monthSlug, toSlug, type MonthDay } from "./birthday";
 export const routes = {
   home: "/" as Route,
   howItWorks: "/how-it-works" as Route,
+  terms: "/terms" as Route,
+  privacy: "/privacy" as Route,
   /** Claim page, optionally pre-filled with a date and the rank to take ("Claim #2 for $226"). */
   claim: (md?: MonthDay, rank?: number) => {
     if (!md) return "/claim" as Route;

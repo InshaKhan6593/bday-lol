@@ -3,6 +3,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { LinkCard } from "@/components/share/LinkCard";
 import { ShareButtons } from "@/components/share/ShareButtons";
+import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { PendingPoller } from "@/components/success/PendingPoller";
 import styles from "@/components/success/success.module.css";
@@ -67,6 +68,7 @@ export default async function ClaimSuccessPage({ searchParams }: Props) {
             )}
           </div>
         </main>
+        <SiteFooter />
       </ThemeScope>
     );
   }
@@ -119,6 +121,7 @@ export default async function ClaimSuccessPage({ searchParams }: Props) {
           />
         </div>
       </main>
+      <SiteFooter />
     </ThemeScope>
   );
 }
