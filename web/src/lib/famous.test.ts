@@ -43,6 +43,7 @@ describe("what they're known for", () => {
   it("says soccer, not association football", () => {
     expect(knownFor("Brazilian association football player", "athlete")).toBe("Brazilian soccer player");
     expect(knownFor("Dutch association football player and manager", "athlete")).toBe("Dutch soccer player and manager");
+    expect(knownFor("Spanish association football manager", "athlete")).toBe("Spanish soccer manager");
   });
 
   it("cuts a long description at 'and'", () => {

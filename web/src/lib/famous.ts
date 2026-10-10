@@ -97,6 +97,7 @@ export function knownFor(description: string | undefined, fallback: string): str
     .replace(/\s*\([^)]*\)/g, "")
     .split(/[;,]| who | known for /)[0]!
     .replace(/\bassociation football(er| player)\b/g, "soccer player")
+    .replace(/\bassociation football\b/g, "soccer")
     .trim();
   if (clean.length > 40) clean = clean.split(" and ")[0]!.trim();
   if (!clean || clean.length > 40 || /\b(1[89]|20)\d\d\b/.test(clean)) return fallback;
