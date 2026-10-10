@@ -5,7 +5,7 @@ import { formatLong } from "@/lib/birthday";
 import { takeTopBoost } from "@/lib/boost";
 import { adminClaimEmail, boostReceiptEmail, claimConfirmationEmail, receiptNumber, type Receipt } from "@/lib/email-templates";
 import type { EventOutcome } from "../stripe-events";
-import { loadEntryContext } from "./context";
+import { boardRows, loadEntryContext } from "./context";
 import type { Mailer } from "./mailer";
 import { sendDueOutbidAlerts } from "./scheduled";
 import { emptyRun, sendCounted, type EmailRun } from "./send";
@@ -67,6 +67,7 @@ export async function sendPaymentEmails(db: Executor, mailer: Mailer, sessionId:
             shareUrl: ctx.personUrl,
             receipt,
             timeZone: tz,
+            board: boardRows(ranked, entry.id),
           }),
         },
         run,

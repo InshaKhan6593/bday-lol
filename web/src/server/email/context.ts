@@ -3,6 +3,7 @@ import type { BoardTypeSettings } from "@/config/board-types";
 import type { Executor } from "@/db";
 import { boards, entries } from "@/db/schema";
 import { parseKey, toKey, zonedDate, type CalendarDate, type MonthDay } from "@/lib/birthday";
+import type { BoardRow } from "@/lib/email-templates";
 import { absoluteUrl, routes } from "@/lib/routes";
 import { getBirthdaySettings, getRankedEntries, type RankedEntry } from "../leaderboard";
 
@@ -35,6 +36,18 @@ export type EntryContext = {
   /** Their personal link (mybday.lol/october-7/sam-rivera): what "Share your link" shares. */
   personUrl: string;
 };
+
+/** The board for an email's mini leaderboard, with photos made absolute and `youId`'s row marked. */
+export function boardRows(ranked: RankedEntry[], youId: string): BoardRow[] {
+  return ranked.map((e) => ({
+    rank: e.rank,
+    name: e.name,
+    totalCents: e.totalCents,
+    theme: e.theme,
+    photoUrl: e.photoUrl ? absoluteUrl(e.photoUrl) : null,
+    isYou: e.id === youId,
+  }));
+}
 
 export async function loadEntryContext(db: Executor, entryId: string, instant: Date): Promise<EntryContext | null> {
   const [row] = await db

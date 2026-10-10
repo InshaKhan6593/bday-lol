@@ -37,8 +37,8 @@ describe("outbid alerts", () => {
       expect(await sendDueOutbidAlerts(tx, mailer, at("14:42"))).toMatchObject({ sent: 2, failed: 0 });
       const [owner] = mailer.to("jess@example.com");
       expect(owner?.subject).toBe("You've been outbid on October 7");
-      expect(owner?.text).toContain("#1 now: Tyler Brooks, $251");
-      expect(owner?.text).toContain("#2 now: You, $240");
+      expect(owner?.text).toContain("#1 Tyler Brooks (New #1): $251");
+      expect(owner?.text).toContain("#2 Jess Moreno (You), Was #1: $240");
       expect(owner?.text).toContain("$12 takes #1 back");
       expect(owner?.text).toContain("Bidding on October 7 closes tonight at midnight ET.");
       expect(owner?.text).toMatch(/Boost \$12 and retake #1: https:\/\/mybday\.lol\/october-7\?boost=\w+&amount=12/);
@@ -160,9 +160,10 @@ describe("Your day is here", () => {
       expect(await sendYourDayEmails(tx, mailer, at("08:00"))).toMatchObject({ sent: 2 });
       const [jess] = mailer.to("jess@example.com");
       expect(jess?.subject).toBe("Happy birthday, Jess! 🎂");
-      expect(jess?.text).toContain("You're on the homepage");
+      expect(jess?.text).toContain("You own the mybday.lol homepage today.");
+      expect(jess?.text).toContain("#1 Jess Moreno (You)");
       const [sam] = mailer.to("sam@example.com");
-      expect(sam?.text).toContain("You're #2 today");
+      expect(sam?.text).toContain("#2 Sam Rivera (You)");
       expect(mailer.to("ana@example.com")).toEqual([]);
 
       expect(await sendYourDayEmails(tx, mailer, at("09:00"))).toMatchObject({ sent: 0 });

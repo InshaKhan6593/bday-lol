@@ -47,10 +47,16 @@ Long values (emails, links) take a full row so they don't break mid-word on phon
 - **One look for every email**: a big centered line says the news ("$5 makes it yours", "You're on the homepage",
   "Maya is #5 today", "$2 takes #1 back"), then **one full-width black button**. The black claim bar inside the card is
   gone (a box in a box).
+- **Mini leaderboard** (2026-10-10, from game emails: Strava's "Uh oh / Dethroned!" crown alerts and Duolingo-style
+  league tables, which show you next to the people around you rather than the whole list). Used in the claim
+  confirmation, the outbid alert and "Your day is here", in place of the avatar row. Rows: #1 with a 👑, then the row
+  above you, you and the row below ("• • •" where ranks are skipped, at most 5 rows). Your row is lifted like the app's
+  #1 card: filled with your color, a thicker ink edge and a hard shadow, a black **YOU** tag. The outbid alert tags the
+  new leader **NEW #1** and your row **Was #1**; a fan's alert highlights the person they follow without "YOU".
 - **Outbid alert** (redesigned 2026-10-10 from auction outbid alerts: 32auctions, Givebutter, HikaShop, Charity Auctions
   Today, which all show the item, who's ahead, the amount that wins it back, when bidding closes, and one "bid again"
-  link). Subject **You've been outbid on October 7** (a fan gets **Jess was outbid on October 7**). Two tiles side by
-  side: **#1 NOW Tyler Brooks $241** (filled with the person's color) and **#2 NOW You $240** (dashed). Then a big
+  link). Subject **You've been outbid on October 7** (a fan gets **Jess was outbid on October 7**). The mini leaderboard
+  (👑 Tyler Brooks **NEW #1** $241, then your lifted row "Jess Moreno **YOU**, Was #1, $240", then #3). Then a big
   **$2 takes #1 back** with "Bidding on October 7 closes tonight at midnight ET." and one full-width button
   **Boost $2 and retake #1**.
 - **Receipt number**: `MB-` + the first 8 characters of our payment id. Stripe keeps the full id as `metadata.paymentId`,

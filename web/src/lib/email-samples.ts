@@ -1,3 +1,4 @@
+import type { ThemeKey } from "@/config/themes";
 import type { EmailContent } from "./email-render";
 import {
   adminClaimEmail,
@@ -7,6 +8,7 @@ import {
   outbidAlertEmail,
   reminderEmail,
   yourDayEmail,
+  type BoardRow,
 } from "./email-templates";
 
 /** The 8 emails filled with the mockup's demo people, for the dev preview page and its tests. */
@@ -19,6 +21,17 @@ export function sampleEmails(origin: string): Array<{ id: string; label: string;
   const jess = { name: "Jess Moreno", bio: "30 and still can't cook. Pizza money appreciated.", photoUrl: null, theme: "lime" as const };
   // A child added by a parent (07 D4): first name only, no gift links.
   const maya = { name: "Maya", bio: "Our girl turns 7 today!", photoUrl: null, theme: "bubblegum" as const };
+
+  /** A demo board for the mini leaderboard: [name, dollars, theme] in rank order; `you` is marked. */
+  type Demo = [name: string, usd: number, theme: ThemeKey];
+  const board = (people: Demo[], you: string): BoardRow[] =>
+    people.map(([name, usd, theme], i) => ({ rank: i + 1, name, totalCents: usd * 100, theme, photoUrl: null, isYou: name === you }));
+  const regulars: Demo[] = [
+    ["Ana Reyes", 150, "apricot"],
+    ["Chris Wu", 60, "mint"],
+    ["Maya", 40, "bubblegum"],
+    ["Jordan Lee", 25, "butter"],
+  ];
 
   return [
     {
@@ -36,6 +49,7 @@ export function sampleEmails(origin: string): Array<{ id: string; label: string;
         isToday: true,
         shareUrl: dateUrl,
         timeZone: tz,
+        board: board([["Sam Rivera", 241, "sky"], ["Jess Moreno", 240, "lime"], ["Tyler Brooks", 225, "sky"], ...regulars], "Sam Rivera"),
         receipt: {
           amountCents: 24_100,
           presentment: { currency: "gbp", amount: 19_200 },
@@ -62,6 +76,7 @@ export function sampleEmails(origin: string): Array<{ id: string; label: string;
         isToday: true,
         shareUrl: dateUrl,
         timeZone: tz,
+        board: board([["Tyler Brooks", 241, "sky"], ["Jess Moreno", 240, "lime"], ["Sam Rivera", 150, "sky"], ...regulars], "Sam Rivera"),
         receipt: { amountCents: 15_000, presentment: null, paidAt, reference: null, item: "Claim October 7, 2026 on mybday.lol", number: "MB-9D21C04E", method: "Mastercard •••• 8812" },
       }),
     },
@@ -94,6 +109,7 @@ export function sampleEmails(origin: string): Array<{ id: string; label: string;
         rank: 2,
         isToday: true,
         boostUrl: `${dateUrl}?boost=IYmnAmfGnX&amount=2`,
+        board: board([["Tyler Brooks", 241, "sky"], ["Jess Moreno", 240, "lime"], ...regulars], "Jess Moreno"),
       }),
     },
     {
@@ -106,13 +122,31 @@ export function sampleEmails(origin: string): Array<{ id: string; label: string;
       id: "your-day",
       label: "5. Your day is here",
       unsubscribe: true,
-      content: yourDayEmail({ ...jess, md, rank: 1, totalCents: 24_000, hasGiftLinks: true, isMinor: false, dateUrl }),
+      content: yourDayEmail({
+        ...jess,
+        md,
+        rank: 1,
+        totalCents: 24_000,
+        hasGiftLinks: true,
+        isMinor: false,
+        dateUrl,
+        board: board([["Jess Moreno", 240, "lime"], ["Tyler Brooks", 225, "sky"], ...regulars], "Jess Moreno"),
+      }),
     },
     {
       id: "your-day-child",
       label: "5. Your day is here (a child, to the parent)",
       unsubscribe: true,
-      content: yourDayEmail({ ...maya, md, rank: 5, totalCents: 4_000, hasGiftLinks: false, isMinor: true, dateUrl }),
+      content: yourDayEmail({
+        ...maya,
+        md,
+        rank: 5,
+        totalCents: 4_000,
+        hasGiftLinks: false,
+        isMinor: true,
+        dateUrl,
+        board: board([["Jess Moreno", 240, "lime"], ["Tyler Brooks", 225, "sky"], ...regulars], "Maya"),
+      }),
     },
     {
       id: "digest",

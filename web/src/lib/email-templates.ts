@@ -76,6 +76,51 @@ function receiptPanel(r: Receipt, line: { label: string; note: string }, timeZon
 
 type Person = { name: string; bio: string; photoUrl: string | null; theme: ThemeKey };
 
+/** One person on the board, for the mini leaderboard. `isYou` marks the email's subject. */
+export type BoardRow = {
+  rank: number;
+  name: string;
+  totalCents: number;
+  theme: ThemeKey;
+  /** Absolute, so it loads in an inbox. */
+  photoUrl: string | null;
+  isYou: boolean;
+};
+
+/**
+ * Which rows the mini leaderboard shows (like a game's league table): #1,
+ * then the row above you, you, and the row below; "gap" where ranks are
+ * skipped. #1 sees the top three. At most five rows.
+ */
+export function boardWindow<T extends { rank: number }>(rows: T[], yourRank: number): Array<T | "gap"> {
+  const wanted = new Set(yourRank === 1 ? [1, 2, 3] : [1, yourRank - 1, yourRank, yourRank + 1]);
+  const picked = rows.filter((row) => wanted.has(row.rank)).sort((a, b) => a.rank - b.rank);
+  return picked.flatMap((row, i) => (i > 0 && row.rank - picked[i - 1]!.rank > 1 ? ["gap" as const, row] : [row]));
+}
+
+type BoardLabels = { badge?: string; note?: string };
+
+/** The mini leaderboard block: "you" is highlighted; `top` labels the #1 row ("NEW #1"). */
+function boardBlock(title: string, rows: BoardRow[], you: BoardLabels, top: BoardLabels = {}): EmailBlock {
+  const mine = rows.find((row) => row.isYou);
+  return {
+    kind: "board",
+    title,
+    rows: boardWindow(rows, mine?.rank ?? 1).map((row) =>
+      row === "gap"
+        ? row
+        : {
+            rank: row.rank,
+            name: row.name,
+            amount: formatUsd(row.totalCents),
+            color: getTheme(row.theme).ground,
+            photoUrl: row.photoUrl,
+            ...(row.isYou ? { highlight: true, ...you } : row.rank === 1 ? top : {}),
+          },
+    ),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // 1. Claim confirmation (doubles as the receipt)
 // ---------------------------------------------------------------------------
@@ -92,6 +137,8 @@ export type ClaimConfirmationInput = Person & {
   shareUrl: string;
   receipt: Receipt;
   timeZone: string;
+  /** Everyone on the board right now, ranked; the claimer is `isYou`. */
+  board: BoardRow[];
 };
 
 export function claimConfirmationEmail(i: ClaimConfirmationInput): EmailContent {
@@ -108,8 +155,8 @@ export function claimConfirmationEmail(i: ClaimConfirmationInput): EmailContent 
       title: label,
       ...colors(i.theme),
       blocks: [
-        { kind: "person", name: i.name, line: i.bio, photoUrl: i.photoUrl },
         { kind: "p", text: `Someone bid more while you were paying. ${toTop}Share your link and friends and followers can boost you there.` },
+        boardBlock(`${day} board`, i.board, { badge: "You", note: "Just joined" }),
         { kind: "button", label: "Share your link", url: i.shareUrl },
         receiptPanel(i.receipt, { label: `Claim · ${formatLong(i.md)}, ${i.year}`, note: "Your spot on the birthday board" }, i.timeZone),
         { kind: "fine", text: "Bids are final. Questions? Just reply to this email." },
@@ -128,8 +175,8 @@ export function claimConfirmationEmail(i: ClaimConfirmationInput): EmailContent 
     title: label,
     ...colors(i.theme),
     blocks: [
-      { kind: "person", name: i.name, line: i.bio, photoUrl: i.photoUrl },
       { kind: "p", text: lead },
+      boardBlock(`${day} board`, i.board, { badge: "You", note: "Just took the top spot" }),
       { kind: "button", label: "Share your link", url: i.shareUrl },
       receiptPanel(i.receipt, { label: `Claim · ${formatLong(i.md)}, ${i.year}`, note: "Your spot on the birthday board" }, i.timeZone),
       { kind: "fine", text: "Bids are final. Questions? Just reply to this email." },
@@ -196,6 +243,8 @@ export type OutbidAlertInput = Person & {
   /** The day being fought over is today: it ends at midnight ET. */
   isToday: boolean;
   boostUrl: string;
+  /** Everyone on the board right now, ranked; the passed person is `isYou`. */
+  board: BoardRow[];
 };
 
 export function outbidAlertEmail(i: OutbidAlertInput): EmailContent {
@@ -211,11 +260,7 @@ export function outbidAlertEmail(i: OutbidAlertInput): EmailContent {
     title: day,
     ...colors(i.theme),
     blocks: [
-      {
-        kind: "versus",
-        left: { kicker: "#1 now", name: i.newTop.name, amount: formatUsd(i.newTop.totalCents) },
-        right: { kicker: `#${i.rank} now`, name: i.isOwner ? "You" : i.name, amount: formatUsd(i.totalCents) },
-      },
+      boardBlock(`${day} board`, i.board, { badge: i.isOwner ? "You" : undefined, note: "Was #1" }, { badge: "New #1" }),
       {
         kind: "callout",
         title: i.isOwner ? `${amount} takes #1 back` : `${amount} puts ${first} back on top`,
@@ -291,6 +336,8 @@ export type YourDayInput = Person & {
   /** A child's listing (07 D4): the email goes to the parent, so it talks about the child. */
   isMinor: boolean;
   dateUrl: string;
+  /** Today's board, ranked; the birthday person is `isYou`. */
+  board: BoardRow[];
 };
 
 export function yourDayEmail(i: YourDayInput): EmailContent {
@@ -305,11 +352,10 @@ export function yourDayEmail(i: YourDayInput): EmailContent {
       title: day,
       ...colors(i.theme),
       blocks: [
-        { kind: "person", name: i.name, line: i.bio, photoUrl: i.photoUrl },
+        boardBlock("Today's board", i.board, {}),
         {
-          kind: "callout",
-          title: i.rank === 1 ? `${first} is on the homepage` : `${first} is #${i.rank} today`,
-          sub: `Share the link so family and friends can celebrate with ${first}.`,
+          kind: "p",
+          text: `${i.rank === 1 ? `${first} owns the mybday.lol homepage today. ` : ""}Share the link so family and friends can celebrate with ${first}.`,
         },
         { kind: "button", label: `Share ${first}'s link`, url: i.dateUrl },
       ],
@@ -327,8 +373,8 @@ export function yourDayEmail(i: YourDayInput): EmailContent {
     title: day,
     ...colors(i.theme),
     blocks: [
-      { kind: "person", name: i.name, line: i.bio, photoUrl: i.photoUrl },
-      { kind: "callout", title: i.rank === 1 ? "You're on the homepage" : `You're #${i.rank} today`, sub: gifts },
+      boardBlock("Today's board", i.board, { badge: "You" }),
+      { kind: "p", text: `${i.rank === 1 ? "You own the mybday.lol homepage today. " : ""}${gifts}` },
       { kind: "button", label: "Share your link", url: i.dateUrl },
     ],
     reason: `You're getting this because you're on ${possessive(i.md)} birthday board on mybday.lol.`,

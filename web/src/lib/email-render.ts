@@ -17,11 +17,11 @@ export type EmailBlock =
   /** Avatar circle + name + an optional line under it. */
   | { kind: "person"; name: string; line?: string; photoUrl?: string | null }
   /**
-   * Two tiles side by side, e.g. who's #1 now vs. you (outbid alert). The
-   * left one is filled with the person's color; the right one is dashed
-   * ("not there yet", like empty spots in the app).
+   * A mini leaderboard, like a game's league table: #1 with a crown, then the
+   * rows around the reader, whose row is lifted and filled with their color.
+   * "gap" marks skipped ranks.
    */
-  | { kind: "versus"; left: VersusTile; right: VersusTile }
+  | { kind: "board"; title: string; rows: Array<BoardRowView | "gap"> }
   /** A big centered line with a smaller one under it: "$2 takes #1 back". */
   | { kind: "callout"; title: string; sub?: string }
   | { kind: "note"; text: string }
@@ -43,7 +43,20 @@ export type EmailBlock =
     }
   | { kind: "fine"; text: string };
 
-export type VersusTile = { kicker: string; name: string; amount: string };
+export type BoardRowView = {
+  rank: number;
+  name: string;
+  amount: string;
+  /** Avatar fill (their theme's ground) when there's no photo. */
+  color: string;
+  photoUrl?: string | null;
+  /** The reader's row (or the person a fan follows): lifted and in the email's color. */
+  highlight?: boolean;
+  /** Small black tag next to the name: "YOU", "NEW #1". */
+  badge?: string;
+  /** Small line under the name: "Was #1". */
+  note?: string;
+};
 
 /** A labelled detail in a panel's grey footer. "wide" takes a whole row. */
 export type EmailDetail = readonly [label: string, value: string] | readonly [label: string, value: string, "wide"];
@@ -160,17 +173,43 @@ function receiptHtml(block: Extract<EmailBlock, { kind: "receipt" }>, ground: st
 </table>`;
 }
 
+function boardHtml(block: Extract<EmailBlock, { kind: "board" }>, ground: string): string {
+  const rows = block.rows
+    .map((row) => {
+      if (row === "gap") {
+        return `<tr><td align="center" style="padding:0 0 8px;font-size:16px;line-height:1;letter-spacing:0.3em;color:#8a8a8a">&bull;&bull;&bull;</td></tr>`;
+      }
+      const avatar = row.photoUrl
+        ? `<img src="${safeUrl(row.photoUrl)}" alt="" width="38" height="38" style="display:block;width:38px;height:38px;border-radius:999px;border:2px solid ${INK};object-fit:cover">`
+        : `<div style="width:38px;height:38px;line-height:38px;border-radius:999px;border:2px solid ${INK};background:${row.highlight ? "#ffffff" : hex(row.color, "#ffffff")};text-align:center;font-size:14px;font-weight:800;color:${INK}">${escapeHtml(initials(row.name))}</div>`;
+      const badge = row.badge
+        ? ` <span style="display:inline-block;margin-left:4px;padding:2px 7px;border-radius:999px;background:${INK};color:#ffffff;font-size:10px;line-height:1.5;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;vertical-align:2px">${escapeHtml(row.badge)}</span>`
+        : "";
+      // The reader's row is lifted like the app's #1 card: their color, thicker ink edge, hard shadow.
+      const box = row.highlight
+        ? `background:${ground};border:3px solid ${INK};border-right-width:7px;border-bottom-width:7px`
+        : `background:#ffffff;border:2px solid ${INK}`;
+      return `<tr><td style="padding:0 0 8px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="${box};border-radius:16px;border-collapse:separate"><tr>
+<td width="34" align="center" style="padding:10px 0 10px 12px;font-size:18px;font-weight:800;color:${INK};white-space:nowrap">${row.rank === 1 ? "&#128081;" : row.rank}</td>
+<td width="38" style="padding:8px 10px">${avatar}</td>
+<td style="padding:8px 4px 8px 0"><p style="margin:0;font-size:16px;line-height:1.3;font-weight:${row.highlight ? 800 : 700};color:${INK}">${escapeHtml(row.name)}${badge}</p>${
+        row.note ? `<p style="margin:2px 0 0;font-size:13px;line-height:1.35;font-weight:600;color:#4a4a4a">${escapeHtml(row.note)}</p>` : ""
+      }</td>
+<td align="right" style="padding:8px 14px 8px 4px;font-size:18px;font-weight:800;color:${INK};white-space:nowrap">${escapeHtml(row.amount)}</td>
+</tr></table></td></tr>`;
+    })
+    .join("");
+  return `<p style="margin:2px 0 10px;font-size:13px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:${INK}">${escapeHtml(block.title)}</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 14px">${rows}</table>`;
+}
+
 function blockHtml(block: EmailBlock, accent: string, ground: string): string {
   switch (block.kind) {
     case "p":
       return `<p style="margin:0 0 16px;font-size:17px;line-height:1.5;color:#333333">${escapeHtml(block.text)}</p>`;
     case "button":
       return `<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:4px 0 20px"><tr><td align="center" style="background:${INK};border:2px solid ${EDGE};border-radius:16px"><a href="${safeUrl(block.url)}" style="display:block;padding:16px 26px;font-family:${FONT};font-size:17px;font-weight:800;color:#ffffff;text-decoration:none;text-align:center">${escapeHtml(block.label)}</a></td></tr></table>`;
-    case "versus": {
-      const tile = (t: VersusTile, filled: boolean) =>
-        `<td width="50%" style="padding:16px 16px 14px;vertical-align:top;border:3px ${filled ? "solid" : "dashed"} ${INK};border-radius:18px;background:${filled ? ground : "#ffffff"}"><p style="margin:0;font-size:12px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:${INK}">${escapeHtml(t.kicker)}</p><p style="margin:6px 0 0;font-size:17px;line-height:1.25;font-weight:700;color:${INK};word-break:break-word">${escapeHtml(t.name)}</p><p style="margin:8px 0 0;font-size:30px;line-height:1;font-weight:800;letter-spacing:-0.02em;color:${INK}">${escapeHtml(t.amount)}</p></td>`;
-      return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border-collapse:separate;border-spacing:0"><tr>${tile(block.left, true)}<td width="12" style="font-size:0;line-height:0">&nbsp;</td>${tile(block.right, false)}</tr></table>`;
-    }
+    case "board":
+      return boardHtml(block, ground);
     case "callout":
       return `<div style="margin:8px 0 18px;text-align:center"><p style="margin:0;font-size:30px;line-height:1.1;font-weight:800;letter-spacing:-0.02em;color:${INK}">${escapeHtml(block.title)}</p>${
         block.sub ? `<p style="margin:8px 0 0;font-size:15px;line-height:1.45;color:#4a4a4a">${escapeHtml(block.sub)}</p>` : ""
@@ -202,8 +241,15 @@ function blockText(block: EmailBlock): string {
       return `${block.label}: ${block.url}`;
     case "person":
       return [block.name, block.line].filter(Boolean).join("\n");
-    case "versus":
-      return [block.left, block.right].map((t) => `${t.kicker}: ${t.name}, ${t.amount}`).join("\n");
+    case "board":
+      return [
+        block.title.toUpperCase(),
+        ...block.rows.map((row) =>
+          row === "gap"
+            ? "..."
+            : `#${row.rank} ${row.name}${row.badge ? ` (${row.badge})` : ""}${row.note ? `, ${row.note}` : ""}: ${row.amount}`,
+        ),
+      ].join("\n");
     case "callout":
       return [block.title, block.sub].filter(Boolean).join("\n");
     case "receipt":

@@ -3,6 +3,8 @@ import { escapeHtml, formatMinorUnits, renderEmail } from "./email-render";
 import { sampleEmails } from "./email-samples";
 import {
   adminClaimEmail,
+  boardWindow,
+  type BoardRow,
   claimConfirmationEmail,
   outbidAlertEmail,
   receiptNumber,
@@ -92,6 +94,29 @@ describe("email rendering", () => {
   });
 });
 
+/** A board for the mini leaderboard: names in rank order, $ totals; `you` is marked. */
+function demoBoard(people: Array<[string, number]>, you: string): BoardRow[] {
+  return people.map(([name, usd], i) => ({ rank: i + 1, name, totalCents: usd * 100, theme: "sky", photoUrl: null, isYou: name === you }));
+}
+
+describe("mini leaderboard", () => {
+  const rows = Array.from({ length: 34 }, (_, i) => ({ rank: i + 1 }));
+  const ranks = (yours: number) => boardWindow(rows, yours).map((r) => (r === "gap" ? "…" : r.rank));
+
+  it("shows #1, the row above you, you and the row below, like a league table", () => {
+    expect(ranks(1)).toEqual([1, 2, 3]);
+    expect(ranks(2)).toEqual([1, 2, 3]);
+    expect(ranks(3)).toEqual([1, 2, 3, 4]);
+    expect(ranks(7)).toEqual([1, "…", 6, 7, 8]);
+    expect(ranks(34)).toEqual([1, "…", 33, 34]);
+  });
+
+  it("copes with tiny boards", () => {
+    expect(boardWindow([{ rank: 1 }], 1)).toEqual([{ rank: 1 }]);
+    expect(boardWindow([{ rank: 1 }, { rank: 2 }], 2)).toEqual([{ rank: 1 }, { rank: 2 }]);
+  });
+});
+
 describe("email wording", () => {
   const receipt = { amountCents: 24_100, presentment: null, paidAt: new Date("2026-10-07T18:40:00Z"), reference: null, item: "Claim", number: "MB-4F7K2A9C", method: null };
   const person = { name: "Sam Rivera", bio: "", photoUrl: null, theme: "sky" as const };
@@ -111,7 +136,7 @@ describe("email wording", () => {
   });
 
   it("claim confirmation: today's #1, a later date's #1, and a lower rank (07 B1, B6)", () => {
-    const base = { ...person, md, year: 2026, currentYear: 2026, totalCents: 24_100, shareUrl: `${ORIGIN}/october-7`, receipt, timeZone: "America/New_York" };
+    const base = { ...person, md, year: 2026, currentYear: 2026, totalCents: 24_100, shareUrl: `${ORIGIN}/october-7`, receipt, timeZone: "America/New_York", board: demoBoard([["Sam Rivera", 241], ["Jess Moreno", 240]], "Sam Rivera") };
     const today = claimConfirmationEmail({ ...base, rank: 1, toTopCents: null, isToday: true });
     expect(today.subject).toBe("October 7 is yours. For now.");
     expect(today.preheader).toBe("You're on the homepage with $241.");
@@ -130,7 +155,16 @@ describe("email wording", () => {
   });
 
   it("claim receipt: one line, a total, and the payment details", () => {
-    const base = { ...person, md, year: 2026, currentYear: 2026, totalCents: 24_100, shareUrl: `${ORIGIN}/october-7`, timeZone: "America/New_York" };
+    const base = {
+      ...person,
+      md,
+      year: 2026,
+      currentYear: 2026,
+      totalCents: 24_100,
+      shareUrl: `${ORIGIN}/october-7`,
+      timeZone: "America/New_York",
+      board: demoBoard([["Sam Rivera", 241]], "Sam Rivera"),
+    };
     const paid = { ...receipt, amountCents: 24_100, method: "Visa •••• 4242", presentment: { currency: "gbp", amount: 19_200 } };
     const email = claimConfirmationEmail({ ...base, rank: 1, toTopCents: null, isToday: true, receipt: paid });
     expect(email.blocks).toContainEqual({
@@ -165,6 +199,7 @@ describe("email wording", () => {
       rank: 2,
       isToday: true,
       boostUrl: `${ORIGIN}/october-7?boost=x&amount=2`,
+      board: demoBoard([["Tyler Brooks", 241], ["Jess Moreno", 240], ["Ana Reyes", 150]], "Jess Moreno"),
     };
     // Like auction outbid alerts: who's on top, where you are, what wins it back, when it closes, one button.
     const owner = outbidAlertEmail({ ...base, isOwner: true });
@@ -172,9 +207,13 @@ describe("email wording", () => {
     expect(owner.preheader).toBe("Tyler has $241. $2 takes #1 back.");
     expect(owner.blocks).toEqual([
       {
-        kind: "versus",
-        left: { kicker: "#1 now", name: "Tyler Brooks", amount: "$241" },
-        right: { kicker: "#2 now", name: "You", amount: "$240" },
+        kind: "board",
+        title: "October 7 board",
+        rows: [
+          { rank: 1, name: "Tyler Brooks", amount: "$241", color: "#BFD8FF", photoUrl: null, badge: "New #1" },
+          { rank: 2, name: "Jess Moreno", amount: "$240", color: "#BFD8FF", photoUrl: null, highlight: true, badge: "You", note: "Was #1" },
+          { rank: 3, name: "Ana Reyes", amount: "$150", color: "#BFD8FF", photoUrl: null },
+        ],
       },
       { kind: "callout", title: "$2 takes #1 back", sub: "Bidding on October 7 closes tonight at midnight ET." },
       { kind: "button", label: "Boost $2 and retake #1", url: base.boostUrl },
@@ -189,6 +228,8 @@ describe("email wording", () => {
 
     const fan = outbidAlertEmail({ ...base, isOwner: false });
     expect(fan.subject).toBe("Jess was outbid on October 7");
+    // A fan's email highlights Jess without calling her "You".
+    expect(JSON.stringify(fan.blocks)).not.toContain('"badge":"You"');
     expect(fan.blocks).toContainEqual({ kind: "callout", title: "$2 puts Jess back on top", sub: "Bidding on October 7 closes tonight at midnight ET." });
     expect(fan.reason).toBe("You're getting this because you asked us to email you if Jess gets passed.");
   });
@@ -207,15 +248,18 @@ describe("email wording", () => {
   });
 
   it("your day is here: talks to the parent about a child, and never mentions gifts (07 D4)", () => {
-    const base = { ...person, md, totalCents: 4_000, hasGiftLinks: false, dateUrl: `${ORIGIN}/october-7/maya` };
+    const base = {
+      ...person,
+      md,
+      totalCents: 4_000,
+      hasGiftLinks: false,
+      dateUrl: `${ORIGIN}/october-7/maya`,
+      board: demoBoard([["Jess Moreno", 240], ["Ana Reyes", 150], ["Maya", 40]], "Maya"),
+    };
     const child = yourDayEmail({ ...base, name: "Maya", rank: 3, isMinor: true });
     expect(child.subject).toBe("Happy birthday to Maya! 🎂");
     expect(child.preheader).toBe("Maya is #3 on today's board.");
-    expect(child.blocks).toContainEqual({
-      kind: "callout",
-      title: "Maya is #3 today",
-      sub: "Share the link so family and friends can celebrate with Maya.",
-    });
+    expect(child.blocks).toContainEqual({ kind: "p", text: "Share the link so family and friends can celebrate with Maya." });
     expect(child.reason).toBe("You're getting this because you added Maya to October 7's birthday board on mybday.lol.");
     expect(JSON.stringify(child).toLowerCase()).not.toContain("gift");
     expect(yourDayEmail({ ...base, name: "Maya", rank: 1, isMinor: true }).preheader).toBe(

@@ -8,7 +8,7 @@ import { minToTakeTop } from "@/lib/money";
 import { absoluteUrl, routes } from "@/lib/routes";
 import { getBirthdaySettings, getCurrentBoard, getRankedEntries } from "../leaderboard";
 import { OUTBID_ALERT_GAP_MS } from "../outbid";
-import { loadEntryContext } from "./context";
+import { boardRows, loadEntryContext } from "./context";
 import type { Mailer } from "./mailer";
 import { addRuns, emptyRun, sendCounted, type EmailRun } from "./send";
 
@@ -105,6 +105,7 @@ export async function sendDueOutbidAlerts(db: Executor, mailer: Mailer, instant:
           rank: mine.rank,
           isToday: ctx.isToday,
           boostUrl: absoluteUrl(routes.boostLink(md, entry.publicId, amountCents)),
+          board: boardRows(ctx.ranked, entry.id),
         }),
       },
       run,
@@ -244,6 +245,7 @@ export async function sendYourDayEmails(db: Executor, mailer: Mailer, instant: D
           totalCents: e.totalCents,
           hasGiftLinks: e.giftLinks.length > 0,
           isMinor: e.isMinor,
+          board: boardRows(ranked, e.id),
           dateUrl: absoluteUrl(routes.person(today, e.slug)),
         }),
       },
