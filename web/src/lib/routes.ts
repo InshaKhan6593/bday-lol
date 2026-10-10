@@ -23,6 +23,10 @@ export const routes = {
   boostLink: (md: MonthDay, publicId: string, amountCents: number) =>
     `/${toSlug(md)}?boost=${encodeURIComponent(publicId)}&amount=${Math.round(amountCents / 100)}` as Route,
   month: (month: number) => `/${monthSlug(month)}` as Route,
+  /** The "Unsubscribe" link in emails: a page that asks before switching anything off. */
+  unsubscribe: (token: string) => `/unsubscribe?t=${encodeURIComponent(token)}` as Route,
+  /** RFC 8058 one-click unsubscribe (the inbox's own button POSTs here). */
+  unsubscribeOneClick: (token: string) => `/api/unsubscribe?t=${encodeURIComponent(token)}`,
 };
 
 /** The site's origin, e.g. https://bday.lol (no trailing slash). */

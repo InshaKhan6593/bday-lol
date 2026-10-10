@@ -139,6 +139,11 @@ export function zonedDate(instant: Date, timeZone: string): CalendarDate {
   return { year: z.getFullYear(), month: z.getMonth() + 1, day: z.getDate() };
 }
 
+/** The hour (0–23) of an instant in the given time zone. */
+export function hourIn(instant: Date, timeZone: string): number {
+  return new TZDate(instant.getTime(), timeZone).getHours();
+}
+
 /**
  * Year of the board that is open right now for this month-day.
  * Today or later this year → this year. Already passed → the next year it occurs

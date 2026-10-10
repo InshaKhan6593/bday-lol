@@ -44,6 +44,24 @@ Unsubscribe links on 4, 5, 6 and 7 (spec §8). "Jess", "October 7" and amounts b
 | 7 | **Yearly re-claim** | 7 days before, last year's claimers (auto-added) | **Claim October 7 again** | "It's a week away and the board starts fresh. The top bid is $40." | "Last year you claimed October 7. Every year starts fresh…" Claim bar → **Claim October 7** |
 | 8 | **Admin alert** | Each new claim, to the client | **New claim: Sam Rivera, Oct 7, $241** | "#1 on October 7, 2026. Check the photo, name and bio." | Photo + name + bio, details table (paid, rank, email, color, gift links), **Open October 7's list** |
 
+## How they're sent (step 8)
+
+Code in `web/src/server/email/`. Every send goes through `sendEmail`, which reserves a row in `email_log` by **dedupe key**
+before sending, so Stripe retries and overlapping cron runs never send twice (a failed send frees the key for a retry).
+
+| Email | Sent by | When | Dedupe key |
+|---|---|---|---|
+| 1, 8 | Stripe webhook | Right after the payment is credited. A failed send returns 500 so Stripe retries | `claim:` / `admin-claim:` + payment id |
+| 2 | Stripe webhook | Right after the boost is credited | `boost-receipt:` + payment id |
+| 3 | Webhook (instantly) + cron (throttled ones) | Re-checked at send time: no email if they're #1 again, were removed, or the day ended. Amount = what it takes **now**. Max 1 per person per 15 min, across everyone they follow | `outbid:` + alert id |
+| 6 | Cron | First boost on the next tick, then at most one digest an hour. Boosts people paid on their own entry are left out | `digest:` + entry + last payment |
+| 5 | Cron | From 8:00 AM ET on the day (also reaches people who claim later that day) | `your-day:` + entry id |
+| 4, 7 | Cron | From 8:00 AM ET, exactly 7 days before. Skipped for anyone already on that date's board. Claimers are added to reminders (source `claim`) when their payment lands | `reminder:` + id + year |
+
+- **Cron:** `vercel.json` calls `/api/cron/emails` every minute with `Authorization: Bearer $CRON_SECRET`. Locally run `pnpm -C web emails:tick` (honors `DEV_NOW`).
+- **Transport:** `EMAIL_TRANSPORT=smtp` → Mailpit (http://localhost:8030); `resend` → Resend's SMTP relay with `RESEND_API_KEY`. `EMAIL_REPLY_TO` and `EMAIL_FOOTER_ADDRESS` fill in once the client sends them.
+- **Unsubscribe** (emails 4–7): a link signed with `APP_SECRET` (email + category, no accounts). `/unsubscribe` asks before switching off (inbox link scanners open links); the inbox's own button POSTs to `/api/unsubscribe` (RFC 8058 `List-Unsubscribe-Post`). Categories: reminders (4 + 7), your-day (5), boost digest (6). Signing up for a reminder again turns reminders back on.
+
 ## Still needed from the client (07 C1, C2)
 
 - The **reply-to inbox** for "Questions? Just reply" (a support email).

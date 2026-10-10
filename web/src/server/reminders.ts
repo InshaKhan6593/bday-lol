@@ -2,6 +2,7 @@ import type { Executor } from "@/db";
 import { reminders } from "@/db/schema";
 import { formatLong } from "@/lib/birthday";
 import { parseReminderInput } from "@/lib/reminders";
+import { resubscribeReminders } from "./email/suppressions";
 
 export type ReminderState = { status: "idle" | "ok" | "error"; message?: string };
 
@@ -20,6 +21,7 @@ export async function saveReminder(
       target: [reminders.email, reminders.month, reminders.day],
       set: { unsubscribedAt: null },
     });
+  await resubscribeReminders(exec, input.email);
 
   return { status: "ok", message: `You're set. We'll email you a week before ${formatLong(input.md)}.` };
 }

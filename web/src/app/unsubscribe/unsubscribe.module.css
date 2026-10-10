@@ -1,0 +1,45 @@
+/* Unsubscribe: one centered card on Butter, in the Claim/Success card style. */
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--space-3xl) var(--gutter) var(--space-page-end);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-lg);
+  padding: var(--space-3xl);
+}
+
+.h1 {
+  font-size: var(--text-h2-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-heading-sm);
+  line-height: var(--leading-snug);
+}
+
+.body {
+  font-size: var(--text-lead);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-lg);
+  margin-top: var(--space-xs);
+}
+
+@media (max-width: 600px) {
+  .card {
+    padding: var(--space-2xl) var(--space-xl);
+  }
+}

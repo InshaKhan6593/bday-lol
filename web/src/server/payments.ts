@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import type { Executor } from "@/db";
-import { boards, entries, leaderLog, payments } from "@/db/schema";
+import { boards, entries, leaderLog, payments, reminders } from "@/db/schema";
+import { parseKey } from "@/lib/birthday";
 import type { ValidClaim } from "@/lib/claim";
 import { publicId } from "@/lib/ids";
 import { cancelOutbidAlerts, queueOutbidAlerts, subscribeToAlerts } from "./outbid";
@@ -114,6 +115,7 @@ export async function fulfillCheckout(db: Executor, paid: PaidSession, instant: 
         alertOptIn: payments.alertOptIn,
         entryId: entries.id,
         boardId: entries.boardId,
+        ownerEmail: entries.ownerEmail,
       })
       .from(payments)
       .innerJoin(entries, eq(entries.id, payments.entryId))
@@ -124,7 +126,7 @@ export async function fulfillCheckout(db: Executor, paid: PaidSession, instant: 
 
     // Lock the board first, then re-read the payment under the lock (Stripe retries can arrive together).
     const [board] = await tx
-      .select({ closesAt: boards.closesAt })
+      .select({ closesAt: boards.closesAt, key: boards.key })
       .from(boards)
       .where(eq(boards.id, row.boardId))
       .for("update");
@@ -155,6 +157,7 @@ export async function fulfillCheckout(db: Executor, paid: PaidSession, instant: 
         .update(entries)
         .set({ status: "live", totalCents: row.amountCents, totalReachedAt: instant, liveAt: instant })
         .where(eq(entries.id, row.entryId));
+      await addClaimReminder(tx, row.ownerEmail, board!.key);
     } else {
       // A boost adds to the running total; reaching the new total "now" decides ties (07 B2).
       await tx
@@ -186,6 +189,20 @@ export async function fulfillCheckout(db: Executor, paid: PaidSession, instant: 
       alerted,
     };
   });
+}
+
+/**
+ * Yearly re-claim (spec §8, email 7): claimers are added to the birthday
+ * reminder for their date. Someone who already has a reminder for it, or
+ * unsubscribed from it, is left as they are.
+ */
+async function addClaimReminder(db: Executor, email: string | null, key: string): Promise<void> {
+  const md = parseKey(key);
+  if (!email || !md) return;
+  await db
+    .insert(reminders)
+    .values({ email: email.toLowerCase(), month: md.month, day: md.day, source: "claim" })
+    .onConflictDoNothing({ target: [reminders.email, reminders.month, reminders.day] });
 }
 
 /** Checkout timed out or failed: the payment is expired and nothing changes on the board. */

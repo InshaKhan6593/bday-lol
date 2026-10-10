@@ -33,6 +33,7 @@ return to the page they started on with `?boosted=…` and a short "Your boost i
 | http://localhost:3000 | The app |
 | http://localhost:3000/styleguide | The design language (dev only) |
 | http://localhost:8030 | Mailpit: every email the app sends lands here |
+| http://localhost:3000/dev/emails | All 8 emails with demo data (dev only) |
 | `pnpm db:studio` | Browse the database |
 
 ## Scripts
@@ -43,6 +44,7 @@ return to the page they started on with `?boosted=…` and a short "Your boost i
 | `pnpm typecheck` / `pnpm lint` | Static checks |
 | `pnpm db:generate` | New migration from `src/db/schema.ts` changes |
 | `pnpm db:reset` | Wipe the local DB, migrate, seed (refuses non-local databases) |
+| `pnpm emails:tick` | Send every scheduled email that is due now (what the production cron does every minute). Respects `DEV_NOW` |
 
 ## Fake clock
 
@@ -51,13 +53,21 @@ Set `DEV_NOW` (ISO 8601) to make the app think it's that moment. Ignored in prod
 ```bash
 DEV_NOW=2026-10-07T23:58:00-04:00 pnpm db:reset   # 2 minutes before Oct 7 ends (ET)
 DEV_NOW=2028-02-27T12:00:00-05:00 pnpm db:reset   # Feb 29, 2028 is "coming up"
+DEV_NOW=2026-10-07T08:05:00-04:00 pnpm emails:tick # Oct 7's "Your day is here" emails
 ```
+
+## Emails
+
+Receipts and the admin alert go out from the Stripe webhook; outbid alerts too, the moment someone loses #1.
+Everything on a timer (hourly boost digest, "Your day is here" at 8 AM ET, reminders a week before) runs from
+`/api/cron/emails`, every minute on Vercel (`vercel.json`). Locally there's no cron: run `pnpm emails:tick`.
+Each email is sent once (dedupe keys in `email_log`). Details in [../08-emails.md](../08-emails.md#how-theyre-sent-step-8).
 
 ## Where things live
 
 ```
 src/
-  app/                 routes (pages, API: api/stripe/webhook, cron)
+  app/                 routes (pages, API: api/stripe/webhook, api/cron/emails, api/unsubscribe)
   components/ui/       design-language primitives: Button, Chip, Surface, Avatar, Badge, Kicker, Field, Select, Menu, Icon…
   components/site/     shared by every page: header, menu, countdown
   components/home/     homepage sections
@@ -72,6 +82,7 @@ src/
   lib/                 pure rules: birthday.ts (ET, leap years, board years), date-page, claim, checkout, success, facts, money, boost math, gifts, routes, clock, ids
   test/                database test helpers (rolled-back transactions)
   server/              server logic: leaderboard queries, page data, payments (claims + boosts, pending → paid), outbid alert queue, Stripe client + events, photo storage, reminders; actions/ = form actions
+  server/email/        sending: mailer (Mailpit / Resend SMTP), sendEmail (dedupe + unsubscribe), payment emails, scheduled emails, suppressions
   styles/tokens.css    design tokens: color, type roles, shape, shadows, spacing, motion
 scripts/               seed, reset
 drizzle/               generated SQL migrations

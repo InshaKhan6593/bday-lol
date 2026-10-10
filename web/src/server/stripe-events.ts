@@ -5,7 +5,7 @@ import { expireCheckout, fulfillCheckout, type FulfillResult } from "./payments"
 
 export type EventOutcome =
   | { handled: false; reason: string }
-  | { handled: true; action: "fulfilled"; result: FulfillResult }
+  | { handled: true; action: "fulfilled"; sessionId: string; result: FulfillResult }
   | { handled: true; action: "expired"; changed: boolean }
   | { handled: true; action: "waiting" };
 
@@ -19,15 +19,20 @@ export async function handleStripeEvent(db: Executor, event: Stripe.Event, insta
     case "checkout.session.completed":
       // Card payments are "paid" here; delayed methods finish in async_payment_succeeded.
       if (session.payment_status !== "paid") return { handled: true, action: "waiting" };
-      return { handled: true, action: "fulfilled", result: await fulfillCheckout(db, paidSession(session), instant) };
+      return fulfilled(db, session, instant);
     case "checkout.session.async_payment_succeeded":
-      return { handled: true, action: "fulfilled", result: await fulfillCheckout(db, paidSession(session), instant) };
+      return fulfilled(db, session, instant);
     case "checkout.session.async_payment_failed":
     case "checkout.session.expired":
       return { handled: true, action: "expired", changed: await expireCheckout(db, session.id) };
     default:
       return { handled: false, reason: `ignored ${event.type}` };
   }
+}
+
+async function fulfilled(db: Executor, session: Stripe.Checkout.Session, instant: Date): Promise<EventOutcome> {
+  const result = await fulfillCheckout(db, paidSession(session), instant);
+  return { handled: true, action: "fulfilled", sessionId: session.id, result };
 }
 
 function paidSession(session: Stripe.Checkout.Session) {
