@@ -23,3 +23,6 @@
 *.tsbuildinfo
 next-env.d.ts
 /coverage
+
+# Written by `next dev` on every start
+/AGENTS.md
