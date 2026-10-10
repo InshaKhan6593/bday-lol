@@ -44,7 +44,7 @@ payments through Stripe Checkout (Adaptive Pricing, settled in USD) and a hidden
 | [07-open-questions.md](07-open-questions.md) | Gaps and conflicts, **with our decisions**. Section C + the draft message at the bottom are what still needs the client |
 | [08-emails.md](08-emails.md) | The 8 emails: research on what good ones say, the design, and each email's subject, preview line and content |
 | [web/](web/) | **The Next.js app.** Setup, commands and folder map in [web/README.md](web/README.md) |
-| [seo-audit/](seo-audit/) | SEO audit on [claude-seo](https://github.com/AgriciDaniel/claude-seo)'s analysers: `audit.py`, before/after reports, the client report page |
+| [seo-audit/](seo-audit/) | SEO audit on [claude-seo](https://github.com/AgriciDaniel/claude-seo)'s analysers: `audit.py`, before/after reports, the client report page. **Next:** [run the real plugin](seo-audit/HANDOFF-claude-seo.md) |
 | `resources/` | *(local only)* Original material from the client (see below) |
 
 ### resources/ (local only)

@@ -10,6 +10,7 @@ its skills, turned into 44 fixed checks over all 366 date pages, the 12 month pa
 | `compare.py` | Before/after table from two runs (`reports/COMPARISON.md`) |
 | `report.py` | The client page from two runs (`reports/report.html`, pictures in `reports/screens` and `reports/og`) |
 | `reports/before`, `reports/after` | Step 9: 46/100 → 97/100 |
+| [`HANDOFF-claude-seo.md`](HANDOFF-claude-seo.md) | **Next:** run the real claude-seo plugin (`/seo audit`) on a local machine |
 
 ## Run it
 
