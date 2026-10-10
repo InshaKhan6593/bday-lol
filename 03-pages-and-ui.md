@@ -1,5 +1,10 @@
 # 03: Pages and UI (taken from the mockup source)
 
+> **Updated by handoff v2 (2026-10-10).** The site is now mybday.lol and several screens changed (date page,
+> Claim, Success, mobile menu, footer, Terms/Privacy). The new mockup is in `resources/handoff-v2/mockup/` and the
+> changes are summarized in [README › Handoff v2](README.md#handoff-v2-2026-10-10). This file still describes the
+> first mockup.
+
 Source files: `resources/mockup-source/*.dc.html`. **Open the file for exact pixel values.** This doc gives the
 structure, copy and behavior. Mockup boards (from `canvas.json`): desktop width **1440**, mobile width **390**.
 

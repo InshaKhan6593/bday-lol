@@ -1,8 +1,13 @@
-# bday.lol: birthday leaderboard (client project)
+# mybday.lol: birthday leaderboard (client project)
 
 **Read this first.** This folder holds the full brief for a client build (the `.md` files) and the app itself (`web/`).
 The foundation is built and runs locally: database schema, date rules with tests, the design system and seed data.
 Every page in the mockup is built. Claims and boosts are paid for through Stripe Checkout (test mode locally), and all 8 emails send (Mailpit locally, Resend in production). Next up is SEO (step 9).
+
+> **Handoff v2 (2026-10-10).** The client sent an updated mockup and developer notes: the site is now **mybday.lol**,
+> with personal links, a reworked Claim form, Terms/Privacy pages and more. It's built (see the
+> [Handoff v2](#handoff-v2-2026-10-10) section). Where it's the source of truth, it beats the older docs below.
+> Points where the notes and the mockup disagree were kept as they were and are listed in [07 section D](07-open-questions.md#d-handoff-v2-points-to-confirm-with-the-client).
 
 ## One-paragraph summary
 
@@ -86,8 +91,27 @@ Mailpit on :8030). Production plan: Vercel Pro + Neon Postgres + Vercel Blob + S
 | 10. Admin | ⬜ |
 | 11. Deploy to Vercel + Neon, test live | ⬜ |
 
-**Tests:** every feature ships with tests (`pnpm test`, 197 so far): pure rules in `web/src/lib/*.test.ts` and
+**Tests:** every feature ships with tests (`pnpm test`, 215 so far): pure rules in `web/src/lib/*.test.ts` and
 database tests in `*.db.test.ts`, which run against the local Docker Postgres inside a rolled-back transaction.
+
+## Handoff v2 (2026-10-10)
+
+Source: `resources/handoff-v2/` (local only): `DEVELOPER-NOTES.md`, `mockup/*.dc.html`, `screenshots/`, `legal/`.
+The social ad boards are gone (07 C3 settled: out of scope). Built on branch `handoff-v2`:
+
+| Area | What changed |
+|---|---|
+| Brand and wording | **mybday.lol** everywhere (UI, emails, checkout). A date's leaderboard is a "board" (never "list"), a claim is a "spot", "friends and followers". Status lines "Ends in…" / "Bidding is open" |
+| Every page | Footer "© 2026 mybday.lol · FAQ · Terms · Privacy". New mobile menu (Today's birthday, Find your birthday, How it works & FAQ, Claim). Pages open at the top after Back/refresh |
+| Date page | "Outrank Jess for $241"; the bar shows where you land with ties ("Bid $6 or more to move up to #20"). Phones: tap a card for an in-card Outrank button. Row share menu (Share…, Facebook, Text, Copy link). 20 people, then "Show 20 more". Short month names in the phone's bottom links, About facts one per row |
+| Personal links | `/october-7/sam-rivera` (slug set when the payment lands, -2 for duplicates): scrolls to and highlights the person with a "You followed Sam's link…" banner. Used by row share menus, emails and the Success page |
+| Claim | Gift links are app + username rows (one per app, up to 4; links built from the username). Name required. Date starts blank; fixed $ bid box; starts on Sky; under-18 tooltip. Stripe Checkout requires "I'm 18 or older and agree to the Terms…" (claims and boosts) |
+| Success | "Your personal link" box with Copy / "Copied!" and "See your spot →". "You're #3 on October 7. Boost to climb." The link card shows the claimer's own link |
+| Terms / Privacy | `/terms`, `/privacy` with the client's final text, read from the `site_pages` table first so the admin can edit them live |
+
+Still to do from the handoff, in later steps: OG image for every personal link (step 9), editing Terms/Privacy/FAQ
+and hiding listings in the admin (step 10), privacy-friendly analytics (named in the Privacy Policy) and the live
+Stripe account's Terms URL (step 11), and testing Venmo/Cash App links on a real phone.
 
 **Design decisions** (details in [04-design-system.md](04-design-system.md#implementation-decisions)): keep the client's look exactly
 (rounded pastel shapes, Bricolage Grotesque); upgrade the mockup's hand-drawn icons to Phosphor Bold; build

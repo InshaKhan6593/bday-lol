@@ -51,6 +51,25 @@ The client can still override any decision in A or B. They are listed in the mes
 
 ---
 
+## D. Handoff v2: points to confirm with the client
+
+The updated handoff (2026-10-10) says to ask the client whenever the notes and the mockup disagree. Until he answers, each
+item below **keeps what was already built**.
+
+| # | Where | Notes say | Mockup shows | Kept for now |
+|---|---|---|---|---|
+| D1 | Homepage gifts | One "Send a birthday gift ▾" button that opens the options | The gift panel with full-width buttons ("Send on Venmo") | The panel (mockup) |
+| D2 | Homepage, nobody claimed today | The page uses gray (Cloud) | Butter (yellow) | Butter |
+| D3 | Calendar | Unclaimed dates are gray | Unclaimed cells are white | White |
+| D4 | Kids on the board | A child's card has a first name only and no gift button | Sample data has a `minor` flag, but the Claim form has no way to say "this is my child" | No flag: a listing with no gift links simply has no gift button. Admin can hide listings (step 10) |
+| D5 | Database | — | Privacy Policy names **Supabase** (database and file storage) | Neon + Vercel Blob as planned. Either switch to Supabase or change the policy text |
+| D6 | Emails | Lists 4 kinds (receipt, outbid, alert to followers, reminder) | — | All 8 from the original doc |
+| D7 | Postal address | Not given | — | `EMAIL_FOOTER_ADDRESS` stays empty (reminder emails should have one) |
+| D8 | Success note for rank 2+ | "If someone passes you, we'll email you right away" | Same note for every rank | Outbid emails only go when someone loses #1, so rank 2+ gets "You stay on October 7's birthday board…" instead of a promise we don't keep |
+
+Settled by the handoff: C2 (Terms, Privacy, support email mybdaylol@gmail.com, footer design), C3 (social boards out
+of scope), most of C1 (domain mybday.lol on Cloudflare, Resend from hello@mybday.lol, Vercel, sole-proprietor Stripe).
+
 ## Message to the client
 
 The ready-to-send message (section C questions + the FYI list of decisions) is kept in `private/README.md`, local only.
