@@ -102,7 +102,7 @@ Each email is sent once (dedupe keys in `email_log`). Details in [../08-emails.m
 ```
 src/
   app/                 routes (pages, API: api/stripe/webhook, api/cron/emails, api/unsubscribe)
-  components/ui/       design-language primitives: Button, Chip, Surface, Avatar, Badge, Kicker, Field, Select, Menu, Icon…
+  components/ui/       design-language primitives: Button, Chip, Surface, Avatar, Badge, Kicker, Field, Select, Menu, Icon… (mockup-icons.tsx = the icon drawings and SITE_ICON_SET)
   components/site/     shared by every page: header, menu, countdown
   components/home/     homepage sections
   components/date/     date page ("Find your birthday"): date picker, ranked list, gift menu, About
@@ -121,7 +121,7 @@ src/
   server/famous*.ts    famous people: Wikidata provider (famous-source.ts), monthly refresh and reads (famous.ts)
   server/og-card.tsx   share images (Open Graph) drawn with next/og; fonts in src/assets/fonts
   styles/tokens.css    design tokens: color, type roles, shape, shadows, spacing, motion
-scripts/               seed, reset
+scripts/               seed, reset, init (new database), email tick, famous refresh, load tests
 drizzle/               generated SQL migrations
 ```
 
@@ -138,9 +138,25 @@ at the top of `src/styles/tokens.css`. Components use **tokens and primitives, n
 
 Decided (2026-10-09): keep the **client's look** exactly: rounded pastel shapes and Bricolage Grotesque.
 We compared it with neubrutalism.com's square style and its fonts (Syne is too wide for the giant homepage date).
-Two upgrades over the mockup:
-- **Icons:** [Phosphor](https://phosphoricons.com), Bold weight, via `<Icon name="…" />` (the mockup's hand-drawn icons looked rough; client is told as FYI)
-- **Dropdowns and popups:** [Radix UI](https://www.radix-ui.com) primitives styled with our tokens (native `<select>` lists can't be styled)
+- **Icons:** the mockup's own line icons, via `<Icon name="…" />` (`components/ui/mockup-icons.tsx`). `SITE_ICON_SET` there switches the site to the suggested set (Phosphor Bold + colored share icons) that `/styleguide` shows the client
+- **Dropdowns and popups** (the one upgrade over the mockup): [Radix UI](https://www.radix-ui.com) primitives styled with our tokens (native `<select>` lists can't be styled)
+
+## Deploy (Vercel + Supabase)
+
+A test copy runs on the developer's own accounts; the client's accounts replace them at handover.
+
+1. **Keys:** every variable Vercel needs is in `.env.vercel` (git-ignored; names and where each comes from are in `.env.example`).
+   Set them in the Vercel project (`vercel env add NAME production`), never as uploaded files.
+2. **New database:** with `DATABASE_URL` set to Supabase's session pooler URL (port 5432), run `pnpm db:migrate`,
+   then `pnpm db:init` (creates the birthday board type; the seed is never run in production), then `pnpm famous:refresh`.
+   The app itself uses the transaction pooler URL (port 6543) with `DATABASE_POOL_MAX=3`.
+3. **Photos:** `STORAGE_DRIVER=supabase` with a public Storage bucket (`SUPABASE_STORAGE_BUCKET`, default `photos`).
+4. **Deploy:** `vercel --prod` from this folder. The CLI does not read `.gitignore`: `.vercelignore` is what keeps
+   `.env*` and local-only files out of the upload, so keep it in step with `.gitignore`.
+5. **Stripe:** add a webhook endpoint for `https://<site>/api/stripe/webhook` (the four `checkout.session.*` events
+   in `server/stripe-events.ts`) and set its signing secret as `STRIPE_WEBHOOK_SECRET`.
+6. **Free plan limits:** `vercel.json` runs the email cron once a day and the famous cron is capped at 300 s.
+   On Vercel Pro, set the email cron back to every minute (`* * * * *`).
 
 ## Load and concurrency tests
 

@@ -2,7 +2,7 @@
 
 **Read this first.** This folder holds the full brief for a client build (the `.md` files) and the app itself (`web/`).
 The foundation is built and runs locally: database schema, date rules with tests, the design system and seed data.
-Every page in the mockup is built. Claims and boosts are paid for through Stripe Checkout (test mode locally), and all 8 emails send (Mailpit locally, Resend in production). SEO (step 9) is done: 46 → 97 on the claude-seo audit ([seo-audit/](seo-audit/)). Next up is the admin (step 10).
+Every page in the mockup is built. Claims and boosts are paid for through Stripe Checkout (test mode locally), and all 8 emails send (Mailpit locally, Resend in production). SEO (step 9) is done: 46 → 97 on the claude-seo audit ([seo-audit/](seo-audit/)). A test copy is deployed on the developer's own Vercel and Supabase accounts (step 11, started 2026-10-11); the admin (step 10) is the remaining build step.
 
 > **Handoff v2 (2026-10-10).** The client sent an updated mockup and developer notes: the site is now **mybday.lol**,
 > with personal links, a reworked Claim form, Terms/Privacy pages and more. It's built (see the
@@ -26,7 +26,7 @@ payments through Stripe Checkout (Adaptive Pricing, settled in USD) and a hidden
 | Timeline | **14 days** (about 12 days of build and self-testing, then client review and revisions) |
 | Stack required by client | **Next.js**. UI must match the mockup **pixel for pixel**, desktop and mobile |
 | Integrations required | Stripe Checkout (Adaptive Pricing), Resend (email), Wikidata + Wikipedia pageviews, FiveThirtyEight US births data, Google Search Console |
-| Status (2026-10-09) | Build foundation done locally (see [Build progress](#build-progress)) |
+| Status (2026-10-11) | Steps 1–9 built and a test copy deployed; admin (step 10) still to build (see [Build progress](#build-progress)) |
 
 > **Private material is not in this repo.** The client's identity, the deal, his chat, spec doc and mockup source
 > live only on the developer's machine (`private/`, `resources/`, `01-client-and-deal.md`, all git-ignored).
@@ -70,7 +70,7 @@ Known conflicts are listed in [07-open-questions.md](07-open-questions.md).
 ## Build progress
 
 **Stack:** Next.js 16 (App Router) + TypeScript, Postgres via Drizzle ORM, CSS Modules on design tokens,
-Radix UI (dropdowns and popups), Phosphor icons, Vitest. Local services run in Docker (Postgres on :5440,
+Radix UI (dropdowns and popups), the mockup's own icons, Vitest. Local services run in Docker (Postgres on :5440,
 Mailpit on :8030). Production plan: Vercel Pro + Supabase (Postgres + Storage for photos, decided 2026-10-10 to match the Privacy Policy) + Stripe Checkout + Resend.
 
 | Step | Status |
@@ -94,7 +94,7 @@ Mailpit on :8030). Production plan: Vercel Pro + Supabase (Postgres + Storage fo
 | 10. Admin | ⏭️ Next, after the test deploy |
 | 11. Deploy to Vercel + Supabase, test live | 🔧 Started 2026-10-11 on the developer's own test accounts, before admin: Supabase Storage for photos (`STORAGE_DRIVER=supabase`), `pnpm db:init` for a new database, email cron once a day until the project is on Vercel Pro |
 
-**Tests:** every feature ships with tests (`pnpm test`, 299 so far): pure rules in `web/src/lib/*.test.ts` and
+**Tests:** every feature ships with tests (`pnpm test`, 304 so far): pure rules in `web/src/lib/*.test.ts` and
 database tests in `*.db.test.ts`, which run against the local Docker Postgres inside a rolled-back transaction.
 
 ## Handoff v2 (2026-10-10)
