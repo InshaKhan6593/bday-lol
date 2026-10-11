@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { connection } from "next/server";
 import styles from "@/components/how/how.module.css";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -13,10 +12,12 @@ import { HOW_DESCRIPTION, HOW_TITLE, pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({ title: HOW_TITLE, description: HOW_DESCRIPTION, path: routes.howItWorks });
 
+// Cached and rebuilt at most every 5 minutes (claude-seo seo-technical: no-store on every page). "Find your date" and the
+// header link follow today's date, so they can lag midnight ET by those minutes.
+export const revalidate = 300;
+
 /** How it works: 3 steps, the FAQ and a "Find your date" bar. Always Butter. */
 export default async function HowItWorksPage() {
-  // Rendered per request so "Find your date" points at today's date page after midnight ET.
-  await connection();
   const settings = BIRTHDAY_BOARD_TYPE.settings;
   const today = zonedDate(now(), settings.timezone);
   const steps = howItWorksSteps(settings);

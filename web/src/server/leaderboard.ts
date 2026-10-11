@@ -143,13 +143,22 @@ export async function getCurrentLeaders(
   return out;
 }
 
-/** When each open board last changed (a claim, a boost or an edit), keyed "10-07". The sitemap's lastmod. */
-export async function getBoardActivity(db: Executor, typeId: number, instant: Date): Promise<Record<string, Date>> {
+/**
+ * When each open board last changed (a claim, a boost or an edit), keyed "10-07": the sitemap's lastmod and
+ * the pages' dateModified. `keys` narrows it to one date ("10-07") or one month ("10-%").
+ */
+export async function getBoardActivity(
+  db: Executor,
+  typeId: number,
+  instant: Date,
+  keys?: string,
+): Promise<Record<string, Date>> {
+  const open = and(eq(boards.boardTypeId, typeId), lte(boards.opensAt, instant), gt(boards.closesAt, instant));
   const rows = await db
     .select({ key: boards.key, at: max(entries.updatedAt) })
     .from(boards)
     .innerJoin(entries, and(eq(entries.boardId, boards.id), eq(entries.status, "live")))
-    .where(and(eq(boards.boardTypeId, typeId), lte(boards.opensAt, instant), gt(boards.closesAt, instant)))
+    .where(keys ? and(open, like(boards.key, keys)) : open)
     .groupBy(boards.key);
   return Object.fromEntries(rows.flatMap((r) => (r.at ? [[r.key, r.at]] : [])));
 }

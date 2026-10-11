@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { allMonthDays, DAYS_IN_MONTH, formatLong } from "./birthday";
 import {
+  CONTENT_UPDATED,
   HOW_DESCRIPTION,
   PRIVACY_DESCRIPTION,
   TERMS_DESCRIPTION,
@@ -11,6 +12,7 @@ import {
   DESCRIPTION_MAX,
   DESCRIPTION_MIN,
   fitDescription,
+  lastModified,
   monthDescription,
   monthJsonLd,
   monthTitle,
@@ -93,6 +95,18 @@ describe("month pages", () => {
 
   it("calls leap day February's rarest birthday, like the page", () => {
     expect(monthDescription(2, 0, 29)).toContain("its rarest is February 29.");
+  });
+
+  it("puts dateModified on date and month pages, never older than the copy", () => {
+    const bid = new Date("2026-11-02T15:04:05Z");
+    expect(lastModified(undefined, bid, new Date("2026-10-20T00:00:00Z"))).toEqual(bid);
+    expect(lastModified()).toEqual(CONTENT_UPDATED);
+    expect(lastModified(new Date("2020-01-01T00:00:00Z"))).toEqual(CONTENT_UPDATED);
+    expect(JSON.stringify(dateJsonLd({ month: 10, day: 7 }, "t", "d", [], bid))).toContain(
+      '"dateModified":"2026-11-02T15:04:05.000Z"',
+    );
+    expect(JSON.stringify(monthJsonLd(10, "t", "d", [], bid))).toContain('"dateModified":"2026-11-02T15:04:05.000Z"');
+    expect(JSON.stringify(dateJsonLd({ month: 10, day: 7 }, "t", "d", []))).not.toContain("dateModified");
   });
 
   it("lists every date of the month in the structured data", () => {

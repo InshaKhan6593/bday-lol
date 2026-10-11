@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { entries, famousHidden, famousPeople, leaderLog } from "@/db/schema";
 import { addBirthdayType, addPeople, inRollback } from "@/test/db";
+import { CONTENT_UPDATED } from "@/lib/seo";
 import { getDatePageData } from "./date-page";
 
 // Noon ET on October 7, 2026.
@@ -103,6 +104,21 @@ describe("date page data", () => {
 
       const page = await getDatePageData(tx, oct10, NOON_OCT_7);
       expect(page.calendarTops).toEqual({ "10-07": 24_000, "02-29": 2_900 });
+    });
+  });
+
+  it("says when the page last changed: the famous list's date, or the copy's when there is no data", async () => {
+    await inRollback(async (tx) => {
+      await addBirthdayType(tx);
+      expect((await getDatePageData(tx, oct10, NOON_OCT_7)).updatedAt).toBe(CONTENT_UPDATED.toISOString());
+
+      const refreshed = new Date("2026-11-03T08:00:00Z");
+      await tx.insert(famousPeople).values([
+        { key: "10-10", sourceId: "Q1", name: "Star", knownFor: "actor", birthDate: "1980-10-10", rank: 1, refreshedAt: refreshed },
+        // Another date's list doesn't count.
+        { key: "10-11", sourceId: "Q2", name: "Other", knownFor: "actor", birthDate: "1980-10-11", rank: 1, refreshedAt: new Date("2026-12-01T00:00:00Z") },
+      ]);
+      expect((await getDatePageData(tx, oct10, NOON_OCT_7)).updatedAt).toBe(refreshed.toISOString());
     });
   });
 

@@ -33,19 +33,33 @@ export function fitDescription(sentences: string[], extras: string[] = []): stri
   return text;
 }
 
-type Social = { title: string; description: string; path: string; type?: "website" | "article" };
+/** Alt text of every share image (the opengraph-image routes use the same words). */
+export const SHARE_IMAGE_ALT = "Birthday card from mybday.lol";
+
+type Social = {
+  title: string;
+  description: string;
+  path: string;
+  type?: "website" | "article";
+  /** Only for a page whose route has no opengraph-image file of its own. */
+  image?: string;
+};
 
 /**
  * Canonical + Open Graph + Twitter for a page. The share image comes from the
  * route's opengraph-image file, which Next adds on its own.
  */
-export function pageMetadata({ title, description, path, type = "website" }: Social, absoluteTitle = false): Metadata {
+export function pageMetadata(
+  { title, description, path, type = "website", image }: Social,
+  absoluteTitle = false,
+): Metadata {
+  const images = image && [{ url: image, width: 1200, height: 630, type: "image/png", alt: SHARE_IMAGE_ALT }];
   return {
     title: absoluteTitle ? { absolute: title } : title,
     description,
     alternates: { canonical: path },
-    openGraph: { title, description, url: path, siteName: SITE_NAME, type, locale: "en_US" },
-    twitter: { card: "summary_large_image", title, description },
+    openGraph: { title, description, url: path, siteName: SITE_NAME, type, locale: "en_US", ...(images && { images }) },
+    twitter: { card: "summary_large_image", title, description, ...(images && { images }) },
   };
 }
 
@@ -164,7 +178,13 @@ export function homeJsonLd(description: string) {
 type FamousForSchema = { name: string; knownFor: string; birthDate: string; source: string; sourceId: string };
 
 /** Date page: breadcrumb, the page, and its famous people linked to their Wikidata entries. */
-export function dateJsonLd(md: MonthDay, title: string, description: string, famous: FamousForSchema[]) {
+export function dateJsonLd(
+  md: MonthDay,
+  title: string,
+  description: string,
+  famous: FamousForSchema[],
+  modified?: Date,
+) {
   const path = routes.date(md);
   const month = MONTHS[md.month - 1]!;
   return {
@@ -184,6 +204,7 @@ export function dateJsonLd(md: MonthDay, title: string, description: string, fam
         inLanguage: "en-US",
         isPartOf: { "@id": WEBSITE_ID() },
         breadcrumb: { "@id": id(path, "breadcrumb") },
+        ...(modified && { dateModified: modified.toISOString() }),
         ...(famous.length > 0 && {
           mainEntity: {
             "@type": "ItemList",
@@ -207,7 +228,7 @@ export function dateJsonLd(md: MonthDay, title: string, description: string, fam
 }
 
 /** Month page: breadcrumb and the collection of its date pages. */
-export function monthJsonLd(month: number, title: string, description: string, days: MonthDay[]) {
+export function monthJsonLd(month: number, title: string, description: string, days: MonthDay[], modified?: Date) {
   const path = routes.month(month);
   return {
     "@context": "https://schema.org",
@@ -225,6 +246,7 @@ export function monthJsonLd(month: number, title: string, description: string, d
         inLanguage: "en-US",
         isPartOf: { "@id": WEBSITE_ID() },
         breadcrumb: { "@id": id(path, "breadcrumb") },
+        ...(modified && { dateModified: modified.toISOString() }),
         mainEntity: {
           "@type": "ItemList",
           numberOfItems: days.length,
@@ -279,3 +301,12 @@ export const PRIVACY_DESCRIPTION =
  * Bump it when that copy changes.
  */
 export const CONTENT_UPDATED = new Date("2026-10-10T00:00:00Z");
+
+/**
+ * When a page last changed: the newest of its data's dates (a board's last bid, the famous list), never
+ * older than the copy itself. The sitemap's lastmod and the pages' dateModified.
+ */
+export function lastModified(...dates: Array<Date | undefined>): Date {
+  const times = dates.filter((d): d is Date => d !== undefined).map((d) => d.getTime());
+  return new Date(Math.max(CONTENT_UPDATED.getTime(), ...times));
+}

@@ -2,10 +2,11 @@ import type { BoardTypeSettings } from "@/config/board-types";
 import type { ThemeKey } from "@/config/themes";
 import type { Executor } from "@/db";
 import type { GiftLink } from "@/db/schema";
-import { boardClosesAt, zonedDate, type MonthDay } from "@/lib/birthday";
+import { boardClosesAt, toKey, zonedDate, type MonthDay } from "@/lib/birthday";
 import { dateStatus, heldText, type DateStatus } from "@/lib/date-page";
-import { getFamousPeople, type FamousPerson } from "./famous";
-import { getBirthdaySettings, getCurrentBoard, getCurrentTopTotals, getLeaderLog } from "./leaderboard";
+import { lastModified } from "@/lib/seo";
+import { getFamousPeople, getFamousRefreshedAt, type FamousPerson } from "./famous";
+import { getBirthdaySettings, getBoardActivity, getCurrentBoard, getCurrentTopTotals, getLeaderLog } from "./leaderboard";
 
 /** One person on the date page's list. Only public fields: this goes to the browser. */
 export type DateEntry = {
@@ -38,6 +39,8 @@ export type DatePageData = {
   /** Top total per month-day for the date picker ("10-07" → cents). */
   calendarTops: Record<string, number>;
   famous: FamousPerson[];
+  /** When this page's data last changed (a bid on the board, the famous list): dateModified. */
+  updatedAt: string;
   /** When today ends (midnight ET), for the countdown in the status line. */
   dayEndsAt: string;
   serverNow: string;
@@ -58,6 +61,11 @@ export async function getDatePageData(db: Executor, md: MonthDay, instant: Date)
   const log = isToday && board.boardId ? await getLeaderLog(db, board.boardId) : [];
   const calendarTops = await getCurrentTopTotals(db, typeId, instant);
   const famous = await getFamousPeople(db, md, board.year);
+  const key = toKey(md);
+  const updatedAt = lastModified(
+    (await getBoardActivity(db, typeId, instant, key))[key],
+    (await getFamousRefreshedAt(db, key))[key],
+  );
 
   return {
     settings,
@@ -84,6 +92,7 @@ export async function getDatePageData(db: Executor, md: MonthDay, instant: Date)
     })),
     calendarTops,
     famous,
+    updatedAt: updatedAt.toISOString(),
     dayEndsAt: boardClosesAt(today, todayDate.year, tz).toISOString(),
     serverNow: instant.toISOString(),
   };

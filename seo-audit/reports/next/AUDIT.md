@@ -1,6 +1,6 @@
 # SEO audit: mybday.lol (next)
 
-Run 2026-10-11T09:38:41+00:00 against `http://localhost:3100` with claude-seo 2.4.0 analysers. 387 URLs fetched.
+Run 2026-10-11T10:06:32+00:00 against `http://localhost:3100` with claude-seo 2.4.0 analysers. 387 URLs fetched.
 
 ## Overall score: 97/100
 
@@ -143,7 +143,7 @@ Security         100/100  ██████████
 | words | 666 |
 | unique_pct | — |
 | schema | ['BreadcrumbList', 'CollectionPage'] |
-| og_image | http://localhost:3100/october/opengraph-image?3fde5180ea8f94b0 |
+| og_image | http://localhost:3100/october/opengraph-image |
 
 ### `/how-it-works`
 

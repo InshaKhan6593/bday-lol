@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { connection } from "next/server";
 import { LegalPageView } from "@/components/legal/LegalPageView";
 import { db } from "@/db";
 import { routes } from "@/lib/routes";
@@ -8,8 +7,12 @@ import { getLegalPage } from "@/server/site-pages";
 
 export const metadata: Metadata = pageMetadata({ title: TERMS_TITLE, description: TERMS_DESCRIPTION, path: routes.terms });
 
-/** Terms of Service. Read per request: the client edits the text in the admin, no deploy needed. */
+// Cached and rebuilt at most every 5 minutes (claude-seo seo-technical: no-store on every page), so an edit
+// shows within 5 minutes. TODO(step 10): the admin's save
+// calls revalidatePath for this page so edits show at once.
+export const revalidate = 300;
+
+/** Terms of Service. The client edits the text in the admin, no deploy needed. */
 export default async function TermsPage() {
-  await connection();
   return <LegalPageView doc={await getLegalPage(db, "terms")} current="terms" />;
 }

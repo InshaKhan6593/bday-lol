@@ -2,8 +2,16 @@ import type { BoardTypeSettings } from "@/config/board-types";
 import type { ThemeKey } from "@/config/themes";
 import type { Executor } from "@/db";
 import { currentBoardYear, DAYS_IN_MONTH, toKey, zonedDate, type MonthDay } from "@/lib/birthday";
-import { getFamousNamesForMonth } from "./famous";
-import { getBirthdaySettings, getCurrentLeaders, getCurrentTopTotals, getCurrentBoard, type BoardLeader } from "./leaderboard";
+import { lastModified } from "@/lib/seo";
+import { getFamousNamesForMonth, getFamousRefreshedAt } from "./famous";
+import {
+  getBirthdaySettings,
+  getBoardActivity,
+  getCurrentBoard,
+  getCurrentLeaders,
+  getCurrentTopTotals,
+  type BoardLeader,
+} from "./leaderboard";
 
 export type MonthDateRow = {
   md: MonthDay;
@@ -23,6 +31,8 @@ export type MonthPageData = {
   /** Top total per month-day, for the calendar grid ("10-07" → cents). */
   calendarTops: Record<string, number>;
   claimed: number;
+  /** When any of the month's boards or famous lists last changed: dateModified. */
+  updatedAt: string;
 };
 
 /** A month page (/october): every date in the month with its #1, famous names and facts (07 B13). */
@@ -36,6 +46,11 @@ export async function getMonthPageData(db: Executor, month: number, instant: Dat
   const famous = await getFamousNamesForMonth(db, month);
   const calendarTops = await getCurrentTopTotals(db, typeId, instant);
   const todayBoard = await getCurrentBoard(db, typeId, settings, today, instant);
+  const keys = `${String(month).padStart(2, "0")}-%`;
+  const updatedAt = lastModified(
+    ...Object.values(await getBoardActivity(db, typeId, instant, keys)),
+    ...Object.values(await getFamousRefreshedAt(db, keys)),
+  );
 
   const rows = Array.from({ length: DAYS_IN_MONTH[month - 1]! }, (_, i) => {
     const md = { month, day: i + 1 };
@@ -51,5 +66,6 @@ export async function getMonthPageData(db: Executor, month: number, instant: Dat
     rows,
     calendarTops,
     claimed: rows.filter((r) => r.leader).length,
+    updatedAt: updatedAt.toISOString(),
   };
 }

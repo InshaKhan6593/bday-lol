@@ -66,15 +66,16 @@ export function About({ md, year, famous, leader, openBidCents }: Props) {
       {/* CC BY 4.0 attribution for the births data (07 B22). */}
       <p className={styles.source}>Source: FiveThirtyEight (CDC/NCHS, SSA), US births 1994–2014.</p>
 
-      <div className={styles.factGrid}>
+      {/* A description list: text extractors and AI answers read "Zodiac sign: Libra" as a fact, not loose spans. */}
+      <dl className={styles.factGrid}>
         {facts.map((fact) => (
           <Surface key={fact.key} padding="none" className={styles.fact}>
-            <span className={styles.factKey}>{fact.key}</span>
-            <span className={styles.factValue}>{fact.value}</span>
-            <span className={styles.factSub}>{fact.sub}</span>
+            <dt className={styles.factKey}>{fact.key}</dt>
+            <dd className={styles.factValue}>{fact.value}</dd>
+            <dd className={styles.factSub}>{fact.sub}</dd>
           </Surface>
         ))}
-      </div>
+      </dl>
 
       {famous.length > 0 && (
         <Surface className={styles.famous}>

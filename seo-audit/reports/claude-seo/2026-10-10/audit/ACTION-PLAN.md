@@ -11,6 +11,10 @@ Adult performers on 30 date pages, people listed on two dates, "footballer" next
 
 ## Phase 1: before launch, ours to do (High)
 
+**Status 2026-10-11:** 2, 3 (as a description list, not a sentence) and 4 are done. 1 is done for How it works,
+Terms, Privacy and the month pages; the homepage and date pages are still per request, to be decided after the stress
+test. `X-Powered-By` (item 7) is removed. Details in `06-seo.md`, "After the claude-seo plugin audit".
+
 | # | Fix | Where | Effort |
 |---|---|---|---|
 | 1 | Make pages cacheable: static/ISR for How it works, Terms, Privacy and month pages; short revalidate + `revalidateTag` from the Stripe webhook for date pages and the homepage | `web/src/app/**/page.tsx`, `server/payments.ts` | 0.5–1 day |

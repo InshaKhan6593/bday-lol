@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { famousHidden } from "@/db/schema";
 import type { FamousRecord } from "@/lib/famous";
 import { inRollback } from "@/test/db";
-import { getFamousPeople, refreshFamousMonth } from "./famous";
+import { getFamousPeople, getFamousRefreshedAt, refreshFamousMonth } from "./famous";
 import type { FamousBirthdaysProvider } from "./famous-source";
 
 const NOON = new Date("2026-10-07T12:00:00-04:00");
@@ -46,6 +46,38 @@ describe("famous people refresh", () => {
       await refreshFamousMonth(tx, fake({ "10-07": [person("Q1", "Old Name", 1)] }), 10, NOON);
       await refreshFamousMonth(tx, fake({ "10-07": [person("Q9", "New Name", 1)] }), 10, NOON);
       expect((await getFamousPeople(tx, oct7, 2026)).map((p) => p.name)).toEqual(["New Name"]);
+    });
+  });
+
+  it("moves a date's last-changed time only when its list reads differently", async () => {
+    await inRollback(async (tx) => {
+      const later = new Date("2026-11-07T12:00:00-05:00");
+      const first = { "10-07": [person("Q1", "Same", 1), person("Q2", "Also Same", 2)], "10-08": [person("Q3", "Old", 1, "1990-10-08")] };
+      await refreshFamousMonth(tx, fake(first), 10, NOON);
+      // A month later: October 7 has the same people (only pageviews moved), October 8 has someone new.
+      await refreshFamousMonth(
+        tx,
+        fake({
+          "10-07": [{ ...person("Q1", "Same", 1), pageviews: 5 }, person("Q2", "Also Same", 2)],
+          "10-08": [person("Q4", "New", 1, "1991-10-08")],
+        }),
+        10,
+        later,
+      );
+      const at = await getFamousRefreshedAt(tx, "10-%");
+      expect(at["10-07"]).toEqual(NOON);
+      expect(at["10-08"]).toEqual(later);
+      // One date only.
+      expect(Object.keys(await getFamousRefreshedAt(tx, "10-08"))).toEqual(["10-08"]);
+    });
+  });
+
+  it("counts a changed order as a change", async () => {
+    await inRollback(async (tx) => {
+      const later = new Date("2026-11-07T12:00:00-05:00");
+      await refreshFamousMonth(tx, fake({ "10-07": [person("Q1", "A", 1), person("Q2", "B", 2)] }), 10, NOON);
+      await refreshFamousMonth(tx, fake({ "10-07": [person("Q2", "B", 1), person("Q1", "A", 2)] }), 10, later);
+      expect((await getFamousRefreshedAt(tx, "10-07"))["10-07"]).toEqual(later);
     });
   });
 

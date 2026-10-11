@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { now } from "@/lib/clock";
 import { getMailer } from "@/server/email/mailer";
@@ -22,6 +23,8 @@ export async function POST(request: Request) {
   }
   const instant = now();
   const outcome = await handleStripeEvent(db, event, instant);
+  // A payment changes a board's top bid: rebuild the cached month pages now, not at their next minute.
+  if (outcome.handled && outcome.action === "fulfilled") revalidatePath("/months/[month]", "page");
   const emails = await emailsAfterStripeEvent(db, getMailer(), outcome, instant);
   if (emails?.alerts.failed) console.error("Outbid alerts failed (the cron retries them):", emails.alerts.errors);
   if (emails?.payment.failed) {

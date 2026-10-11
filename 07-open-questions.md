@@ -72,6 +72,8 @@ item below **keeps what was already built**.
 | D12 | Famous people (step 9) | — | Sample list | Entertainment only (actors, musicians, athletes, presenters, creators…), anyone who is also a politician left out, nobody under 10. Ranked by Wikipedia pageviews, so the order moves month to month. Ages are the age they turn on the board's date (next October 7 is 2027, so Simon Cowell shows 68) |
 | D13 | Site icon (step 9) | — | — | A bold "b" on Butter until he has a logo. Google shows it next to search results |
 | D14 | AI crawlers (step 9) | — | — | All allowed (ChatGPT, Claude, Perplexity search and the training crawlers). He can block training crawlers (GPTBot, ClaudeBot, Google-Extended…) without affecting AI search; one line in `robots.ts` |
+| D15 | 404 page (2026-10-11) | — | Not designed | Built from the legal pages' heading and the site's buttons: "That's not on the calendar.", with "Today's birthday" and "How it works" buttons, on Butter |
+| D16 | Month page list and footer month row (2026-10-11) | — | Not designed | Footer months are small outlined ovals (the current month filled black). Each date row on a month page has a day tile, the famous names, sign and rarity tags, and "#1 Name · $85" or "Claim from $5" |
 
 Settled by the handoff: C2 (Terms, Privacy, support email mybdaylol@gmail.com, footer design), C3 (social boards out
 of scope), most of C1 (domain mybday.lol on Cloudflare, Resend from hello@mybday.lol, Vercel, sole-proprietor Stripe).

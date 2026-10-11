@@ -1,0 +1,32 @@
+/* 404 page. Not in the mockup: the legal pages' column and heading. */
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: var(--space-5xl) var(--gutter) var(--space-page-end);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.h1 {
+  font-size: var(--text-h1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-heading);
+  line-height: 1;
+}
+
+.text {
+  max-width: 34em;
+  font-size: var(--text-lead-lg);
+  color: var(--color-text-secondary);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
