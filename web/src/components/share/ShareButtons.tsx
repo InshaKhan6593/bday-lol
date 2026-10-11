@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Icon } from "@/components/ui";
+import { Button, ColorIcon, Icon } from "@/components/ui";
 import { cx } from "@/lib/cx";
 import { facebookShareUrl, smsShareUrl } from "@/lib/share";
 import styles from "./ShareButtons.module.css";
@@ -23,7 +23,7 @@ export function ShareButtons({ url, message, large, className }: Props) {
 
   return (
     <div className={cx(styles.grid, large && styles.large, className)}>
-      <Button variant={lead} onClick={() => share(url, message)} iconStart={<Icon name="share" size={24} />}>
+      <Button variant={lead} onClick={() => share(url, message)} iconStart={<ColorIcon name="share" tile={large} />}>
         Share
       </Button>
       <Button
@@ -32,17 +32,17 @@ export function ShareButtons({ url, message, large, className }: Props) {
         href={facebookShareUrl(url)}
         target="_blank"
         rel="noopener noreferrer"
-        iconStart={<Icon name="facebook" size={24} />}
+        iconStart={<ColorIcon name="facebook" tile={large} />}
       >
         Facebook
       </Button>
-      <Button variant="paper" external href={smsShareUrl(message, url)} iconStart={<Icon name="text" size={24} />}>
+      <Button variant="paper" external href={smsShareUrl(message, url)} iconStart={<ColorIcon name="text" />}>
         Text
       </Button>
       <Button
         variant="paper"
         onClick={() => copy(url)}
-        iconStart={copied ? <Icon name="check" size={24} /> : <Icon name="link" size={24} />}
+        iconStart={copied ? <Icon name="check" size={24} /> : <ColorIcon name="link" />}
       >
         <span aria-live="polite">{copied ? "Copied!" : "Copy link"}</span>
       </Button>
@@ -60,7 +60,7 @@ export function InviteButtons({ url, message, className }: Props) {
         href={smsShareUrl(message, url)}
         size="lg"
         className={styles.inviteText}
-        iconStart={<Icon name="text" size={24} />}
+        iconStart={<ColorIcon name="text" tile />}
       >
         Text them the link
       </Button>
@@ -69,7 +69,7 @@ export function InviteButtons({ url, message, className }: Props) {
         size="lg"
         onClick={() => copy(url)}
         className={styles.inviteCopy}
-        iconStart={copied ? <Icon name="check" size={24} /> : <Icon name="link" size={24} />}
+        iconStart={copied ? <Icon name="check" size={24} /> : <ColorIcon name="link" />}
       >
         <span aria-live="polite">{copied ? "Copied!" : "Copy link"}</span>
       </Button>

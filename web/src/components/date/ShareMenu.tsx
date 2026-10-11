@@ -2,7 +2,7 @@
 
 import { DropdownMenu } from "radix-ui";
 import { useShare } from "@/components/share/useShare";
-import { Icon, IconButton, ThemeScope } from "@/components/ui";
+import { ColorIcon, Icon, IconButton, ThemeScope } from "@/components/ui";
 import type { ThemeKey } from "@/config/themes";
 import { facebookShareUrl, smsShareUrl } from "@/lib/share";
 import styles from "./date.module.css";
@@ -42,18 +42,18 @@ export function ShareMenu({ url, message, name, theme }: Props) {
           {...contentProps}
         >
           <DropdownMenu.Item className={`${styles.shareOption} lift`} onSelect={() => void share(url, message)}>
-            <Icon name="share" size={20} />
+            <ColorIcon name="share" size={20} />
             Share…
           </DropdownMenu.Item>
           <DropdownMenu.Item asChild className={`${styles.shareOption} lift`}>
             <a href={facebookShareUrl(url)} target="_blank" rel="noopener noreferrer">
-              <Icon name="facebook" size={20} />
+              <ColorIcon name="facebook" size={20} />
               Facebook
             </a>
           </DropdownMenu.Item>
           <DropdownMenu.Item asChild className={`${styles.shareOption} lift`}>
             <a href={smsShareUrl(message, url)}>
-              <Icon name="text" size={20} />
+              <ColorIcon name="text" size={20} />
               Text
             </a>
           </DropdownMenu.Item>
@@ -65,7 +65,7 @@ export function ShareMenu({ url, message, name, theme }: Props) {
               void copy(url);
             }}
           >
-            {copied ? <Icon name="check" size={20} /> : <Icon name="link" size={20} />}
+            {copied ? <Icon name="check" size={20} /> : <ColorIcon name="link" size={20} />}
             <span aria-live="polite">{copied ? "Copied!" : "Copy link"}</span>
           </DropdownMenu.Item>
         </DropdownMenu.Content>

@@ -45,6 +45,10 @@ export function SiteFooter({ currentMonth }: Props = {}) {
       </nav>
       <div className={styles.copy}>
         © {year} mybday.lol
+        {/* Streamline's free icons (CC BY 4.0) need a credit; a paid Streamline plan removes it. */}
+        <a href="https://www.streamlinehq.com" target="_blank" rel="noopener noreferrer" className={styles.credit}>
+          Icons by Streamline
+        </a>
       </div>
       <nav aria-label="Footer" className={styles.links}>
         <Link href={routes.howItWorks}>FAQ</Link>

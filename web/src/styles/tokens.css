@@ -18,6 +18,7 @@
   /* ---------- Color: neutrals ---------- */
   --color-ink: #141414;
   --color-paper: #ffffff;
+  --color-share-icon: #a88bff; /* the one fill of the four share icons (Butter's accent) */
   --color-text-secondary: #333333;
   --color-text-tertiary: #4a4a4a;
   --color-on-ink-secondary: #d6d6d6;

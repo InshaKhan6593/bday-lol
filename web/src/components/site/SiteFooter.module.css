@@ -70,6 +70,13 @@
   font-weight: var(--weight-bold);
 }
 
+.credit {
+  font-size: var(--text-fine);
+  font-weight: var(--weight-regular);
+  color: var(--color-text-tertiary);
+  text-decoration: none;
+}
+
 .links {
   display: flex;
   flex-wrap: wrap;

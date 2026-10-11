@@ -220,7 +220,7 @@ export function StyleGuide() {
           </Surface>
         </Section>
 
-        <Section title="Icons" note="Phosphor, Bold weight (phosphoricons.com). One color: they take the text color. ▲ is solid.">
+        <Section title="Icons" note="Phosphor, Bold weight (phosphoricons.com), in the text color. ▲ is solid. The four share buttons use filled icons in one fixed color.">
           <div className={styles.row}>
             {ICONS.map((name) => (
               <span key={name} className={styles.iconCell} title={name}>
