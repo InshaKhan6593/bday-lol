@@ -87,6 +87,8 @@ export function Icon({ name, size = 20, weight, set = SITE_ICON_SET, ...rest }: 
         strokeLinejoin="round"
         aria-hidden="true"
         {...rest}
+        // Inside a narrow flex button the drawing must keep its size, not shrink to nothing.
+        style={{ flexShrink: 0, ...rest.style }}
       >
         {drawing.body}
       </svg>
