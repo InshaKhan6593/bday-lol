@@ -5,8 +5,11 @@ import { CACHE_TAGS } from "@/server/cached";
 import { refreshFamousMonth } from "@/server/famous";
 import { wikidataProvider } from "@/server/famous-source";
 
-/** A month is ~31 Wikidata queries and ~900 pageview lookups (about 2 minutes): allow the Pro plan's maximum. */
-export const maxDuration = 800;
+/**
+ * A month is ~31 Wikidata queries and ~900 pageview lookups (about 2 minutes). 300 s is the most the free
+ * plan allows (a higher value fails the deploy there); Pro allows up to 800 if a month ever needs it.
+ */
+export const maxDuration = 300;
 
 /**
  * Monthly refresh of "Famous people born on [date]" (06-seo.md §2). Vercel Cron
