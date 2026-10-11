@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { StyleGuide } from "./StyleGuide";
+import { DesignOptions } from "./DesignOptions";
 
 export const metadata: Metadata = {
-  title: "Style guide",
+  title: "Design options",
   robots: { index: false, follow: false },
 };
 
-/** Development-only reference of the design language. */
+/**
+ * Where the build differs from the mockup, side by side, for the client to review. Live in production,
+ * but not linked from the site and kept out of search (noindex, robots.txt). The developers' reference of
+ * the design language is at /styleguide/reference (development only).
+ */
 export default function StyleGuidePage() {
-  if (process.env.NODE_ENV === "production") notFound();
-  return <StyleGuide />;
+  return <DesignOptions />;
 }

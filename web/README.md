@@ -60,7 +60,8 @@ return to the page they started on with `?boosted=…` and a short "Your boost i
 | URL | What |
 |---|---|
 | http://localhost:3000 | The app |
-| http://localhost:3000/styleguide | The design language (dev only) |
+| http://localhost:3000/styleguide | Design options for the client: mockup and site side by side (icons, gift link help). Also live in production, noindex |
+| http://localhost:3000/styleguide/reference | The design language (dev only) |
 | http://localhost:8030 | Mailpit: every email the app sends lands here |
 | http://localhost:3000/dev/emails | All 8 emails with demo data (dev only) |
 | `pnpm db:studio` | Browse the database |

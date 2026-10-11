@@ -20,6 +20,8 @@ import styles from "./claim.module.css";
 type Props = {
   rows: GiftEntry[];
   onChange: (rows: GiftEntry[]) => void;
+  /** Help shown under a row while its box is empty (an option on /styleguide, not used on Claim yet). */
+  rowHelp?: (service: GiftService) => string;
 };
 
 /**
@@ -28,7 +30,7 @@ type Props = {
  * wishlist link. One row per app, so up to four; apps used in another row are
  * greyed out. Pasting a full link switches the row to that link's app.
  */
-export function GiftLinkInputs({ rows, onChange }: Props) {
+export function GiftLinkInputs({ rows, onChange, rowHelp }: Props) {
   const usedElsewhere = (index: number): GiftService[] => rows.filter((_, i) => i !== index).map((r) => r.service);
   const update = (index: number, row: GiftEntry) => onChange(rows.map((r, i) => (i === index ? row : r)));
   const next = nextUnusedService(rows);
@@ -84,7 +86,7 @@ export function GiftLinkInputs({ rows, onChange }: Props) {
                 />
               )}
             </div>
-            {hint && <Hint tone={hint.tone}>{hint.text}</Hint>}
+            {hint ? <Hint tone={hint.tone}>{hint.text}</Hint> : rowHelp && <Hint>{rowHelp(row.service)}</Hint>}
           </div>
         );
       })}
