@@ -5,8 +5,13 @@ import { runEmailTick } from "@/server/email/scheduled";
 
 /**
  * The email timer: outbid alerts, the hourly "You got boosted" digest, "Your
- * day is here" and reminders. Vercel Cron calls it every minute (vercel.json)
- * with `Authorization: Bearer $CRON_SECRET`. Locally, run `pnpm emails:tick`.
+ * day is here" and reminders. Vercel Cron calls it (vercel.json) with
+ * `Authorization: Bearer $CRON_SECRET`. Locally, run `pnpm emails:tick`.
+ *
+ * It is built to run every minute ("* * * * *"), which needs Vercel Pro. While the
+ * project is on the Hobby plan (one run a day at most) it runs once, after 13:05 UTC:
+ * past 8 AM Eastern in both summer and winter, when "Your day is here" is due.
+ * Set the schedule back to every minute as soon as the project is on Pro.
  */
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;

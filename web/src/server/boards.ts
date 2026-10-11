@@ -9,7 +9,7 @@ type Board = typeof boards.$inferSelect;
 
 export async function getBoardType(db: Executor, slug: string): Promise<BoardType> {
   const [type] = await db.select().from(boardTypes).where(eq(boardTypes.slug, slug)).limit(1);
-  if (!type) throw new Error(`Board type "${slug}" not found. Run the seed.`);
+  if (!type) throw new Error(`Board type "${slug}" not found. Run "pnpm db:init" (or the seed).`);
   return type;
 }
 

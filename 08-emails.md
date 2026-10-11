@@ -99,7 +99,7 @@ before sending, so Stripe retries and overlapping cron runs never send twice (a 
 | 5 | Cron | From 8:00 AM ET on the day (also reaches people who claim later that day) | `your-day:` + entry id |
 | 4, 7 | Cron | From 8:00 AM ET, exactly 7 days before. Skipped for anyone already on that date's board. Claimers are added to reminders (source `claim`) when their payment lands | `reminder:` + id + year |
 
-- **Cron:** `vercel.json` calls `/api/cron/emails` every minute with `Authorization: Bearer $CRON_SECRET`. Locally run `pnpm -C web emails:tick` (honors `DEV_NOW`).
+- **Cron:** `vercel.json` calls `/api/cron/emails` with `Authorization: Bearer $CRON_SECRET`: every minute on Vercel Pro, once a day (after 13:05 UTC) while the project is on the free plan. Locally run `pnpm -C web emails:tick` (honors `DEV_NOW`).
 - **Transport:** `EMAIL_TRANSPORT=smtp` → Mailpit (http://localhost:8030); `resend` → Resend's SMTP relay with `RESEND_API_KEY`. `EMAIL_REPLY_TO` and `EMAIL_FOOTER_ADDRESS` fill in once the client sends them.
 - **Unsubscribe** (emails 4–7): a link signed with `APP_SECRET` (email + category, no accounts). `/unsubscribe` asks before switching off (inbox link scanners open links); the inbox's own button POSTs to `/api/unsubscribe` (RFC 8058 `List-Unsubscribe-Post`). Categories: reminders (4 + 7), your-day (5), boost digest (6). Signing up for a reminder again turns reminders back on.
 

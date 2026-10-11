@@ -72,8 +72,9 @@ return to the page they started on with `?boosted=…` and a short "Your boost i
 | `pnpm test` | Unit tests + database tests (`*.db.test.ts`, need `pnpm db:up`; they roll back, so seed data is untouched) |
 | `pnpm typecheck` / `pnpm lint` | Static checks |
 | `pnpm db:generate` | New migration from `src/db/schema.ts` changes |
+| `pnpm db:init` | Create the rows a new database needs (the birthday board type). Safe to rerun and on a live database; run it once after `pnpm db:migrate` on production, where the seed is never run |
 | `pnpm db:reset` | Wipe the local DB, migrate, seed (refuses non-local databases) |
-| `pnpm emails:tick` | Send every scheduled email that is due now (what the production cron does every minute). Respects `DEV_NOW` |
+| `pnpm emails:tick` | Send every scheduled email that is due now (what the production cron does). Respects `DEV_NOW` |
 | `pnpm famous:refresh [month]` | Fill "Famous people born on…" from Wikidata + Wikipedia pageviews: all 12 months (about an hour) or one (`pnpm famous:refresh 10`). What `/api/cron/famous` does on days 1–12 of each month |
 | `pnpm data:commonness` | Rebuild `src/lib/commonness-data.ts` from FiveThirtyEight's births data (only if the source changes) |
 
@@ -91,7 +92,9 @@ DEV_NOW=2026-10-07T08:05:00-04:00 pnpm emails:tick # Oct 7's "Your day is here" 
 
 Receipts and the admin alert go out from the Stripe webhook; outbid alerts too, the moment someone loses #1.
 Everything on a timer (hourly boost digest, "Your day is here" at 8 AM ET, reminders a week before) runs from
-`/api/cron/emails`, every minute on Vercel (`vercel.json`). Locally there's no cron: run `pnpm emails:tick`.
+`/api/cron/emails` on Vercel (`vercel.json`). It is built to run every minute, which needs Vercel Pro; while the
+project is on the free plan it runs once a day (after 13:05 UTC, past 8 AM ET all year), so the digest and
+throttled outbid alerts wait for that run. Locally there's no cron: run `pnpm emails:tick`.
 Each email is sent once (dedupe keys in `email_log`). Details in [../08-emails.md](../08-emails.md#how-theyre-sent-step-8).
 
 ## Where things live
