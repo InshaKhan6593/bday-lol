@@ -50,21 +50,31 @@
   gap: 14px;
 }
 
+/*
+ * "Every October birthday": two columns of date rows on wide screens. Each row leads with a
+ * day tile drawn like a calendar cell; a claimed date takes its #1's ground (tile) and accent (pill).
+ */
 .dates {
   margin: 0;
   padding: 0;
   list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
 }
 
 .dateRow {
-  display: flex;
+  --row-ground: var(--ground);
+  --row-accent: var(--accent);
+  height: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "tile name side"
+    "tile body body";
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-  padding: 14px 18px;
+  gap: var(--space-2xs) 14px;
+  padding: var(--space-md);
   background: var(--color-paper);
   border: var(--border-thin);
   border-radius: var(--radius-tile);
@@ -72,7 +82,47 @@
   text-decoration: none;
 }
 
-.dateMain {
+.dayTile {
+  grid-area: tile;
+  align-self: start;
+  width: var(--control-xl);
+  height: var(--control-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: var(--border-thin);
+  border-radius: var(--radius-cell);
+  background: var(--color-fill-muted);
+  line-height: 1;
+}
+
+.dateRowClaimed .dayTile {
+  background: var(--row-ground);
+}
+
+.dateRowToday .dayTile {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+.dayNum {
+  font-size: var(--text-title);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-title);
+}
+
+.dayWeek {
+  margin-top: var(--space-3xs);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.dateBody {
+  grid-area: body;
+  align-self: start;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -80,10 +130,12 @@
 }
 
 .dateName {
+  grid-area: name;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  font-size: var(--text-body-lg);
+  font-size: var(--text-body);
   font-weight: var(--weight-bold);
 }
 
@@ -98,36 +150,67 @@
   text-transform: uppercase;
 }
 
-.dateMeta {
-  font-size: var(--text-caption);
-  color: var(--color-text-tertiary);
-}
-
-.dateLeader {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  text-align: right;
-}
-
-.leaderName {
+.famous {
   font-size: var(--text-caption);
   font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-fine);
 }
 
-.leaderTotal {
-  font-size: var(--text-body-lg);
-  font-weight: var(--weight-bold);
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  margin-top: var(--space-3xs);
 }
 
+.tag {
+  padding: 1px var(--space-sm);
+  border: var(--border-thin);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-tiny);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+}
+
+/* Least common birthdays (rank 301+, and Feb 29): the one fact worth a second look. */
+.tagRare {
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+.dateSide {
+  grid-area: side;
+  flex-shrink: 0;
+}
+
+.leaderPill,
 .open {
-  padding: var(--space-2xs) var(--space-md);
-  border: var(--stroke-thin) dashed var(--color-ink);
+  display: inline-block;
+  padding: var(--space-xs) var(--space-md);
   border-radius: var(--radius-pill);
   font-size: var(--text-caption);
   font-weight: var(--weight-bold);
+  white-space: nowrap;
+}
+
+.leaderPill {
+  border: var(--border-thin);
+  background: var(--row-accent);
+}
+
+/* Dashed = "empty / not yet" (design rule 8). */
+.open {
+  border: var(--border-dashed-thin);
+}
+
+@media (max-width: 900px) {
+  .dates {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-sm);
+  }
 }
 
 @media (max-width: 640px) {
@@ -139,7 +222,26 @@
     padding: var(--space-lg);
   }
 
+  /* Phones: the pill moves under the text so the date name gets the full width. */
   .dateRow {
-    padding: var(--space-md) 14px;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "tile name"
+      "tile body"
+      "tile side";
+    gap: var(--space-2xs) var(--space-md);
+  }
+
+  .dateSide {
+    margin-top: var(--space-2xs);
+  }
+
+  .dayTile {
+    width: var(--control-md);
+    height: var(--control-md);
+  }
+
+  .dayNum {
+    font-size: var(--text-title-sm);
   }
 }

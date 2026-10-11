@@ -89,6 +89,7 @@ describe("the month paragraph", () => {
   it("mentions leap day in February and an unclaimed month", () => {
     const text = monthIntro(2, 29, 0).join(" ");
     expect(text).toContain("February has 29 birthdays, leap day included");
+    expect(text).toContain("the rarest is February 29, which only comes once every four years. Of the other dates,");
     expect(text).toContain("None of its 29 dates has been claimed on this year's boards yet.");
   });
 });

@@ -63,12 +63,12 @@ async function getJson<T>(url: string, init: RequestInit = {}, attempts = 5): Pr
 
 type Bindings = { results: { bindings: Array<Record<string, { value: string }>> } };
 
-function sparql(query: string): Promise<Bindings> {
+function sparql(query: string, attempts?: number): Promise<Bindings> {
   return getJson<Bindings>(SPARQL, {
     method: "POST",
     headers: { Accept: "application/sparql-results+json", "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ query }),
-  });
+  }, attempts);
 }
 
 const qid = (uri: string) => uri.slice(uri.lastIndexOf("/") + 1);
@@ -83,24 +83,48 @@ const FROM_YEAR = 1925;
  * use its index; filtering every birth date by MONTH() times out (504).
  */
 async function candidatesFor(md: MonthDay, lastYear: number): Promise<FamousCandidate[]> {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const dates: string[] = [];
-  for (let y = FROM_YEAR; y <= lastYear; y++) {
-    if (occursIn(md, y)) dates.push(`"${y}-${pad(md.month)}-${pad(md.day)}T00:00:00Z"^^xsd:dateTime`);
+  const years: number[] = [];
+  for (let y = FROM_YEAR; y <= lastYear; y++) if (occursIn(md, y)) years.push(y);
+  return oneBirthDateEach(await candidatesInYears(md, years, 2));
+}
+
+/** Smallest span of birth years a timed-out date query is split down to. */
+const MIN_SPLIT_YEARS = 12;
+
+/**
+ * One date's candidates for some birth years. The busiest dates (Jan 1 holds far more people than
+ * any other) can time out when the query service is loaded: then the years are split in half and
+ * each half asked for on its own, down to MIN_SPLIT_YEARS.
+ */
+async function candidatesInYears(md: MonthDay, years: number[], attempts = 5): Promise<FamousCandidate[]> {
+  try {
+    return await candidatesQuery(md, years, attempts);
+  } catch (error) {
+    if (years.length < MIN_SPLIT_YEARS * 2) throw error;
+    const half = Math.ceil(years.length / 2);
+    const [older, newer] = [years.slice(0, half), years.slice(half)];
+    return [...(await candidatesInYears(md, older, 2)), ...(await candidatesInYears(md, newer, 2))];
   }
+}
+
+async function candidatesQuery(md: MonthDay, years: number[], attempts: number): Promise<FamousCandidate[]> {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const dates = years.map((y) => `"${y}-${pad(md.month)}-${pad(md.day)}T00:00:00Z"^^xsd:dateTime`);
   const data = await sparql(`
     SELECT ?p ?dob ?links ?article (GROUP_CONCAT(DISTINCT ?occ; separator=" ") AS ?occs) WHERE {
       hint:Query hint:optimizer "None" .
       VALUES ?dob { ${dates.join(" ")} }
-      ?p wdt:P569 ?dob .
+      # Day-precise value nodes first: year-only birth dates are stored as January 1, so starting
+      # from "wdt:P569 ?dob" makes Jan 1 match every year-only birth and time out.
+      ?value wikibase:timeValue ?dob; wikibase:timePrecision 11 .
+      ?born psv:P569 ?value; a wikibase:BestRank .
+      ?p p:P569 ?born .
       ?p wdt:P31 wd:Q5 .
       ?p wikibase:sitelinks ?links . FILTER(?links >= 15)
-      ?p p:P569 ?born . ?born a wikibase:BestRank; psv:P569 ?value .
-      ?value wikibase:timeValue ?dob; wikibase:timePrecision 11 .
       MINUS { ?p wdt:P570 [] }
       ?article schema:about ?p; schema:isPartOf <https://en.wikipedia.org/> .
       ?p wdt:P106 ?occ .
-    } GROUP BY ?p ?dob ?links ?article`);
+    } GROUP BY ?p ?dob ?links ?article`, attempts);
   const rows = data.results.bindings.map((b) => ({
     sourceId: qid(b.p!.value),
     birthDate: b.dob!.value.slice(0, 10),
@@ -108,7 +132,27 @@ async function candidatesFor(md: MonthDay, lastYear: number): Promise<FamousCand
     article: b.article!.value.slice(b.article!.value.indexOf("/wiki/") + 6),
     occupations: b.occs!.value.split(" ").map(qid),
   }));
-  return oneBirthDateEach(rows);
+  return rows;
+}
+
+/**
+ * People with more than one equally ranked, day-precise birth date. A date's query only sees the
+ * date it asked for, so without this they'd be listed on two dates (Jane Seymour on Feb 15 and
+ * May 13). Checked for the shortlist only: doing it inside the date query times out on Jan 1.
+ */
+async function withAmbiguousBirthDates(ids: string[]): Promise<Set<string>> {
+  const ambiguous = new Set<string>();
+  for (let i = 0; i < ids.length; i += 400) {
+    const batch = ids.slice(i, i + 400);
+    const data = await sparql(`
+      SELECT ?p WHERE {
+        VALUES ?p { ${batch.map((id) => `wd:${id}`).join(" ")} }
+        ?p p:P569 ?born . ?born a wikibase:BestRank; psv:P569 ?value .
+        ?value wikibase:timeValue ?dob; wikibase:timePrecision 11 .
+      } GROUP BY ?p HAVING (COUNT(DISTINCT ?dob) > 1)`);
+    for (const b of data.results.bindings) ambiguous.add(qid(b.p!.value));
+  }
+  return ambiguous;
 }
 
 /** For each occupation, which of our root classes it falls under (walking up "subclass of"). */
@@ -209,13 +253,19 @@ export const wikidataProvider: FamousBirthdaysProvider = {
     const roots = await rootsOf([...new Set(all.flatMap((c) => c.occupations))]);
 
     // Pageviews only for each day's most-linked qualifying candidates: the rest can't make the top 10.
+    // Ten spare per day so dropping the ones with two birth dates still leaves a full shortlist.
+    const mostLinked = fetched.map(({ key, list }) => ({
+      key,
+      list: list
+        .filter((c) => qualifies(c.occupations, roots))
+        .sort((a, b) => b.sitelinks - a.sitelinks)
+        .slice(0, PAGEVIEW_CANDIDATES + 10),
+    }));
+    const ambiguous = await withAmbiguousBirthDates(mostLinked.flatMap(({ list }) => list.map((c) => c.sourceId)));
     const shortlist = new Map(
-      fetched.map(({ key, list }) => [
+      mostLinked.map(({ key, list }) => [
         key,
-        list
-          .filter((c) => qualifies(c.occupations, roots))
-          .sort((a, b) => b.sitelinks - a.sitelinks)
-          .slice(0, PAGEVIEW_CANDIDATES),
+        list.filter((c) => !ambiguous.has(c.sourceId)).slice(0, PAGEVIEW_CANDIDATES),
       ]),
     );
     const flat = [...shortlist.values()].flat();

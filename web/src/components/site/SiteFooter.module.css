@@ -10,23 +10,56 @@
   font-size: var(--text-note);
 }
 
+/* Month pages as a strip of outlined pills, drawn like the calendar cells (thin ink line on paper). */
 .months {
   flex-basis: 100%;
   display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding-bottom: var(--space-xl);
+}
+
+/* Same-size oval "balls" (barely wider than tall) that wrap instead of stretching across wide screens. */
+.monthList {
+  display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-2xs) var(--space-lg);
-  font-weight: var(--weight-medium);
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.monthsLabel {
-  margin-right: var(--space-xs);
+.month {
+  width: var(--control-xl);
+  height: var(--control-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--border-thin);
+  border-radius: var(--radius-pill);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: var(--text-label);
   font-weight: var(--weight-bold);
+  text-decoration: none;
 }
 
-.months a {
-  padding: var(--space-2xs) 0;
-  text-decoration: none;
+/* The month this page is about: ink fill, like a selected chip. */
+.monthCurrent {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+/* Phones: two even rows of six instead of a 5 + 5 + 2 wrap. */
+@media (max-width: 640px) {
+  .monthList {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .month {
+    width: auto;
+  }
 }
 
 .copy {

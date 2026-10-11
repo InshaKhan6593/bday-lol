@@ -27,8 +27,17 @@ export const ENTERTAINMENT_ROOTS: Record<string, string> = {
   Q130857: "DJ",
 };
 
-/** Anyone who is also a politician is left out, even if they once acted (07 A4: entertainment only). */
-export const EXCLUDED_ROOTS: Record<string, string> = { Q82955: "politician" };
+/**
+ * Left out even if they're also actors or musicians: politicians (07 A4: entertainment only) and
+ * adult performers (a birthday site for everyone; 30 date pages listed one before this filter).
+ */
+export const EXCLUDED_ROOTS: Record<string, string> = {
+  Q82955: "politician",
+  Q488111: "pornographic film actor",
+  Q17456089: "pornographic film director",
+  Q3286043: "erotic photography model",
+  Q8193763: "fetish model",
+};
 
 /** Listed in full under "Famous people born on…" (06-seo.md: top 10); the rest of the stored ones go in an "Also born on…" line. */
 export const FAMOUS_LISTED = 10;
@@ -93,15 +102,32 @@ export function occupationLabel(occupations: string[], rootsOf: Map<string, Set<
  * Missing or still too long → the occupation label.
  */
 export function knownFor(description: string | undefined, fallback: string): string {
-  let clean = (description ?? "")
-    .replace(/\s*\([^)]*\)/g, "")
-    .split(/[;,]| who | known for /)[0]!
-    .replace(/\bassociation football(er| player)\b/g, "soccer player")
-    .replace(/\bassociation football\b/g, "soccer")
-    .trim();
+  let clean = soccerTheUsWay(
+    (description ?? "")
+      .replace(/\s*\([^)]*\)/g, "")
+      .split(/[;,]| who | known for /)[0]!,
+  ).trim();
+  // "middle- and long-distance runner" → "middle-distance runner", so the cut below can't leave "middle-".
+  if (clean.length > 40) clean = clean.replace(/\b(\w+)- and \w+-(\w+)\b/g, "$1-$2");
   if (clean.length > 40) clean = clean.split(" and ")[0]!.trim();
-  if (!clean || clean.length > 40 || /\b(1[89]|20)\d\d\b/.test(clean)) return fallback;
+  if (!clean || clean.length > 40 || clean.endsWith("-") || /\b(1[89]|20)\d\d\b/.test(clean)) return fallback;
   return clean;
+}
+
+/** Football codes that aren't soccer; their wording is left alone. */
+const OTHER_FOOTBALL = /\b(American|Canadian|Australian rules|Gaelic|rugby(?: league| union)?|arena|flag) football/i;
+
+/**
+ * The site is American English: "association football", "footballer" and a bare
+ * "football" all mean soccer in Wikidata's English descriptions ("Spanish footballer"
+ * → "Spanish soccer player", "French football manager" → "French soccer manager").
+ */
+export function soccerTheUsWay(text: string): string {
+  if (OTHER_FOOTBALL.test(text)) return text;
+  return text
+    .replace(/\bassociation football(er| player)\b/g, "soccer player")
+    .replace(/\bfootballer\b/g, "soccer player")
+    .replace(/\b(association )?football\b/g, "soccer");
 }
 
 /** Best known first: most Wikipedia pageviews, then most language editions, then id for a stable order. */

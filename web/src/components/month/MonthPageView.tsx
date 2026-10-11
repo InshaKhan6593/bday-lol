@@ -4,7 +4,7 @@ import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Kicker, Surface, ThemeScope } from "@/components/ui";
 import { getTheme } from "@/config/themes";
-import { monthIntro } from "@/lib/about";
+import { monthIntro, weekday } from "@/lib/about";
 import { compareMonthDay, formatLongNb, MONTHS } from "@/lib/birthday";
 import { commonness } from "@/lib/commonness";
 import { cx } from "@/lib/cx";
@@ -61,30 +61,44 @@ export function MonthPageView({ page }: { page: MonthPageData }) {
             Every {name} birthday
           </h2>
           <ul className={styles.dates}>
-            {rows.map(({ md, leader, famous }) => {
+            {rows.map(({ md, year, leader, famous }) => {
               const c = commonness(md);
               const isToday = compareMonthDay(md, page.today) === 0;
+              // A claimed date wears its #1's colors (tile = their ground, pill = their accent), like the calendar.
+              const leaderStyle = leader
+                ? ({ "--row-ground": getTheme(leader.theme).ground, "--row-accent": getTheme(leader.theme).accent } as CSSProperties)
+                : undefined;
               return (
                 <li key={md.day}>
-                  <Link href={routes.date(md)} className={cx(styles.dateRow, "lift")}>
-                    <span className={styles.dateMain}>
-                      <span className={styles.dateName}>
-                        {formatLongNb(md)}
-                        {isToday && <span className={styles.todayTag}>Today</span>}
-                      </span>
-                      <span className={styles.dateMeta}>
-                        {zodiacSign(md)} · {c.rank === 366 ? "rarest birthday" : `${ordinal(c.rank)} most common`}
-                        {famous.length > 0 && <> · Famous birthdays: {famous.join(", ")}</>}
+                  <Link
+                    href={routes.date(md)}
+                    style={leaderStyle}
+                    className={cx(styles.dateRow, leader && styles.dateRowClaimed, isToday && styles.dateRowToday, "lift")}
+                  >
+                    <span className={styles.dayTile} aria-hidden="true">
+                      <span className={styles.dayNum}>{md.day}</span>
+                      <span className={styles.dayWeek}>{weekday(md, year).slice(0, 3)}</span>
+                    </span>
+                    <span className={styles.dateName}>
+                      {formatLongNb(md)}
+                      {isToday && <span className={styles.todayTag}>Today</span>}
+                    </span>
+                    <span className={styles.dateBody}>
+                      {famous.length > 0 && <span className={styles.famous}>{famous.join(", ")}</span>}
+                      <span className={styles.tags}>
+                        <span className={styles.tag}>{zodiacSign(md)}</span>
+                        <span className={cx(styles.tag, c.rank > 300 && styles.tagRare)}>
+                          {c.rank === 366 ? "Rarest birthday" : `${ordinal(c.rank)} most common`}
+                        </span>
                       </span>
                     </span>
-                    <span className={styles.dateLeader}>
+                    <span className={styles.dateSide}>
                       {leader ? (
-                        <>
-                          <span className={styles.leaderName}>#1 {shortName(leader.name)}</span>
-                          <span className={styles.leaderTotal}>{formatUsd(leader.totalCents)}</span>
-                        </>
+                        <span className={styles.leaderPill}>
+                          #1 {shortName(leader.name)} · {formatUsd(leader.totalCents)}
+                        </span>
                       ) : (
-                        <span className={styles.open}>Open</span>
+                        <span className={styles.open}>Claim from {formatUsd(settings.minOpenBidCents)}</span>
                       )}
                     </span>
                   </Link>
@@ -120,7 +134,7 @@ export function MonthPageView({ page }: { page: MonthPageData }) {
           <Link href={routes.month(next)}>{MONTHS[next - 1]} →</Link>
         </nav>
       </main>
-      <SiteFooter />
+      <SiteFooter currentMonth={month} />
     </ThemeScope>
   );
 }

@@ -91,6 +91,10 @@ describe("month pages", () => {
     expect(new Set(descriptions).size).toBe(24);
   });
 
+  it("calls leap day February's rarest birthday, like the page", () => {
+    expect(monthDescription(2, 0, 29)).toContain("its rarest is February 29.");
+  });
+
   it("lists every date of the month in the structured data", () => {
     const days = Array.from({ length: 31 }, (_, i) => ({ month: 10, day: i + 1 }));
     const ld = monthJsonLd(10, "t", "d", days);

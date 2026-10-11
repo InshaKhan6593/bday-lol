@@ -1,5 +1,6 @@
 "use client";
 
+import { MoonStarsIcon } from "@phosphor-icons/react/ssr";
 import { useState } from "react";
 import {
   Avatar,
@@ -20,7 +21,9 @@ import {
 import { THEME_KEYS, THEMES, type ThemeKey } from "@/config/themes";
 import { MONTHS } from "@/lib/birthday";
 import { cx } from "@/lib/cx";
+import monthStyles from "@/components/month/month.module.css";
 import styles from "./StyleGuide.module.css";
+import { ZODIAC_ICON_SETS, ZODIAC_SIGNS } from "./zodiac-options";
 
 const TYPE_ROLES = [
   ["--text-display", "Display", "October 7", 800],
@@ -227,9 +230,76 @@ export function StyleGuide() {
             ))}
           </div>
         </Section>
+
+        <Section
+          title="Star sign icons: options"
+          note="For the sign tag on month pages. Not chosen yet. Each row: the 12 signs at 24px, then the tag at its real size."
+        >
+          <div className={styles.stack}>
+            <ZodiacOption name="A · Phosphor MoonStars, same icon on every sign" meta="Our own set (Phosphor Bold). One icon for all 12 signs.">
+              {ZODIAC_SIGNS.map((sign) => (
+                <ZodiacCell key={sign} sign={sign} icon={<MoonStarsIcon size={24} weight="bold" aria-hidden="true" />} />
+              ))}
+              <ZodiacTags render={() => <MoonStarsIcon size={14} weight="bold" aria-hidden="true" />} />
+            </ZodiacOption>
+            {ZODIAC_ICON_SETS.map((set, i) => (
+              <ZodiacOption
+                key={set.name}
+                name={`${String.fromCharCode(66 + i)} · ${set.name}`}
+                meta={`${set.license} licence, free, no credit shown on the site. ${set.style}.`}
+              >
+                {ZODIAC_SIGNS.map((sign, j) => (
+                  <ZodiacCell key={sign} sign={sign} icon={<ZodiacSvg body={set.bodies[j]!} size={24} />} />
+                ))}
+                <ZodiacTags render={(j) => <ZodiacSvg body={set.bodies[j]!} size={14} />} />
+              </ZodiacOption>
+            ))}
+          </div>
+        </Section>
       </main>
     </ThemeScope>
   );
+}
+
+function ZodiacOption({ name, meta, children }: { name: string; meta: string; children: React.ReactNode }) {
+  return (
+    <Surface padding="none" className={styles.zodiacOption}>
+      <div>
+        <h3 className={styles.zodiacName}>{name}</h3>
+        <p className={styles.note}>{meta}</p>
+      </div>
+      <div className={styles.zodiacGrid}>{children}</div>
+    </Surface>
+  );
+}
+
+function ZodiacCell({ sign, icon }: { sign: string; icon: React.ReactNode }) {
+  return (
+    <span className={styles.zodiacCell}>
+      {icon}
+      <span>{sign}</span>
+    </span>
+  );
+}
+
+/** The tag as it would sit on a month page row: "Aquarius" with the icon, next to the rarity tag. */
+function ZodiacTags({ render }: { render: (signIndex: number) => React.ReactNode }) {
+  return (
+    <span className={styles.zodiacTagRow}>
+      {[10, 6, 7].map((j) => (
+        <span key={j} className={cx(monthStyles.tag, styles.zodiacTag)}>
+          {render(j)}
+          {ZODIAC_SIGNS[j]}
+        </span>
+      ))}
+      <span className={monthStyles.tag}>249th most common</span>
+    </span>
+  );
+}
+
+/** Third-party icon markup from zodiac-options.ts (static, fetched once), drawn in currentColor. */
+function ZodiacSvg({ body, size }: { body: string; size: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" dangerouslySetInnerHTML={{ __html: body }} />;
 }
 
 function Section({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {

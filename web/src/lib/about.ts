@@ -86,7 +86,12 @@ export function monthIntro(month: number, days: number, claimed: number): string
     .join(" and ");
   return [
     `${name} has ${days} birthdays${month === 2 ? ", leap day included" : ""}, and every one has its own board.`,
-    `The most common is ${formatLong(most)}, the ${ordinal(top.rank)} most common birthday in the US with about ${roundTo100(top.births).toLocaleString("en-US")} babies a year, and the rarest is ${formatLong(least)}, ${ordinal(bottom.rank)} out of 366.`,
+    `The most common is ${formatLong(most)}, the ${ordinal(top.rank)} most common birthday in the US with about ${roundTo100(top.births).toLocaleString("en-US")} babies a year, and the rarest is ${
+      // monthExtremes leaves leap day out; February must still call Feb 29 the rarest (it's #366).
+      month === 2
+        ? `${formatLong({ month: 2, day: 29 })}, which only comes once every four years. Of the other dates, ${formatLong(least)} is the rarest, ${ordinal(bottom.rank)} out of 366.`
+        : `${formatLong(least)}, ${ordinal(bottom.rank)} out of 366.`
+    }`,
     `${name} birthdays are ${signText}, with ${birthstone(month).toLowerCase()} as the birthstone and the ${birthFlower(month).toLowerCase()} as the birth flower.`,
     claimed
       ? `${claimed} of its ${days} dates have a #1 on this year's boards so far.`

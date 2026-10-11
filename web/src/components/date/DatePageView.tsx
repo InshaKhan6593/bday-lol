@@ -77,7 +77,7 @@ export function DatePageView({ md, page, query, focusPublicId = null }: Props) {
           openBidCents={page.settings.minOpenBidCents}
         />
       </main>
-      <SiteFooter />
+      <SiteFooter currentMonth={md.month} />
     </ThemeScope>
   );
 }

@@ -106,7 +106,7 @@ export function monthDescription(month: number, claimed: number, days: number): 
   const { most, least } = monthExtremes(month);
   return fitDescription(
     [
-      `${name}'s most common birthday is ${formatLong(most)} and its rarest is ${formatLong(least)}.`,
+      `${name}'s most common birthday is ${formatLong(most)} and its rarest is ${formatLong(month === 2 ? { month: 2, day: 29 } : least)}.`,
       `Birthstone ${birthstone(month).toLowerCase()}, flower ${birthFlower(month).toLowerCase()}.`,
       claimed ? `${claimed} of ${days} dates have a #1 so far.` : `All ${days} dates are still open to claim.`,
     ],

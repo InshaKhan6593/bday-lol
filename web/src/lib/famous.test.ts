@@ -6,6 +6,7 @@ const roots = new Map<string, Set<string>>([
   ["Q10800557", new Set(["Q33999"])], // film actor → actor
   ["Q937857", new Set(["Q50995749", "Q2066131"])], // association football player → athlete
   ["Q82955", new Set(["Q82955"])], // politician
+  ["Q488111", new Set(["Q488111"])], // pornographic film actor
   ["Q40348", new Set()], // lawyer: no root of ours
 ]);
 
@@ -22,6 +23,10 @@ describe("who counts as entertainment", () => {
 
   it("leaves out politicians even if they also acted (07 A4)", () => {
     expect(qualifies(["Q10800557", "Q82955"], roots)).toBe(false);
+  });
+
+  it("leaves out adult performers even if they're also film actors", () => {
+    expect(qualifies(["Q10800557", "Q488111"], roots)).toBe(false);
   });
 
   it("labels the first entertainment occupation", () => {
@@ -44,10 +49,24 @@ describe("what they're known for", () => {
     expect(knownFor("Brazilian association football player", "athlete")).toBe("Brazilian soccer player");
     expect(knownFor("Dutch association football player and manager", "athlete")).toBe("Dutch soccer player and manager");
     expect(knownFor("Spanish association football manager", "athlete")).toBe("Spanish soccer manager");
+    expect(knownFor("Spanish footballer", "athlete")).toBe("Spanish soccer player");
+    expect(knownFor("English footballer and manager", "athlete")).toBe("English soccer player and manager");
+    expect(knownFor("French football manager", "athlete")).toBe("French soccer manager");
+    expect(knownFor("Brazilian football player", "athlete")).toBe("Brazilian soccer player");
+  });
+
+  it("leaves other football codes alone", () => {
+    expect(knownFor("American football player", "athlete")).toBe("American football player");
+    expect(knownFor("Australian rules footballer", "athlete")).toBe("Australian rules footballer");
+    expect(knownFor("Irish Gaelic footballer", "athlete")).toBe("Irish Gaelic footballer");
+    expect(knownFor("Welsh rugby union footballer", "athlete")).toBe("Welsh rugby union footballer");
   });
 
   it("cuts a long description at 'and'", () => {
     expect(knownFor("English musician and lead vocalist of Radiohead", "musician")).toBe("English musician");
+    expect(knownFor("Norwegian middle- and long-distance runner", "athlete")).toBe("Norwegian middle-distance runner");
+    // Still over 40 characters after the rewrite: the occupation label, never "…middle-".
+    expect(knownFor("Ethiopian-born Dutch middle- and long-distance runner", "athlete")).toBe("athlete");
   });
 
   it("falls back to the occupation when the description is missing, dated or too long", () => {
