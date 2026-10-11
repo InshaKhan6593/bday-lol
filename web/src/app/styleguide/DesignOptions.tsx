@@ -44,6 +44,7 @@ export function SuggestedChanges() {
           note="The site uses the mockup’s icons. The suggested set is drawn heavier, to match the thick outlines, and its four share icons take the person’s color."
         >
           <BeforeAfter shot="home" width={1280} height={1068} alt="The homepage’s #1 card with its share buttons" />
+          <BeforeAfter shot="nobody" width={1720} height={832} alt="The homepage card when nobody has claimed today" />
 
           <h3 className={cx(styles.optionName, styles.setHead)}>Every icon</h3>
           <div className={styles.pairGrid}>
