@@ -17,6 +17,8 @@
 
   html {
     -webkit-text-size-adjust: 100%;
+    /* Phones tint a tapped link or button blue by default; buttons have their own press state (.lift:active). */
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
