@@ -74,6 +74,7 @@ item below **keeps what was already built**.
 | D14 | AI crawlers (step 9) | — | — | All allowed (ChatGPT, Claude, Perplexity search and the training crawlers). He can block training crawlers (GPTBot, ClaudeBot, Google-Extended…) without affecting AI search; one line in `robots.ts` |
 | D15 | 404 page (2026-10-11) | — | Not designed | Built from the legal pages' heading and the site's buttons: "That's not on the calendar.", with "Today's birthday" and "How it works" buttons, on Butter |
 | D16 | Month page list and footer month row (2026-10-11) | — | Not designed | Footer months are small outlined ovals (the current month filled black). Each date row on a month page has a day tile, the famous names, sign and rarity tags, and "#1 Name · $85" or "Claim from $5" |
+| D17 | Icons and gift link help (2026-10-11) | — | Line-drawn icons; a four-line list of apps under the gift rows | **The site uses the mockup's version of both** (this replaces B24: Phosphor is no longer on the site). Two suggestions are shown to the client side by side at `/styleguide`: Phosphor Bold icons with colored share icons, and a help line that follows the app picked in each gift row. Switching the icons is one line (`SITE_ICON_SET` in `web/src/components/ui/mockup-icons.tsx`) |
 
 Settled by the handoff: C2 (Terms, Privacy, support email mybdaylol@gmail.com, footer design), C3 (social boards out
 of scope), most of C1 (domain mybday.lol on Cloudflare, Resend from hello@mybday.lol, Vercel, sole-proprietor Stripe).

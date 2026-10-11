@@ -1,7 +1,12 @@
 import { cx } from "@/lib/cx";
+import { Icon } from "./Icon";
+import { SITE_ICON_SET, type IconSet } from "./mockup-icons";
 import styles from "./ColorIcon.module.css";
 
 /**
+ * The site draws the mockup's line icons here instead (SITE_ICON_SET in mockup-icons.tsx); the colored
+ * set below is the suggestion shown to the client on /styleguide.
+ *
  * Colored share icons: Streamline "Plump Color" (https://www.streamlinehq.com, CC BY 4.0, credited in the
  * site footer), redrawn in the design language: ink outlines and the theme's --accent as the fill, so they
  * recolor with every person's theme. The Facebook square takes the theme color too (chosen for the look;
@@ -91,10 +96,14 @@ type Props = {
   size?: 20 | 24 | 28;
   /** White square behind the icon, for black buttons. */
   tile?: boolean;
+  /** Which drawings to use; the site's own set unless a page compares the two. */
+  set?: IconSet;
   className?: string;
 };
 
-export function ColorIcon({ name, size = 24, tile = false, className }: Props) {
+export function ColorIcon({ name, size = 24, tile = false, set = SITE_ICON_SET, className }: Props) {
+  // The mockup's share icons are plain line drawings in the button's text color: no fill, no tile.
+  if (set === "mockup") return <Icon name={name} size={size} set="mockup" className={className} />;
   const svg = (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none" strokeWidth={3.5} aria-hidden="true" className={styles.svg}>
       <Glyph name={name} />

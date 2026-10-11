@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Kicker } from "@/components/ui";
+import { Kicker, SITE_ICON_SET } from "@/components/ui";
 import { BIRTHDAY_BOARD_TYPE } from "@/config/board-types";
 import { MONTHS, MONTHS_SHORT, zonedDate } from "@/lib/birthday";
 import { now } from "@/lib/clock";
@@ -45,10 +45,12 @@ export function SiteFooter({ currentMonth }: Props = {}) {
       </nav>
       <div className={styles.copy}>
         © {year} mybday.lol
-        {/* Streamline's free icons (CC BY 4.0) need a credit; a paid Streamline plan removes it. */}
-        <a href="https://www.streamlinehq.com" target="_blank" rel="noopener noreferrer" className={styles.credit}>
-          Icons by Streamline
-        </a>
+        {/* Streamline's free icons (CC BY 4.0) need a credit wherever they are shown; a paid plan removes it. */}
+        {SITE_ICON_SET === "suggested" && (
+          <a href="https://www.streamlinehq.com" target="_blank" rel="noopener noreferrer" className={styles.credit}>
+            Icons by Streamline
+          </a>
+        )}
       </div>
       <nav aria-label="Footer" className={styles.links}>
         <Link href={routes.howItWorks}>FAQ</Link>

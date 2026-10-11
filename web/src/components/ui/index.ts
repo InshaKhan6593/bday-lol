@@ -8,6 +8,7 @@ export { Icon, type IconName, type IconSize } from "./Icon";
 export { IconButton } from "./IconButton";
 export { Kicker } from "./Kicker";
 export { Menu } from "./Menu";
+export { SITE_ICON_SET, type IconSet } from "./mockup-icons";
 export { Select, type SelectOption } from "./Select";
 export { Surface } from "./Surface";
 export { ThemeScope } from "./ThemeScope";
