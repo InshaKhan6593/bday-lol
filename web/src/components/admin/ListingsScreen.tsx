@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Anchor, Badge, Button, Group, Modal, Paper, SegmentedControl, Table, Text, TextInput } from "@mantine/core";
+import { Alert, Anchor, Badge, Button, Group, Modal, Pagination, Paper, SegmentedControl, Table, Text, TextInput } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import type { Route } from "next";
 import Link from "next/link";
@@ -23,6 +23,8 @@ type Filter = { date: string; q: string; status: "all" | "live" | "removed" };
 type Props = {
   entries: AdminEntry[];
   filter: Filter;
+  /** Which page this is, and how many listings match in all. */
+  paging: { page: number; total: number; pageSize: number };
   /** The comped part of each comped listing's total. */
   compedCents: Record<string, number>;
   limits: { nameMaxLength: number; bioMaxLength: number };
@@ -30,23 +32,27 @@ type Props = {
   justAdded: boolean;
 };
 
-function listingsUrl(filter: Filter): Route {
+function listingsUrl(filter: Filter, page = 1): Route {
   const params = new URLSearchParams();
   if (filter.date) params.set("date", filter.date);
   if (filter.q.trim()) params.set("q", filter.q.trim());
   if (filter.status !== "all") params.set("status", filter.status);
+  if (page > 1) params.set("page", String(page));
   const query = params.toString();
   return (query ? `${routes.admin.listings}?${query}` : routes.admin.listings) as Route;
 }
 
 /** Everyone on the open boards: find a listing, edit it, take it down or put it back. */
-export function ListingsScreen({ entries, filter, compedCents, limits, justAdded }: Props) {
+export function ListingsScreen({ entries, filter, paging, compedCents, limits, justAdded }: Props) {
   const router = useRouter();
   const [q, setQ] = useState(filter.q);
   const [editing, setEditing] = useState<AdminEntry | null>(null);
   const [confirming, setConfirming] = useState<AdminEntry | null>(null);
   const [working, startWork] = useTransition();
+  // A new search starts again from the first page.
   const go = (next: Partial<Filter>) => router.push(listingsUrl({ ...filter, q, ...next }));
+  const pages = Math.max(1, Math.ceil(paging.total / paging.pageSize));
+  const firstShown = (paging.page - 1) * paging.pageSize + 1;
 
   useEffect(() => {
     if (justAdded) notifications.show({ message: "Comped listing added. It’s live on the board.", color: "green" });
@@ -181,6 +187,23 @@ export function ListingsScreen({ entries, filter, compedCents, limits, justAdded
           </Table>
         )}
       </Paper>
+
+      {paging.total > 0 && (
+        <Group justify="space-between" mt="lg">
+          <Text size="sm" fw={600} c="dimmed">
+            Showing {firstShown}–{firstShown + entries.length - 1} of {paging.total}
+          </Text>
+          {pages > 1 && (
+            <Pagination
+              total={pages}
+              value={paging.page}
+              onChange={(page) => router.push(listingsUrl({ ...filter, q: filter.q }, page))}
+              radius="xl"
+              getControlProps={(control) => ({ "aria-label": `${control} page` })}
+            />
+          )}
+        </Group>
+      )}
 
       <Modal opened={Boolean(editing)} onClose={() => setEditing(null)} title={editing ? `Edit ${editing.name}` : ""} size="lg">
         {editing && (

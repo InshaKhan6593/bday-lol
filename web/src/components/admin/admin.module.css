@@ -113,6 +113,16 @@
   border: var(--border-thin);
 }
 
+.pageControl {
+  border: var(--border-thin);
+  font-weight: var(--weight-bold);
+  color: var(--color-ink);
+}
+
+.pageControl[data-active] {
+  color: var(--color-paper);
+}
+
 .notification {
   border: var(--border-thin);
   border-radius: var(--radius-control);

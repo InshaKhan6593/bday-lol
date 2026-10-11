@@ -5,6 +5,9 @@ import type { ValidListing } from "@/lib/claim";
 import { addBirthdayType, addPeople, inRollback, type Tx } from "@/test/db";
 import { paidBoost, paidClaim } from "@/test/money";
 import {
+  ADMIN_PAGE_SIZE,
+  countAdminEntries,
+  lastAdminPage,
   addCompedEntry,
   compedAmountError,
   getCompedAmounts,
@@ -83,6 +86,46 @@ describe("admin: listings", () => {
       expect((await listAdminEntries(tx, { status: "removed" }, NOON)).map((r) => r.name)).toEqual(["Tyler Brooks"]);
       // A "%" typed in the search box is a character, not a wildcard.
       expect(await listAdminEntries(tx, { q: "%" }, NOON)).toEqual([]);
+    });
+  });
+
+  it("pages through a long board 50 at a time: every listing once, in rank order", async () => {
+    await inRollback(async (tx) => {
+      const type = await addBirthdayType(tx);
+      // 120 people; many share a total, so only the tie-break keeps the pages apart.
+      await addPeople(
+        tx,
+        type,
+        oct7,
+        2026,
+        Array.from({ length: 120 }, (_, i) => ({ name: `Person ${String(i + 1).padStart(3, "0")}`, usd: 5 + (i % 4), reachedAt: "2026-10-07T08:00:00-04:00" })),
+      );
+      const filter = { key: "10-07" };
+      expect(await countAdminEntries(tx, filter, NOON)).toBe(120);
+      expect(lastAdminPage(120)).toBe(3);
+
+      const pages = [];
+      for (const page of [1, 2, 3, 4]) pages.push(await listAdminEntries(tx, { ...filter, page }, NOON));
+      expect(pages.map((p) => p.length)).toEqual([ADMIN_PAGE_SIZE, ADMIN_PAGE_SIZE, 20, 0]);
+      const all = pages.flat();
+      expect(new Set(all.map((e) => e.id)).size).toBe(120);
+      expect(all.map((e) => e.rank)).toEqual(Array.from({ length: 120 }, (_, i) => i + 1));
+      // The first page is what you get without asking for one.
+      expect((await listAdminEntries(tx, filter, NOON)).map((e) => e.id)).toEqual(pages[0]!.map((e) => e.id));
+    });
+  });
+
+  it("counts what the search matches, and an empty result has one (empty) page", async () => {
+    await inRollback(async (tx) => {
+      const { tyler } = await board3(tx);
+      await setEntryStatus(tx, tyler.id, "removed", NOON);
+      expect(await countAdminEntries(tx, {}, NOON)).toBe(3);
+      expect(await countAdminEntries(tx, { status: "live" }, NOON)).toBe(2);
+      expect(await countAdminEntries(tx, { q: "ana" }, NOON)).toBe(1);
+      expect(await countAdminEntries(tx, { key: "12-25" }, NOON)).toBe(0);
+      expect(lastAdminPage(0)).toBe(1);
+      expect(lastAdminPage(50)).toBe(1);
+      expect(lastAdminPage(51)).toBe(2);
     });
   });
 

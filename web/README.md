@@ -106,7 +106,7 @@ screen and every action checks the sign-in itself.
 
 | Screen | What it does |
 |---|---|
-| Listings (`/admin`) | The newest listings on every open board, or one date's board in rank order. Search by name, filter Live / Removed. **Edit** (name, bio, photo, color, child flag, gift links), **Remove** (the board moves up; nothing is refunded), **Restore** |
+| Listings (`/admin`) | The newest listings on every open board, or one date's board in rank order, 50 to a page. Search by name, filter Live / Removed. **Edit** (name, bio, photo, color, child flag, gift links), **Remove** (the board moves up; nothing is refunded), **Restore** |
 | Add comped (`/admin/comped`) | A free listing on any date with an amount you set, no Stripe. It goes live at once and looks like any other; it is marked comped inside and never counted as revenue. Its amount can be changed later from Edit |
 | Famous people (`/admin/famous`) | A date's stored list with **Hide this person**: the next name moves up, and the choice survives the monthly refresh |
 | Pages (`/admin/pages`) | The text of Terms, Privacy and the FAQ. Saving publishes at once; "Back to the original" deletes the edit |

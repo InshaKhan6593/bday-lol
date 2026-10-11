@@ -51,25 +51,56 @@ export type AdminEntryFilter = {
   /** Part of a name. */
   q?: string;
   status?: "live" | "removed" | "all";
-  limit?: number;
+  /** Which page of ADMIN_PAGE_SIZE listings, from 1. */
+  page?: number;
 };
 
+/** Listings per page in the admin. */
+export const ADMIN_PAGE_SIZE = 50;
+
+/** The rows a filter matches: boards open now, never unpaid claims. */
+function entriesWhere(filter: AdminEntryFilter, instant: Date) {
+  const q = filter.q?.trim();
+  return and(
+    lte(boards.opensAt, instant),
+    gt(boards.closesAt, instant),
+    filter.status && filter.status !== "all" ? eq(entries.status, filter.status) : ne(entries.status, "pending"),
+    filter.key ? eq(boards.key, filter.key) : undefined,
+    q ? ilike(entries.name, `%${q.replace(/[%_\\]/g, "\\$&")}%`) : undefined,
+  );
+}
+
+/** How many listings a filter matches, for the page count. */
+export async function countAdminEntries(db: Executor, filter: AdminEntryFilter, instant: Date): Promise<number> {
+  const [row] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(entries)
+    .innerJoin(boards, eq(boards.id, entries.boardId))
+    .where(entriesWhere(filter, instant));
+  return row?.n ?? 0;
+}
+
+/** The last page a filter has (at least 1), so a page number from the address can be kept in range. */
+export function lastAdminPage(total: number): number {
+  return Math.max(1, Math.ceil(total / ADMIN_PAGE_SIZE));
+}
+
 /**
- * Listings on the boards that are open now: newest first, or in board order when one date is picked.
- * Unpaid claims never appear (they aren't on a board).
+ * One page of the listings on the boards that are open now: newest first, or in board order when one
+ * date is picked. Unpaid claims never appear (they aren't on a board).
  */
 export async function listAdminEntries(db: Executor, filter: AdminEntryFilter, instant: Date): Promise<AdminEntry[]> {
   const ranked = db
     .select({
       id: entries.id,
-      rank: sql<number>`(row_number() over (partition by ${entries.boardId} order by ${entries.totalCents} desc, ${entries.totalReachedAt} asc))::int`.as(
+      rank: sql<number>`(row_number() over (partition by ${entries.boardId} order by ${entries.totalCents} desc, ${entries.totalReachedAt} asc, ${entries.id} asc))::int`.as(
         "rank",
       ),
     })
     .from(entries)
     .where(eq(entries.status, "live"))
     .as("ranked");
-  const q = filter.q?.trim();
+  const page = Math.max(1, Math.floor(filter.page ?? 1));
   const rows = await db
     .select({
       id: entries.id,
@@ -93,17 +124,14 @@ export async function listAdminEntries(db: Executor, filter: AdminEntryFilter, i
     .from(entries)
     .innerJoin(boards, eq(boards.id, entries.boardId))
     .leftJoin(ranked, eq(ranked.id, entries.id))
-    .where(
-      and(
-        lte(boards.opensAt, instant),
-        gt(boards.closesAt, instant),
-        filter.status && filter.status !== "all" ? eq(entries.status, filter.status) : ne(entries.status, "pending"),
-        filter.key ? eq(boards.key, filter.key) : undefined,
-        q ? ilike(entries.name, `%${q.replace(/[%_\\]/g, "\\$&")}%`) : undefined,
-      ),
+    .where(entriesWhere(filter, instant))
+    // The id settles ties, so a listing is never on two pages or on none.
+    .orderBy(
+      ...(filter.key ? [asc(entries.status), desc(entries.totalCents), asc(entries.totalReachedAt)] : [desc(entries.liveAt)]),
+      asc(entries.id),
     )
-    .orderBy(...(filter.key ? [asc(entries.status), desc(entries.totalCents), asc(entries.totalReachedAt)] : [desc(entries.liveAt)]))
-    .limit(filter.limit ?? 100);
+    .limit(ADMIN_PAGE_SIZE)
+    .offset((page - 1) * ADMIN_PAGE_SIZE);
   return rows.map(({ period, liveAt, status, ...row }) => ({
     ...row,
     status: status as "live" | "removed",
