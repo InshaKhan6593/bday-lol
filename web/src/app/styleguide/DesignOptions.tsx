@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { ColorIcon, Icon, Kicker, Surface, ThemeScope, type ColorIconName, type IconName, type IconSet } from "@/components/ui";
-import { THEME_KEYS, THEMES, type ThemeKey } from "@/config/themes";
+import { ColorIcon, Icon, Kicker, Surface, type ColorIconName, type IconName, type IconSet } from "@/components/ui";
 import { cx } from "@/lib/cx";
 import styles from "./StyleGuide.module.css";
 
@@ -29,19 +27,17 @@ const ICON_ROWS: Array<{ label: string; name: IconName }> = [
 /** The four share icons have a colored version in the suggested set. */
 const COLORED: readonly string[] = ["share", "facebook", "text", "link"] satisfies ColorIconName[];
 
-export function DesignOptions() {
-  const [theme, setTheme] = useState<ThemeKey>("butter");
-
+/** The two suggested changes, each next to what the site has now. The last part of the style guide. */
+export function SuggestedChanges() {
   return (
-    <ThemeScope theme={theme} paint>
-      <main className={cx(styles.page, styles.review)}>
-        <header className={styles.intro}>
-          <Kicker size="lg">mybday.lol · for review</Kicker>
-          <h1 className={styles.display}>Design options.</h1>
-          <p className={styles.lead}>
-            The site follows the mockup. Here are two suggested changes, each next to what the site has now.
-          </p>
-        </header>
+    <div className={styles.review}>
+      <header className={styles.intro}>
+        <Kicker size="lg">For review</Kicker>
+        <h2 className={styles.display}>Suggested changes.</h2>
+        <p className={styles.lead}>
+          The site follows the mockup. Here are two suggested changes, each next to what the site has now.
+        </p>
+      </header>
 
         <Section
           title="1. Icons"
@@ -49,26 +45,7 @@ export function DesignOptions() {
         >
           <BeforeAfter shot="home" width={1280} height={1068} alt="The homepage’s #1 card with its share buttons" />
 
-          <div className={styles.setHead}>
-            <h3 className={styles.optionName}>Every icon</h3>
-            <div className={styles.swatches} role="radiogroup" aria-label="Color">
-              {THEME_KEYS.map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  role="radio"
-                  aria-checked={key === theme}
-                  aria-label={THEMES[key].name}
-                  title={THEMES[key].name}
-                  onClick={() => setTheme(key)}
-                  className={cx(styles.swatch, key === theme && styles.swatchSelected)}
-                  style={{ background: THEMES[key].ground }}
-                >
-                  <span className={styles.swatchAccent} style={{ background: THEMES[key].accent }} />
-                </button>
-              ))}
-            </div>
-          </div>
+          <h3 className={cx(styles.optionName, styles.setHead)}>Every icon</h3>
           <div className={styles.pairGrid}>
             {ICON_ROWS.map((row) => (
               <Surface key={row.label} padding="none" className={styles.pair}>
@@ -100,8 +77,7 @@ export function DesignOptions() {
         >
           <BeforeAfter shot="claim" width={1280} height={754} alt="“Where should gifts go?” on the Claim page" />
         </Section>
-      </main>
-    </ThemeScope>
+    </div>
   );
 }
 

@@ -315,9 +315,14 @@
 
 /* ---------- /styleguide: what the site has now next to the suggestion ---------- */
 
-/* The review page breathes more than the developers' reference. */
+/* The suggestions breathe more than the reference above them. */
 .review {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-5xl);
+  margin-top: var(--space-5xl);
+  padding-top: var(--space-5xl);
+  border-top: var(--border);
 }
 
 .review .intro {
@@ -358,20 +363,8 @@
   color: var(--color-text-tertiary);
 }
 
-/* "Every icon" and the color picker on one line. */
 .setHead {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-lg);
   margin-top: var(--space-4xl);
-}
-
-.setHead .swatches {
-  flex: 1 1 320px;
-  max-width: 440px;
-  gap: var(--space-xs);
 }
 
 .pairGrid {
