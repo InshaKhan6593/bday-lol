@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { cache } from "react";
+import { preload } from "react-dom";
 import { BoostNotice } from "@/components/boost/BoostNotice";
 import { ClaimBar } from "@/components/home/ClaimBar";
 import { ComingUp } from "@/components/home/ComingUp";
@@ -39,6 +40,9 @@ export default async function HomePage({ searchParams }: Props) {
   await connection();
   const home = await homeData();
   const { leader, settings, today } = home;
+  // The #1's photo sits on another host (photo storage): start fetching it from the page's <head>,
+  // before the browser has laid anything out.
+  if (leader?.photoUrl) preload(leader.photoUrl, { as: "image", fetchPriority: "high" });
   const dateLabel = formatLong(today);
   const shareUrl = absoluteUrl(routes.date(today));
 

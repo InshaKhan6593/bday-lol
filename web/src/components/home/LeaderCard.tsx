@@ -28,7 +28,7 @@ export function LeaderCard({ leader, shareUrl, dateLabel, theme, otherTotalsCent
   return (
     <Surface as="section" radius="hero" elevation="hero" padding="hero" className={styles.heroCard}>
       <div className={styles.owner}>
-        <Avatar name={leader.name} photoUrl={leader.photoUrl} size="lg" />
+        <Avatar name={leader.name} photoUrl={leader.photoUrl} size="lg" priority />
         <div className={styles.ownerText}>
           <h2 className={styles.ownerName}>{leader.name}</h2>
           {/* The mockup quotes the #1's bio. Strip any quotes already in it (older or admin-added entries) so there's one pair. */}
