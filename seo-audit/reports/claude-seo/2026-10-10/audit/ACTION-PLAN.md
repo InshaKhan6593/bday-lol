@@ -11,9 +11,9 @@ Adult performers on 30 date pages, people listed on two dates, "footballer" next
 
 ## Phase 1: before launch, ours to do (High)
 
-**Status 2026-10-11:** 2, 3 (as a description list, not a sentence) and 4 are done. 1 is done for How it works,
-Terms, Privacy and the month pages; the homepage and date pages are still per request, to be decided after the stress
-test. `X-Powered-By` (item 7) is removed. Details in `06-seo.md`, "After the claude-seo plugin audit".
+**Status 2026-10-12:** 1, 2, 3 (as a description list, not a sentence) and 4 are done. For 1, the homepage and date
+pages are saved copies too, one per Eastern day, thrown away when a board changes. 5 is done on the test database.
+`X-Powered-By` (item 7) is removed. Details in `06-seo.md`, "After the claude-seo plugin audit".
 
 | # | Fix | Where | Effort |
 |---|---|---|---|
@@ -41,7 +41,7 @@ test. `X-Powered-By` (item 7) is removed. Details in `06-seo.md`, "After the cla
 | B | Nothing on the site answers "famous birthdays today"; the homepage has no famous people | A "Famous birthdays today" strip under "Coming up" |
 | C | Date pages are 37% unique on the strict measure (07 D9) | Add a holiday/observance line per date (Christmas, July 4…) |
 | D | On unclaimed dates the famous list is the third block | Show 3–5 names under the H1 |
-| E | Terms and Privacy show "[Launch date]" and "[If required: … Article 27 GDPR.]" | He fills them in, or edits them in the admin (step 10) |
+| E | Terms and Privacy show "[Launch date]" and "[If required: … Article 27 GDPR.]" | He fills them in from the admin (`/admin/pages`) |
 | F | Footer month row and month pages aren't in his mockup (07 D10, D11) | Keep both; send him the screenshots |
 | G | Content-Signal line in robots.txt: may AI companies train on the site? (07 D14) | His call |
 

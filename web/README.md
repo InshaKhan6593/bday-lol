@@ -61,6 +61,7 @@ return to the page they started on with `?boosted=…` and a short "Your boost i
 |---|---|
 | http://localhost:3000 | The app |
 | http://localhost:3000/styleguide | The design language. Also live in production, noindex |
+| http://localhost:3000/admin | The admin (needs `ADMIN_PASSWORD_HASH`, see [Admin](#admin)) |
 | http://localhost:8030 | Mailpit: every email the app sends lands here |
 | http://localhost:3000/dev/emails | All 8 emails with demo data (dev only) |
 | `pnpm db:studio` | Browse the database |
@@ -177,7 +178,10 @@ off, as of 2026-10); pages beyond the limit fall back to the timer.
 
 ```
 src/
-  app/                 routes (pages, API: api/stripe/webhook, api/cron/emails, api/unsubscribe)
+  proxy.ts             runs before the cache: sends "/" and "/october-7" to today's saved copy (lib/day-cache.ts)
+  app/                 routes (pages, API: api/stripe/webhook, api/cron/*, api/unsubscribe, api/board-version, api/boost-result)
+  app/admin/           the admin's screens; app/home/[date] and app/[slug]/~day/[date] are the saved copies
+  components/admin/    the admin: Mantine theme (theme.ts, admin.module.css) and its screens
   components/ui/       design-language primitives: Button, Chip, Surface, Avatar, Badge, Kicker, Field, Select, Menu, Icon…
   components/site/     shared by every page: header, menu, countdown, LiveBoard (open pages follow the board)
   components/home/     homepage sections
@@ -190,14 +194,16 @@ src/
   components/share/    share and copy-link buttons, shared-link card
   config/              themes (12), board type settings (min bid, min boost, time zone…)
   db/                  schema.ts (board → entries → payments model), client
-  lib/                 pure rules: birthday.ts (ET, leap years, board years), date-page, claim, checkout, success, facts, money, boost math, gifts, routes, clock, ids
+  lib/                 pure rules: birthday.ts (ET, leap years, board years), date-page, claim, checkout, success, facts, money, boost math, gifts, routes, clock, ids,
+                       live (open pages follow a board), day-cache (saved pages), server-clock (countdowns), admin-auth (password, session)
   test/                database test helpers (rolled-back transactions)
-  server/              server logic: leaderboard queries, page data, payments (claims + boosts, pending → paid), outbid alert queue, Stripe client + events, photo storage, reminders; actions/ = form actions
+  server/              server logic: leaderboard queries, page data, payments (claims + boosts, pending → paid), outbid alert queue, Stripe client + events, photo storage, reminders,
+                       cached.ts (shared reads, which saved pages to throw away), live.ts (board version, push), admin.ts + admin-session.ts; actions/ = form actions
   server/email/        sending: mailer (Mailpit / Resend SMTP), sendEmail (dedupe + unsubscribe), payment emails, scheduled emails, suppressions
   server/famous*.ts    famous people: Wikidata provider (famous-source.ts), monthly refresh and reads (famous.ts)
   server/og-card.tsx   share images (Open Graph) drawn with next/og; fonts in src/assets/fonts
   styles/tokens.css    design tokens: color, type roles, shape, shadows, spacing, motion
-scripts/               seed, reset, init (new database), email tick, famous refresh, load tests
+scripts/               seed, reset, init (new database, push policy), email tick, famous refresh, admin password, load tests
 drizzle/               generated SQL migrations
 ```
 
@@ -234,6 +240,11 @@ A test copy runs on the developer's own accounts; the client's accounts replace 
    in `server/stripe-events.ts`) and set its signing secret as `STRIPE_WEBHOOK_SECRET`.
 6. **Free plan limits:** `vercel.json` runs the email cron once a day and the famous cron is capped at 300 s.
    On Vercel Pro, set the email cron back to every minute (`* * * * *`).
+7. **Live boards:** set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (both public).
+   `pnpm db:init` in step 2 already added the rule that lets visitors listen and only the server send.
+8. **Admin:** run `pnpm admin:password` and set the line it prints as `ADMIN_PASSWORD_HASH`. `APP_SECRET` must be a
+   long random string (32+ characters): it signs admin sessions and unsubscribe links.
+9. **After every deploy with a new file in `drizzle/`:** run `pnpm db:migrate` against the session pooler URL first.
 
 ## Load and concurrency tests
 

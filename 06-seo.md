@@ -77,14 +77,14 @@ The real plugin audit ([seo-audit/reports/claude-seo/2026-10-10/](seo-audit/repo
 | Area | What changed | Where |
 |---|---|---|
 | Famous people | No adult performers, nobody on two dates, "soccer player" for every "footballer", no cut-off labels; January 1 refreshes (its query used to time out) | `web/src/lib/famous.ts`, `web/src/server/famous-source.ts` |
-| Caching | How it works, Terms and Privacy are cached for 5 minutes. Month pages are cached for 1 minute and rebuilt right after a payment (the Stripe webhook calls `revalidatePath`). They moved to their own route, `/months/[month]`, reached through a rewrite, because one route can't be both cached and per request; the public URL is still `/october`, and `/months/october` redirects to it. **The homepage and date pages are still rendered per request** (bids, the countdown and midnight ET change them): decide after the stress test | `web/next.config.ts`, `web/src/app/months/[month]/page.tsx`, `web/src/components/month/MonthRoute.tsx`, `web/src/app/api/stripe/webhook/route.ts` |
+| Caching | How it works, Terms and Privacy are cached for 5 minutes. Month pages are cached for 1 minute and rebuilt right after a payment (the Stripe webhook calls `revalidatePath`). They moved to their own route, `/months/[month]`, reached through a rewrite, because one route can't be both cached and per request; the public URL is still `/october`, and `/months/october` redirects to it. The homepage and date pages were still rendered per request at this point; they are saved copies now (see the update below) | `web/next.config.ts`, `web/src/app/months/[month]/page.tsx`, `web/src/components/month/MonthRoute.tsx`, `web/src/app/api/stripe/webhook/route.ts` |
 | 404 | A real 404 page in the HTML (heading, two buttons, the month links). URLs that can't be a page are rewritten to it; `/february-30` and unknown personal links still get the 404 status, but their page is drawn in the browser | `web/src/app/not-found.tsx`, `web/next.config.ts` |
 | Freshness | `dateModified` on date and month pages, the same time the sitemap uses as `lastmod`. A monthly refresh that returns the same people no longer moves a date's time | `web/src/lib/seo.ts` (`lastModified`), `web/src/server/famous.ts` |
 | Fact cards | Sign, birthstone, flower and the other facts are a description list (`dl`), so text extractors read them as facts. Looks the same | `web/src/components/date/About.tsx` |
 | Headers | `X-Powered-By` removed | `web/next.config.ts` |
 
 Build note: Terms and Privacy are now built ahead, so `pnpm build` needs the database running (`pnpm db:up`).
-When the admin (step 10) saves Terms or Privacy it should call `revalidatePath` for that page, or the edit shows up to 5 minutes later.
+The admin's save rebuilds Terms, Privacy and How it works at once (`adminSavePage`); without it an edit would show up to 5 minutes later.
 
 **Update 2026-10-11 (later): the homepage and date pages are saved too.** One copy per Eastern day, thrown away by a
 payment, so most visits are served from Vercel's nearest location (details in [web/README.md](web/README.md#saved-pages-why-the-site-is-fast)).

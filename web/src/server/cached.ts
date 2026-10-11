@@ -28,7 +28,7 @@ import { getBoardVersion } from "./live";
 /**
  * The routes of the saved homepage and date pages (lib/day-cache.ts), for revalidatePath(route, "page").
  * Whatever changes what those pages show must throw them away: a payment (Stripe webhook), the monthly
- * famous-people refresh, and the admin's edits (step 10).
+ * famous-people refresh, and the admin's edits.
  */
 export const SAVED_PAGE_ROUTES = ["/home/[date]", "/[slug]/~day/[date]"] as const;
 

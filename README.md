@@ -44,7 +44,7 @@ payments through Stripe Checkout (Adaptive Pricing, settled in USD) and a hidden
 | [07-open-questions.md](07-open-questions.md) | Gaps and conflicts, **with our decisions**. Section C + the draft message at the bottom are what still needs the client |
 | [08-emails.md](08-emails.md) | The 8 emails: research on what good ones say, the design, and each email's subject, preview line and content |
 | [web/](web/) | **The Next.js app.** Setup, commands and folder map in [web/README.md](web/README.md) |
-| [seo-audit/](seo-audit/) | SEO audit on [claude-seo](https://github.com/AgriciDaniel/claude-seo)'s analysers: `audit.py`, before/after reports, the client report page. **Next:** [run the real plugin](seo-audit/HANDOFF-claude-seo.md) |
+| [seo-audit/](seo-audit/) | SEO audit on [claude-seo](https://github.com/AgriciDaniel/claude-seo)'s analysers: `audit.py`, before/after reports, the client report page, and the real plugin's audit (80/100) with its action plan |
 | `resources/` | *(local only)* Original material from the client (see below) |
 
 ### resources/ (local only)
@@ -97,6 +97,18 @@ Mailpit on :8030). Production plan: Vercel Pro + Supabase (Postgres + Storage fo
 **Tests:** every feature ships with tests (`pnpm test`, 387 so far): pure rules in `web/src/lib/*.test.ts` and
 database tests in `*.db.test.ts`, which run against the local Docker Postgres inside a rolled-back transaction.
 
+## Since the first deploy (2026-10-11 and 12)
+
+| What | In short | Details |
+|---|---|---|
+| Live boards | An open homepage or date page updates by itself when a claim, a boost or the admin changes its board: pushed through Supabase Realtime, with a check on a timer as the safety net | [web/README.md](web/README.md#live-boards) |
+| Saved pages | The homepage and date pages are saved copies, one per Eastern day, served from the nearest location and thrown away the moment a board changes | [web/README.md](web/README.md#saved-pages-why-the-site-is-fast) |
+| Admin | `/admin`: listings, comped listings, famous people, Terms / Privacy / FAQ, revenue | [web/README.md](web/README.md#admin) |
+
+**Left before launch:** put the admin on the deployed copy (its password and one migration), move to the client's
+accounts (Vercel Pro, Stripe live keys, Resend with the mybday.lol domain, his Supabase), and the client's open
+points in [07](07-open-questions.md) sections C and D.
+
 ## Handoff v2 (2026-10-10)
 
 Source: `resources/handoff-v2/` (local only): `DEVELOPER-NOTES.md`, `mockup/*.dc.html`, `screenshots/`, `legal/`.
@@ -112,9 +124,9 @@ The social ad boards are gone (07 C3 settled: out of scope). Built on branch `ha
 | Success | "Your personal link" box with Copy / "Copied!" and "See your spot →". "You're #3 on October 7. Boost to climb." The link card shows the claimer's own link |
 | Terms / Privacy | `/terms`, `/privacy` with the client's final text, read from the `site_pages` table first so the admin can edit them live |
 
-Still to do from the handoff, in later steps: OG image for every personal link (step 9), editing Terms/Privacy/FAQ
-and hiding listings in the admin (step 10), privacy-friendly analytics (named in the Privacy Policy) and the live
-Stripe account's Terms URL (step 11), and testing Venmo/Cash App links on a real phone.
+Done since: a share image for every personal link (step 9), and editing Terms/Privacy/FAQ and hiding listings in the
+admin (step 10). Still to do at launch: privacy-friendly analytics (named in the Privacy Policy), the live Stripe
+account's Terms URL, and testing Venmo/Cash App links on a real phone.
 
 **Design decisions** (details in [04-design-system.md](04-design-system.md#implementation-decisions)): keep the client's look exactly
 (rounded pastel shapes, Bricolage Grotesque); upgrade the mockup's hand-drawn icons to Phosphor Bold, with filled black share icons from Streamline

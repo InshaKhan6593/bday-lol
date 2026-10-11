@@ -2,7 +2,7 @@ import { and, asc, desc, eq, gt, ilike, inArray, isNull, lte, ne, sql } from "dr
 import type { BoardTypeSettings } from "@/config/board-types";
 import type { Executor } from "@/db";
 import { boards, entries, famousHidden, famousPeople, leaderLog, payments, type GiftLink } from "@/db/schema";
-import { parseKey, toKey, type MonthDay } from "@/lib/birthday";
+import { toKey, type MonthDay } from "@/lib/birthday";
 import type { ValidListing } from "@/lib/claim";
 import { publicId } from "@/lib/ids";
 import type { ThemeKey } from "@/config/themes";
@@ -436,9 +436,4 @@ export async function getRevenue(db: Executor, instant: Date, timeZone: string):
     return sum;
   }, emptyRow("all"));
   return { days, months, allTime };
-}
-
-/** "10-07" → a month-day, for the admin's date filters. Null for anything else. */
-export function adminDate(key: unknown): MonthDay | null {
-  return typeof key === "string" ? parseKey(key) : null;
 }
