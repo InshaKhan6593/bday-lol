@@ -300,6 +300,22 @@ export const sitePages = pgTable("site_pages", {
 });
 
 // ---------------------------------------------------------------------------
+// Admin sign-in attempts (login rate limit, 07 B14)
+// ---------------------------------------------------------------------------
+
+/** Every password try on /admin/login. Wrong ones inside the last 15 minutes decide whether another is allowed. */
+export const adminLogins = pgTable(
+  "admin_logins",
+  {
+    id: serial("id").primaryKey(),
+    ip: text("ip").notNull(),
+    ok: boolean("ok").notNull(),
+    at: tstz("at").notNull().defaultNow(),
+  },
+  (t) => [index("admin_logins_at_idx").on(t.at)],
+);
+
+// ---------------------------------------------------------------------------
 // "About [date] birthdays": famous people (refreshed monthly)
 // ---------------------------------------------------------------------------
 

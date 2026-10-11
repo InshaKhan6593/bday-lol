@@ -134,6 +134,29 @@ export function validateClaim(input: ClaimInput, minCents: number, target: Claim
   const tooLow = bidError(amountCents, minCents, target);
   if (tooLow) errors.bid = tooLow;
 
+  const listing = validateListing(input, rules);
+  if (!listing.ok) Object.assign(errors, listing.errors);
+
+  const email = input.email.trim();
+  if (!EMAIL.test(email) || email.length > 254) errors.email = "Enter your email for the receipt.";
+
+  if (!listing.ok || Object.keys(errors).length > 0) return { ok: false, errors };
+  return { ok: true, claim: { md: input.md, amountCents, ...listing.listing, email: email.toLowerCase() } };
+}
+
+/** What a listing shows: everything on a claim except the money and the email. */
+export type ListingInput = Pick<ClaimInput, "name" | "bio" | "giftLinks" | "theme" | "isMinor">;
+export type ValidListing = Pick<ValidClaim, "name" | "bio" | "giftLinks" | "theme" | "isMinor">;
+export type ListingField = "name" | "bio" | "giftLinks" | "theme";
+export type ListingResult = { ok: true; listing: ValidListing } | { ok: false; errors: Partial<Record<ListingField, string>> };
+
+/**
+ * Checks the name, bio, gift links, color and child flag. Part of every claim, and what the admin
+ * runs when editing a listing or adding a comped one: the same rules for everyone on the board.
+ */
+export function validateListing(input: ListingInput, rules: FormRules): ListingResult {
+  const errors: Partial<Record<ListingField, string>> = {};
+
   const name = cleanName(input.name);
   if (!name) errors.name = "Add a name to continue.";
   else if (name.length > rules.nameMaxLength) errors.name = `Names can be up to ${rules.nameMaxLength} characters.`;
@@ -156,23 +179,8 @@ export function validateClaim(input: ClaimInput, minCents: number, target: Claim
 
   if (!isThemeKey(input.theme)) errors.theme = "Pick a color.";
 
-  const email = input.email.trim();
-  if (!EMAIL.test(email) || email.length > 254) errors.email = "Enter your email for the receipt.";
-
   if (Object.keys(errors).length > 0) return { ok: false, errors };
-  return {
-    ok: true,
-    claim: {
-      md: input.md,
-      amountCents,
-      name,
-      bio,
-      giftLinks,
-      theme: input.theme as ThemeKey,
-      email: email.toLowerCase(),
-      isMinor: input.isMinor,
-    },
-  };
+  return { ok: true, listing: { name, bio, giftLinks, theme: input.theme as ThemeKey, isMinor: input.isMinor } };
 }
 
 // ---------------------------------------------------------------------------

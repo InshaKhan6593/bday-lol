@@ -237,7 +237,7 @@ export async function expireCheckout(db: Executor, sessionId: string): Promise<b
 }
 
 /** The live #1 on a board: highest total, ties to whoever got there first. */
-async function currentTopEntryId(db: Executor, boardId: string): Promise<string | null> {
+export async function currentTopEntryId(db: Executor, boardId: string): Promise<string | null> {
   const [top] = await db
     .select({ id: entries.id })
     .from(entries)
@@ -248,7 +248,7 @@ async function currentTopEntryId(db: Executor, boardId: string): Promise<string 
 }
 
 /** Closes the current #1 stint and opens a new one (powers the "held the homepage" lines). */
-async function moveLeader(db: Executor, boardId: string, entryId: string, at: Date): Promise<void> {
+export async function moveLeader(db: Executor, boardId: string, entryId: string, at: Date): Promise<void> {
   await db
     .update(leaderLog)
     .set({ endedAt: at })

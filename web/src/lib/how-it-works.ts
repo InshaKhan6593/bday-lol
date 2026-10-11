@@ -74,6 +74,38 @@ export function howItWorksFaq(rules: CopyRules): Faq[] {
   ];
 }
 
+/**
+ * The FAQ as the text the admin edits: a "## " line for each question, its answer underneath.
+ *
+ *   ## Are bids refundable?
+ *   No. A bid buys you a spot on that date's board…
+ */
+export function faqToMarkdown(faq: Faq[]): string {
+  return faq.map(({ q, a }) => `## ${q}\n\n${a}`).join("\n\n") + "\n";
+}
+
+/** Reads that text back. Questions without an answer are dropped; text before the first question is ignored. */
+export function parseFaqMarkdown(markdown: string): Faq[] {
+  const faq: Faq[] = [];
+  let current: { q: string; lines: string[] } | null = null;
+  const close = () => {
+    if (!current) return;
+    const a = current.lines.join(" ").replace(/\s+/g, " ").trim();
+    if (current.q && a) faq.push({ q: current.q, a });
+  };
+  for (const line of markdown.replace(/\r\n?/g, "\n").split("\n")) {
+    const heading = /^##\s+(.*)$/.exec(line.trim());
+    if (heading) {
+      close();
+      current = { q: heading[1]!.trim(), lines: [] };
+    } else if (current) {
+      current.lines.push(line.trim());
+    }
+  }
+  close();
+  return faq;
+}
+
 /** schema.org FAQPage structured data, so search engines can read the questions. */
 export function faqJsonLd(faq: Faq[]) {
   return {

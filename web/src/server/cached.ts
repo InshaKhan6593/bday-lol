@@ -22,8 +22,8 @@ import { getBoardVersion } from "./live";
  * | A board's version (open pages ask for it) | 5 seconds | a payment lands (Stripe webhook) |
  *
  * Money rules never read these: claims and boosts check settings and totals in the database.
- * TODO(step 10): the admin must revalidate `famous` after hiding a person, `settings` after editing them and
- * `boards` after editing or removing a listing (then announce the board, as the Stripe webhook does).
+ * The admin's actions (server/actions/admin.ts) drop `famous` after hiding a person and `boards` after
+ * changing a listing, then announce the board, as the Stripe webhook does.
  */
 /**
  * The routes of the saved homepage and date pages (lib/day-cache.ts), for revalidatePath(route, "page").

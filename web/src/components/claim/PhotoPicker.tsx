@@ -13,7 +13,7 @@ export type Photo = { blob: Blob; url: string };
  * (decided, 07 B7). Re-encoding through a canvas also drops EXIF data, so
  * GPS tags from phone photos never leave the device.
  */
-async function toSquareJpeg(file: File): Promise<Blob> {
+export async function toSquareJpeg(file: File): Promise<Blob> {
   const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
   const { x, y, size } = squareCrop(bitmap.width, bitmap.height);
   const out = Math.min(PHOTO_SIZE, size);

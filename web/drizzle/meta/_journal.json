@@ -43,6 +43,13 @@
       "when": 1791615702372,
       "tag": "0005_payment_method",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791746477680,
+      "tag": "0006_admin_logins",
+      "breakpoints": true
     }
   ]
 }

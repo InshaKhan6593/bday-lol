@@ -75,6 +75,7 @@ return to the page they started on with `?boosted=…` and a short "Your boost i
 | `pnpm db:init` | Create the rows a new database needs (the birthday board type). Safe to rerun and on a live database; run it once after `pnpm db:migrate` on production, where the seed is never run |
 | `pnpm db:demo --host=<db host>` | For a deployed test copy: replaces every listing with the demo people (today's date, ET) and keeps famous people, Terms/Privacy and the board type. Never on the real site |
 | `pnpm db:reset` | Wipe the local DB, migrate, seed (refuses non-local databases) |
+| `pnpm admin:password` | Prints the `ADMIN_PASSWORD_HASH` line for a password you type (see [Admin](#admin)) |
 | `pnpm emails:tick` | Send every scheduled email that is due now (what the production cron does). Respects `DEV_NOW` |
 | `pnpm famous:refresh [month]` | Fill "Famous people born on…" from Wikidata + Wikipedia pageviews: all 12 months (about an hour) or one (`pnpm famous:refresh 10`). What `/api/cron/famous` does on days 1–12 of each month |
 | `pnpm data:commonness` | Rebuild `src/lib/commonness-data.ts` from FiveThirtyEight's births data (only if the source changes) |
@@ -98,6 +99,34 @@ project is on the free plan it runs once a day (after 13:05 UTC, past 8 AM ET al
 throttled outbid alerts wait for that run. Locally there's no cron: run `pnpm emails:tick`.
 Each email is sent once (dedupe keys in `email_log`). Details in [../08-emails.md](../08-emails.md#how-theyre-sent-step-8).
 
+## Admin
+
+`/admin` is the client's own tool (spec §10, 07 B14). It is not linked from anywhere, never indexed, and every
+screen and every action checks the sign-in itself.
+
+| Screen | What it does |
+|---|---|
+| Listings (`/admin`) | The newest listings on every open board, or one date's board in rank order. Search by name, filter Live / Removed. **Edit** (name, bio, photo, color, child flag, gift links), **Remove** (the board moves up; nothing is refunded), **Restore** |
+| Add comped (`/admin/comped`) | A free listing on any date with an amount you set, no Stripe. It goes live at once and looks like any other; it is marked comped inside and never counted as revenue. Its amount can be changed later from Edit |
+| Famous people (`/admin/famous`) | A date's stored list with **Hide this person**: the next name moves up, and the choice survives the monthly refresh |
+| Pages (`/admin/pages`) | The text of Terms, Privacy and the FAQ. Saving publishes at once; "Back to the original" deletes the edit |
+| Revenue (`/admin/revenue`) | Paid claims and boosts by month and for the last 30 days, in Eastern Time, comped listings apart. Stripe stays the real record |
+
+**Set it up.** Run `pnpm admin:password`, type a password, and put the line it prints into `.env.local` (or the Vercel
+project's environment variables) as `ADMIN_PASSWORD_HASH`. Only the hash is stored. Sessions are signed with
+`APP_SECRET` and last 12 hours. Five wrong passwords from one address (30 from everyone) lock sign-in for 15 minutes.
+A new database needs migration `0006_admin_logins` (`pnpm db:migrate`).
+
+**How a change reaches the site.** The functions in `src/server/admin.ts` change the database inside a
+transaction that locks the board, exactly like a payment, and keep the #1 history right (someone pushed out of #1
+by a comped or restored listing gets the usual outbid email; a taken-down listing sends none). The actions in
+`src/server/actions/admin.ts` then drop the caches, throw away the saved pages and tell open pages to look again.
+A listing keeps its personal link when its name is edited, so shared links keep working.
+
+**The look.** [Mantine](https://mantine.dev) draws the components and loads only under `/admin`. The theme
+(`src/components/admin/theme.ts`, `admin.module.css`) is built from the site's own tokens: Bricolage Grotesque, ink
+outlines, hard shadows, in a calmer and denser form, on Cloud with Butter as the one accent.
+
 ## Saved pages (why the site is fast)
 
 The homepage and the date pages are **saved copies**, served from Vercel's nearest location instead of
@@ -119,8 +148,8 @@ being built in the US on every visit (rules in `src/lib/day-cache.ts`):
   (`/october-7/sam-rivera`) are still drawn per request.
 - A month of date links (the date picker, the month pages) is fetched on click, not prefetched.
 
-Whatever changes what these pages show must throw them away: the admin (step 10) has to call
-`revalidatePath` for `SAVED_PAGE_ROUTES` after an edit, then `announceBoardChange`.
+Whatever changes what these pages show must throw them away: the admin's actions do it the same way
+(`boardChanged` in `src/server/actions/admin.ts`).
 
 ## Live boards
 

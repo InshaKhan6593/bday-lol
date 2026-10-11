@@ -6,14 +6,16 @@ import { Button, Icon, Surface, ThemeScope } from "@/components/ui";
 import { BIRTHDAY_BOARD_TYPE } from "@/config/board-types";
 import { zonedDate } from "@/lib/birthday";
 import { now } from "@/lib/clock";
-import { faqJsonLd, howItWorksFaq, howItWorksSteps, jsonLdScript } from "@/lib/how-it-works";
+import { db } from "@/db";
+import { faqJsonLd, howItWorksSteps, jsonLdScript } from "@/lib/how-it-works";
 import { routes } from "@/lib/routes";
 import { HOW_DESCRIPTION, HOW_TITLE, pageMetadata } from "@/lib/seo";
+import { getFaq } from "@/server/site-pages";
 
 export const metadata: Metadata = pageMetadata({ title: HOW_TITLE, description: HOW_DESCRIPTION, path: routes.howItWorks });
 
 // Cached and rebuilt at most every 5 minutes (claude-seo seo-technical: no-store on every page). "Find your date" and the
-// header link follow today's date, so they can lag midnight ET by those minutes.
+// header link follow today's date, so they can lag midnight ET by those minutes. The admin's FAQ save rebuilds it at once.
 export const revalidate = 300;
 
 /** How it works: 3 steps, the FAQ and a "Find your date" bar. Always Butter. */
@@ -21,7 +23,8 @@ export default async function HowItWorksPage() {
   const settings = BIRTHDAY_BOARD_TYPE.settings;
   const today = zonedDate(now(), settings.timezone);
   const steps = howItWorksSteps(settings);
-  const faq = howItWorksFaq(settings);
+  // The client edits the questions in the admin; until then they are the original 10.
+  const faq = await getFaq(db);
 
   return (
     <ThemeScope theme={settings.defaultTheme} paint>

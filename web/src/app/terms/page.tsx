@@ -8,8 +8,7 @@ import { getLegalPage } from "@/server/site-pages";
 export const metadata: Metadata = pageMetadata({ title: TERMS_TITLE, description: TERMS_DESCRIPTION, path: routes.terms });
 
 // Cached and rebuilt at most every 5 minutes (claude-seo seo-technical: no-store on every page), so an edit
-// shows within 5 minutes. TODO(step 10): the admin's save
-// calls revalidatePath for this page so edits show at once.
+// shows within 5 minutes at the latest; the admin's save rebuilds the page at once.
 export const revalidate = 300;
 
 /** Terms of Service. The client edits the text in the admin, no deploy needed. */

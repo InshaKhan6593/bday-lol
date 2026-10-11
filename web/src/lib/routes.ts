@@ -27,6 +27,15 @@ export const routes = {
   boostLink: (md: MonthDay, publicId: string, amountCents: number) =>
     `/${toSlug(md)}?boost=${encodeURIComponent(publicId)}&amount=${Math.round(amountCents / 100)}` as Route,
   month: (month: number) => `/${monthSlug(month)}` as Route,
+  /** The hidden admin (07 B14). */
+  admin: {
+    listings: "/admin" as Route,
+    login: "/admin/login" as Route,
+    comped: "/admin/comped" as Route,
+    famous: "/admin/famous" as Route,
+    pages: "/admin/pages" as Route,
+    revenue: "/admin/revenue" as Route,
+  },
   /** The "Unsubscribe" link in emails: a page that asks before switching anything off. */
   unsubscribe: (token: string) => `/unsubscribe?t=${encodeURIComponent(token)}` as Route,
   /** RFC 8058 one-click unsubscribe (the inbox's own button POSTs here). */

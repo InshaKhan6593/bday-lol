@@ -29,7 +29,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={bricolage.variable}>
+    // data-mantine-color-scheme: the admin's component library reads it before its own code runs (always light).
+    <html lang="en" className={bricolage.variable} data-mantine-color-scheme="light">
       <body>
         <ScrollToTop />
         {children}

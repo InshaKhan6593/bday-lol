@@ -5,7 +5,7 @@ import type { EmailCategory } from "@/lib/unsubscribe";
 
 const DEV_SECRET = "change-me-to-a-long-random-string";
 
-/** The key that signs unsubscribe links. Production refuses to run with the placeholder. */
+/** The key that signs unsubscribe links and admin sessions. Production refuses to run with the placeholder. */
 export function unsubscribeSecret(): string {
   const secret = process.env.APP_SECRET;
   if (process.env.NODE_ENV === "production" && (!secret || secret === DEV_SECRET || secret.length < 32)) {
