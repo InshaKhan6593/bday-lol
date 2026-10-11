@@ -150,14 +150,20 @@ Two upgrades over the mockup:
 
 Both load tests only send GET requests: they never start a checkout, so Stripe is not touched.
 
-**Local result, 2026-10-11** (one `next start` process, pool of 10 connections, this laptop also running the test):
+**Local results, 2026-10-11** (one `next start` process, pool of 10 connections, this laptop also running the test).
+"Before" is with every read done per request; "after" is with the board read in one query and the slow-changing
+reads cached (`src/server/cached.ts`: settings 5 minutes, a date's famous people 1 hour, the date picker's top bids
+30 seconds or until the next payment).
 
-| Page kind | Requests per second | Median wait at 10 / 100 / 400 visitors | Errors |
-|---|---|---|---|
-| Cached (How it works, Terms, month pages) | about 900–1,150 | 9 ms / 95 ms / 0.35 s | 0 |
-| Homepage (per request, 7 queries) | about 100–160 | 94 ms / 0.8 s / 3.0 s | 0 |
-| Date pages (per request, 8 queries) | about 110–155 | 86 ms / 0.8 s / 3.2 s | 0 |
+| Page kind | Queries per view | Requests per second | Median wait at 10 / 100 / 400 visitors | Errors |
+|---|---|---|---|---|
+| Cached (How it works, Terms, month pages) | 0 | about 1,000–1,150 | 9 ms / 86 ms / 0.36 s | 0 |
+| Homepage, before | 7 | about 100–160 | 94 ms / 0.82 s / 3.0 s | 0 |
+| Homepage, after | about 2 | about 150–205 | 61 ms / 0.62 s / 2.3 s | 0 |
+| Date pages, before | 8 | about 110–155 | 86 ms / 0.82 s / 3.2 s | 0 |
+| Date pages, after | about 2 | about 125–185 | 69 ms / 0.67 s / 2.5 s | 0 |
 
-Nothing failed, but a page rendered per request costs about 8 times a cached one, and the wait grows with every
-extra visitor. The database stayed at the pool's 10 connections. These are not Vercel's numbers: run the k6 script on a
-preview before launch.
+Nothing failed in either run. What limits one process now is rendering the page (CPU), not the database, and Vercel
+adds processes under load: there the database's connection limit is the ceiling, which is why the query count matters
+more than these laptop timings. Set `DATABASE_POOL_MAX=3` on Vercel. These are not Vercel's numbers: run the k6 script
+on a preview before launch.

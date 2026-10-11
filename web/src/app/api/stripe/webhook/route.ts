@@ -1,6 +1,7 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/db";
 import { now } from "@/lib/clock";
+import { CACHE_TAGS } from "@/server/cached";
 import { getMailer } from "@/server/email/mailer";
 import { emailsAfterStripeEvent } from "@/server/email/payment-emails";
 import { handleStripeEvent } from "@/server/stripe-events";
@@ -24,7 +25,11 @@ export async function POST(request: Request) {
   const instant = now();
   const outcome = await handleStripeEvent(db, event, instant);
   // A payment changes a board's top bid: rebuild the cached month pages now, not at their next minute.
-  if (outcome.handled && outcome.action === "fulfilled") revalidatePath("/months/[month]", "page");
+  // The date picker's top bids are cached too (server/cached.ts): drop them at once, not stale-while-revalidate.
+  if (outcome.handled && outcome.action === "fulfilled") {
+    revalidatePath("/months/[month]", "page");
+    revalidateTag(CACHE_TAGS.boards, { expire: 0 });
+  }
   const emails = await emailsAfterStripeEvent(db, getMailer(), outcome, instant);
   if (emails?.alerts.failed) console.error("Outbid alerts failed (the cron retries them):", emails.alerts.errors);
   if (emails?.payment.failed) {

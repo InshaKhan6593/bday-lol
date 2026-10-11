@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { entries, famousHidden, famousPeople, leaderLog } from "@/db/schema";
 import { addBirthdayType, addPeople, inRollback } from "@/test/db";
 import { CONTENT_UPDATED } from "@/lib/seo";
-import { getDatePageData } from "./date-page";
+import { directReads, getDatePageData } from "./date-page";
 
 // Noon ET on October 7, 2026.
 const NOON_OCT_7 = new Date("2026-10-07T12:00:00-04:00");
@@ -119,6 +119,46 @@ describe("date page data", () => {
         { key: "10-11", sourceId: "Q2", name: "Other", knownFor: "actor", birthDate: "1980-10-11", rank: 1, refreshedAt: new Date("2026-12-01T00:00:00Z") },
       ]);
       expect((await getDatePageData(tx, oct10, NOON_OCT_7)).updatedAt).toBe(refreshed.toISOString());
+    });
+  });
+
+  it("reads a board in one go: a bid moves the page's last-changed time, a removed person doesn't count", async () => {
+    await inRollback(async (tx) => {
+      const type = await addBirthdayType(tx);
+      // Only a removed person: the board exists but shows nobody, and nothing on the page has changed.
+      await addPeople(tx, type, oct10, 2026, [{ name: "Gone", usd: 50, reachedAt: "2026-10-07T09:00:00-04:00", status: "removed" }]);
+      const empty = await getDatePageData(tx, oct10, NOON_OCT_7);
+      expect(empty.entries).toEqual([]);
+      expect(empty.updatedAt).toBe(CONTENT_UPDATED.toISOString());
+
+      await addPeople(tx, type, oct10, 2026, [{ name: "Here", usd: 20, reachedAt: "2026-10-07T10:00:00-04:00" }]);
+      const claimed = await getDatePageData(tx, oct10, NOON_OCT_7);
+      expect(claimed.entries.map((e) => [e.rank, e.name])).toEqual([[1, "Here"]]);
+      expect(new Date(claimed.updatedAt).getTime()).toBeGreaterThan(CONTENT_UPDATED.getTime());
+    });
+  });
+
+  it("takes the slow-changing reads from whoever is passed in (the pages pass cached ones)", async () => {
+    await inRollback(async (tx) => {
+      const type = await addBirthdayType(tx);
+      const real = directReads(tx);
+      const calls: string[] = [];
+      const page = await getDatePageData(tx, oct10, NOON_OCT_7, {
+        settings: () => (calls.push("settings"), real.settings()),
+        topTotals: async () => (calls.push("tops"), { "10-01": 1_234 }),
+        famous: async () => (
+          calls.push("famous"),
+          {
+            people: [{ sourceId: "Q1", source: "wikidata", name: "Cached Star", knownFor: "actor", age: 46, birthDate: "1980-10-10" }],
+            refreshedAt: "2026-11-03T08:00:00.000Z",
+          }
+        ),
+      });
+      expect(calls).toEqual(["settings", "tops", "famous"]);
+      expect(page.settings).toEqual(type.settings);
+      expect(page.calendarTops).toEqual({ "10-01": 1_234 });
+      expect(page.famous.map((p) => p.name)).toEqual(["Cached Star"]);
+      expect(page.updatedAt).toBe("2026-11-03T08:00:00.000Z");
     });
   });
 

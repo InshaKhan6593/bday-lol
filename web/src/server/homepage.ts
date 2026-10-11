@@ -1,8 +1,8 @@
 import type { BoardTypeSettings } from "@/config/board-types";
 import type { ThemeKey } from "@/config/themes";
 import type { Executor } from "@/db";
-import { boardClosesAt, nextDates, zonedDate, type MonthDay } from "@/lib/birthday";
-import { getBirthdaySettings, getCurrentBoard, type RankedEntry } from "./leaderboard";
+import { boardClosesAt, nextDates, toKey, zonedDate, type MonthDay } from "@/lib/birthday";
+import { getBirthdaySettings, getCurrentBoard, getCurrentLeaders, type RankedEntry } from "./leaderboard";
 
 /** How many dates the "Coming up" row shows (decided, 07 B10). */
 const COMING_UP_DAYS = 4;
@@ -26,17 +26,21 @@ export type HomepageData = {
   comingUp: ComingUpDay[];
 };
 
-export async function getHomepageData(db: Executor, instant: Date): Promise<HomepageData> {
-  const { typeId, settings } = await getBirthdaySettings(db);
+export async function getHomepageData(
+  db: Executor,
+  instant: Date,
+  /** The pages pass a cached read (server/cached.ts): the settings are the same for every visitor. */
+  readSettings: () => Promise<{ typeId: number; settings: BoardTypeSettings }> = () => getBirthdaySettings(db),
+): Promise<HomepageData> {
+  const { typeId, settings } = await readSettings();
   const todayDate = zonedDate(instant, settings.timezone);
   const today = { month: todayDate.month, day: todayDate.day };
 
   // Sequential on purpose: a transaction's single connection can't run queries in parallel.
   const board = await getCurrentBoard(db, typeId, settings, today, instant);
-  const upcoming = [];
-  for (const { month, day } of nextDates(todayDate, COMING_UP_DAYS)) {
-    upcoming.push(await getCurrentBoard(db, typeId, settings, { month, day }, instant));
-  }
+  // "Coming up" only needs each date's #1: one query for all four dates.
+  const upcoming = nextDates(todayDate, COMING_UP_DAYS).map(({ month, day }) => ({ month, day }));
+  const leaders = await getCurrentLeaders(db, typeId, instant, upcoming.map(toKey));
 
   const [leader = null, ...rest] = board.entries;
   return {
@@ -48,10 +52,10 @@ export async function getHomepageData(db: Executor, instant: Date): Promise<Home
     leader,
     otherTotalsCents: rest.map((e) => e.totalCents),
     others: { count: rest.length, preview: rest.slice(0, OTHERS_AVATARS) },
-    comingUp: upcoming.map((b) => ({
-      md: b.md,
-      leaderName: b.entries[0]?.name ?? null,
-      topTotalCents: b.entries[0]?.totalCents ?? null,
+    comingUp: upcoming.map((md) => ({
+      md,
+      leaderName: leaders[toKey(md)]?.name ?? null,
+      topTotalCents: leaders[toKey(md)]?.totalCents ?? null,
     })),
   };
 }

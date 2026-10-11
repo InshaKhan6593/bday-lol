@@ -25,6 +25,13 @@ export type FamousPerson = {
  * (cron: /api/cron/famous; locally: `pnpm famous:refresh`).
  */
 export async function getFamousPeople(db: Executor, md: MonthDay, year: number): Promise<FamousPerson[]> {
+  return (await getFamousForDate(db, md, year)).people;
+}
+
+/** A date's famous list plus when it last changed (ISO), in one query. Plain data, so it can be cached. */
+export type FamousForDate = { people: FamousPerson[]; refreshedAt: string | null };
+
+export async function getFamousForDate(db: Executor, md: MonthDay, year: number): Promise<FamousForDate> {
   const rows = await db
     .select({
       sourceId: famousPeople.sourceId,
@@ -32,6 +39,7 @@ export async function getFamousPeople(db: Executor, md: MonthDay, year: number):
       name: famousPeople.name,
       knownFor: famousPeople.knownFor,
       birthDate: famousPeople.birthDate,
+      refreshedAt: famousPeople.refreshedAt,
     })
     .from(famousPeople)
     .leftJoin(
@@ -42,7 +50,17 @@ export async function getFamousPeople(db: Executor, md: MonthDay, year: number):
     .orderBy(asc(famousPeople.rank))
     .limit(FAMOUS_LIMIT);
 
-  return rows.map((row) => ({ ...row, age: year - Number(row.birthDate.slice(0, 4)) }));
+  return {
+    people: rows.map((row) => ({
+      sourceId: row.sourceId,
+      source: row.source,
+      name: row.name,
+      knownFor: row.knownFor,
+      birthDate: row.birthDate,
+      age: year - Number(row.birthDate.slice(0, 4)),
+    })),
+    refreshedAt: rows.length ? new Date(Math.max(...rows.map((row) => row.refreshedAt.getTime()))).toISOString() : null,
+  };
 }
 
 /** The best-known (not hidden) names for each date in a month, keyed "10-07", for the month page. */

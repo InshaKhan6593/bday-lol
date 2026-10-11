@@ -1,5 +1,7 @@
+import { revalidateTag } from "next/cache";
 import { db } from "@/db";
 import { now } from "@/lib/clock";
+import { CACHE_TAGS } from "@/server/cached";
 import { refreshFamousMonth } from "@/server/famous";
 import { wikidataProvider } from "@/server/famous-source";
 
@@ -22,5 +24,7 @@ export async function GET(request: Request) {
   const month = Number(new URL(request.url).searchParams.get("month") ?? instant.getUTCDate());
   if (!Number.isInteger(month) || month < 1 || month > 12) return Response.json({ skipped: true, month });
   const run = await refreshFamousMonth(db, wikidataProvider, month, instant);
+  // Date pages cache each date's list for an hour (server/cached.ts): show the new lists now.
+  revalidateTag(CACHE_TAGS.famous, { expire: 0 });
   return Response.json({ month, ...run });
 }

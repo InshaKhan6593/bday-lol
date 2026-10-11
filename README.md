@@ -94,7 +94,7 @@ Mailpit on :8030). Production plan: Vercel Pro + Supabase (Postgres + Storage fo
 | 10. Admin | ⏭️ Next |
 | 11. Deploy to Vercel + Supabase, test live | ⬜ |
 
-**Tests:** every feature ships with tests (`pnpm test`, 297 so far): pure rules in `web/src/lib/*.test.ts` and
+**Tests:** every feature ships with tests (`pnpm test`, 299 so far): pure rules in `web/src/lib/*.test.ts` and
 database tests in `*.db.test.ts`, which run against the local Docker Postgres inside a rolled-back transaction.
 
 ## Handoff v2 (2026-10-10)

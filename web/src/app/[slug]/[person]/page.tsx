@@ -8,6 +8,7 @@ import { now } from "@/lib/clock";
 import { firstName } from "@/lib/people";
 import { routes } from "@/lib/routes";
 import { dateTitle, pageMetadata } from "@/lib/seo";
+import { cachedReads } from "@/server/cached";
 import { getDatePageData } from "@/server/date-page";
 import { getPersonOnBoard } from "@/server/people";
 import { dateFromSlug } from "../date-from-slug";
@@ -43,7 +44,7 @@ export default async function PersonPage({ params, searchParams }: Props) {
   const { slug, person } = await params;
   const md = dateFromSlug(slug);
   await connection();
-  const page = await getDatePageData(db, md, now());
+  const page = await getDatePageData(db, md, now(), cachedReads);
   const focus = page.entries.find((e) => e.slug === person);
   if (!focus) redirect(routes.date(md));
   return <DatePageView md={md} page={page} query={await searchParams} focusPublicId={focus.publicId} />;

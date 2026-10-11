@@ -2,11 +2,11 @@ import type { BoardTypeSettings } from "@/config/board-types";
 import type { ThemeKey } from "@/config/themes";
 import type { Executor } from "@/db";
 import type { GiftLink } from "@/db/schema";
-import { boardClosesAt, toKey, zonedDate, type MonthDay } from "@/lib/birthday";
+import { boardClosesAt, zonedDate, type MonthDay } from "@/lib/birthday";
 import { dateStatus, heldText, type DateStatus } from "@/lib/date-page";
 import { lastModified } from "@/lib/seo";
-import { getFamousPeople, getFamousRefreshedAt, type FamousPerson } from "./famous";
-import { getBirthdaySettings, getBoardActivity, getCurrentBoard, getCurrentTopTotals, getLeaderLog } from "./leaderboard";
+import { getFamousForDate, type FamousForDate, type FamousPerson } from "./famous";
+import { getBirthdaySettings, getCurrentBoard, getCurrentTopTotals, getLeaderLog } from "./leaderboard";
 
 /** One person on the date page's list. Only public fields: this goes to the browser. */
 export type DateEntry = {
@@ -46,8 +46,30 @@ export type DatePageData = {
   serverNow: string;
 };
 
-export async function getDatePageData(db: Executor, md: MonthDay, instant: Date): Promise<DatePageData> {
-  const { typeId, settings } = await getBirthdaySettings(db);
+/**
+ * The reads that change slowly and are the same for every visitor. The pages pass cached versions
+ * (server/cached.ts); tests and scripts use these, straight from the database.
+ */
+export type SharedReads = {
+  settings(): Promise<{ typeId: number; settings: BoardTypeSettings }>;
+  /** Top total per month-day for the date picker ("10-07" → cents). */
+  topTotals(typeId: number, instant: Date): Promise<Record<string, number>>;
+  famous(md: MonthDay, year: number): Promise<FamousForDate>;
+};
+
+export const directReads = (db: Executor): SharedReads => ({
+  settings: () => getBirthdaySettings(db),
+  topTotals: (typeId, instant) => getCurrentTopTotals(db, typeId, instant),
+  famous: (md, year) => getFamousForDate(db, md, year),
+});
+
+export async function getDatePageData(
+  db: Executor,
+  md: MonthDay,
+  instant: Date,
+  shared: SharedReads = directReads(db),
+): Promise<DatePageData> {
+  const { typeId, settings } = await shared.settings();
   const tz = settings.timezone;
   const todayDate = zonedDate(instant, tz);
   const today = { month: todayDate.month, day: todayDate.day };
@@ -59,13 +81,9 @@ export async function getDatePageData(db: Executor, md: MonthDay, instant: Date)
   const todayBoard = isToday ? board : await getCurrentBoard(db, typeId, settings, today, instant);
   // Held lines exist only on today's board (decided, 07 B9).
   const log = isToday && board.boardId ? await getLeaderLog(db, board.boardId) : [];
-  const calendarTops = await getCurrentTopTotals(db, typeId, instant);
-  const famous = await getFamousPeople(db, md, board.year);
-  const key = toKey(md);
-  const updatedAt = lastModified(
-    (await getBoardActivity(db, typeId, instant, key))[key],
-    (await getFamousRefreshedAt(db, key))[key],
-  );
+  const calendarTops = await shared.topTotals(typeId, instant);
+  const { people: famous, refreshedAt } = await shared.famous(md, board.year);
+  const updatedAt = lastModified(board.lastChangedAt ?? undefined, refreshedAt ? new Date(refreshedAt) : undefined);
 
   return {
     settings,

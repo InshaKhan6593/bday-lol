@@ -50,7 +50,7 @@ export const options = {
 };
 
 /** One visitor: lands on a date page (search) or the homepage (a shared link), then looks around. */
-export default function () {
+export default function visitor() {
   const r = Math.random();
   const [page, path] =
     r < 0.6 ? ["date", pick(DATES)] : r < 0.8 ? ["home", "/"] : r < 0.9 ? ["month", `/${pick(MONTHS)}`] : ["static", pick(["/how-it-works", "/terms", "/privacy"])];

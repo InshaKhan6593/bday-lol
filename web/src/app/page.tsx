@@ -20,13 +20,14 @@ import { minToTakeTop } from "@/lib/money";
 import { jsonLdScript } from "@/lib/how-it-works";
 import { absoluteUrl, routes } from "@/lib/routes";
 import { HOME_TITLE, homeDescription, homeJsonLd, pageMetadata } from "@/lib/seo";
+import { cachedReads } from "@/server/cached";
 import { getHomepageData } from "@/server/homepage";
 
 /** Today's date and whoever owns it. Rendered per request: it changes with every bid and at midnight ET. */
 type Props = { searchParams: Promise<{ boosted?: string | string[] }> };
 
 // generateMetadata and the page read the same data: fetch it once per request.
-const homeData = cache(async () => getHomepageData(db, now()));
+const homeData = cache(async () => getHomepageData(db, now(), cachedReads.settings));
 
 export async function generateMetadata(): Promise<Metadata> {
   await connection();

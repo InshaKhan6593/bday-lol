@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, like, lte, max } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, like, lte, max } from "drizzle-orm";
 import type { BoardTypeSettings } from "@/config/board-types";
 import type { Executor } from "@/db";
 import { boards, entries, leaderLog } from "@/db/schema";
@@ -26,6 +26,8 @@ export type BoardView = {
   year: number;
   boardId: string | null;
   entries: RankedEntry[];
+  /** When a live entry on the board last changed (a claim, a boost, an edit). Null for an empty board. */
+  lastChangedAt: Date | null;
 };
 
 /** Settings of the birthday board type (per-board overrides come later). */
@@ -46,30 +48,54 @@ export async function getCurrentBoard(
   instant: Date,
 ): Promise<BoardView> {
   const year = currentBoardYear(md, instant, settings.timezone);
-  const [board] = await db
-    .select({ id: boards.id })
+  // One query for the board and its people: this runs on every page view (twice on a date page).
+  const rows = await db
+    .select({ boardId: boards.id, updatedAt: entries.updatedAt, ...RANKED_COLUMNS })
     .from(boards)
+    .leftJoin(entries, and(eq(entries.boardId, boards.id), eq(entries.status, "live")))
     .where(and(eq(boards.boardTypeId, typeId), eq(boards.key, toKey(md)), eq(boards.period, String(year))))
-    .limit(1);
-  if (!board) return { md, year, boardId: null, entries: [] };
-  return { md, year, boardId: board.id, entries: await getRankedEntries(db, board.id) };
+    .orderBy(desc(entries.totalCents), asc(entries.totalReachedAt));
+  if (!rows.length) return { md, year, boardId: null, entries: [], lastChangedAt: null };
+  // A board whose people were all removed still comes back, as one row with no entry.
+  const people = rows.filter((row) => row.id !== null);
+  return {
+    md,
+    year,
+    boardId: rows[0]!.boardId,
+    entries: people.map((row, i) => ({
+      id: row.id!,
+      publicId: row.publicId!,
+      slug: row.slug,
+      rank: i + 1,
+      name: row.name!,
+      bio: row.bio!,
+      photoUrl: row.photoUrl,
+      theme: row.theme!,
+      giftLinks: row.giftLinks!,
+      isMinor: row.isMinor!,
+      totalCents: row.totalCents!,
+    })),
+    lastChangedAt: people.length ? new Date(Math.max(...people.map((row) => row.updatedAt!.getTime()))) : null,
+  };
 }
+
+const RANKED_COLUMNS = {
+  id: entries.id,
+  publicId: entries.publicId,
+  slug: entries.slug,
+  name: entries.name,
+  bio: entries.bio,
+  photoUrl: entries.photoUrl,
+  theme: entries.theme,
+  giftLinks: entries.giftLinks,
+  isMinor: entries.isMinor,
+  totalCents: entries.totalCents,
+};
 
 /** Live entries on a board, ranked: highest total first, ties to whoever got there first. */
 export async function getRankedEntries(db: Executor, boardId: string): Promise<RankedEntry[]> {
   const rows = await db
-    .select({
-      id: entries.id,
-      publicId: entries.publicId,
-      slug: entries.slug,
-      name: entries.name,
-      bio: entries.bio,
-      photoUrl: entries.photoUrl,
-      theme: entries.theme,
-      giftLinks: entries.giftLinks,
-      isMinor: entries.isMinor,
-      totalCents: entries.totalCents,
-    })
+    .select(RANKED_COLUMNS)
     .from(entries)
     .where(and(eq(entries.boardId, boardId), eq(entries.status, "live")))
     .orderBy(desc(entries.totalCents), asc(entries.totalReachedAt));
@@ -125,14 +151,21 @@ export async function getCurrentLeaders(
   db: Executor,
   typeId: number,
   instant: Date,
-  month?: number,
+  /** One month (10), or a few dates by key (["10-12", "10-13"]). Everything when left out. */
+  only?: number | string[],
 ): Promise<Record<string, BoardLeader>> {
   const open = and(eq(boards.boardTypeId, typeId), lte(boards.opensAt, instant), gt(boards.closesAt, instant));
+  const narrowed =
+    only === undefined
+      ? open
+      : typeof only === "number"
+        ? and(open, like(boards.key, `${String(only).padStart(2, "0")}-%`))
+        : and(open, inArray(boards.key, only));
   const rows = await db
     .select({ key: boards.key, name: entries.name, totalCents: entries.totalCents, theme: entries.theme })
     .from(boards)
     .innerJoin(entries, and(eq(entries.boardId, boards.id), eq(entries.status, "live")))
-    .where(month ? and(open, like(boards.key, `${String(month).padStart(2, "0")}-%`)) : open)
+    .where(narrowed)
     .orderBy(asc(boards.key), desc(entries.totalCents), asc(entries.totalReachedAt));
   const out: Record<string, BoardLeader> = {};
   for (const row of rows) {

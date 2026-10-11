@@ -9,6 +9,7 @@ import { parseSlug, type MonthDay } from "@/lib/birthday";
 import { now } from "@/lib/clock";
 import { routes } from "@/lib/routes";
 import { dateDescription, dateJsonLd, dateTitle, pageMetadata } from "@/lib/seo";
+import { cachedReads } from "@/server/cached";
 import { getDatePageData } from "@/server/date-page";
 import { pageFromSlug } from "./date-from-slug";
 
@@ -18,7 +19,7 @@ type Props = {
 };
 
 // generateMetadata and the page read the same data: fetch it once per request.
-const dateData = cache(async (month: number, day: number) => getDatePageData(db, { month, day }, now()));
+const dateData = cache(async (month: number, day: number) => getDatePageData(db, { month, day }, now(), cachedReads));
 
 async function dateSeo(md: MonthDay) {
   const page = await dateData(md.month, md.day);
