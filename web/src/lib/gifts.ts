@@ -168,3 +168,14 @@ export function giftEntryHint(entry: GiftEntry): { text: string; tone: "strong" 
   if (parsed.kind === "bad") return { text: GIFT_ENTRY[entry.service].error, tone: "error" };
   return { text: `Your spot will show a “${GIFT_SERVICES[entry.service].label}” button`, tone: "strong" };
 }
+
+/**
+ * Suggested help for an empty gift row: one line for the app picked in that row. Shown to the client on
+ * /styleguide; the Claim page still has the mockup's four-line list (07 D17).
+ */
+export const GIFT_ROW_HELP: Record<GiftService, string> = {
+  venmo: "Your Venmo username, like @sam-rivera. A full link works too.",
+  cashapp: "Your $cashtag, like $samrivera. A full link works too.",
+  amazon: "Open your wishlist on Amazon, tap Share, and paste the link here.",
+  throne: "Your Throne username, like @samrivera. A full link works too.",
+};
