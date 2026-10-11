@@ -138,3 +138,26 @@ We compared it with neubrutalism.com's square style and its fonts (Syne is too w
 Two upgrades over the mockup:
 - **Icons:** [Phosphor](https://phosphoricons.com), Bold weight, via `<Icon name="…" />` (the mockup's hand-drawn icons looked rough; client is told as FYI)
 - **Dropdowns and popups:** [Radix UI](https://www.radix-ui.com) primitives styled with our tokens (native `<select>` lists can't be styled)
+
+## Load and concurrency tests
+
+| Command | What it does |
+|---|---|
+| `pnpm test` | The unit and database tests, then `pnpm test:concurrency` |
+| `pnpm test:concurrency` | Fires many payments at one board at the same moment on real connections (60 boosts, the same webhook 5 times over, 30 same-name claims) and checks totals, ranks, personal links and the #1 log. Runs on its own because the other database tests lock every table |
+| `pnpm load:test [url]` | No-install load test: holds 10 → 400 visitors on each kind of page and prints requests per second, latency and open database connections. Run it against `pnpm build && pnpm start -p 3100`, never `pnpm dev` |
+| `k6 run -e BASE_URL=… scripts/k6-load.js` | The same visitor mix for a staging copy or Vercel preview, with `PROFILE=stress` (default), `spike` or `soak`. Needs [k6](https://k6.io). Never point it at production |
+
+Both load tests only send GET requests: they never start a checkout, so Stripe is not touched.
+
+**Local result, 2026-10-11** (one `next start` process, pool of 10 connections, this laptop also running the test):
+
+| Page kind | Requests per second | Median wait at 10 / 100 / 400 visitors | Errors |
+|---|---|---|---|
+| Cached (How it works, Terms, month pages) | about 900–1,150 | 9 ms / 95 ms / 0.35 s | 0 |
+| Homepage (per request, 7 queries) | about 100–160 | 94 ms / 0.8 s / 3.0 s | 0 |
+| Date pages (per request, 8 queries) | about 110–155 | 86 ms / 0.8 s / 3.2 s | 0 |
+
+Nothing failed, but a page rendered per request costs about 8 times a cached one, and the wait grows with every
+extra visitor. The database stayed at the pool's 10 connections. These are not Vercel's numbers: run the k6 script on a
+preview before launch.
