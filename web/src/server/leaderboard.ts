@@ -3,6 +3,7 @@ import type { BoardTypeSettings } from "@/config/board-types";
 import type { Executor } from "@/db";
 import { boards, entries, leaderLog } from "@/db/schema";
 import { currentBoardYear, toKey, type MonthDay } from "@/lib/birthday";
+import { boardVersion } from "@/lib/live";
 import { getBoardType } from "./boards";
 
 export type RankedEntry = {
@@ -29,6 +30,16 @@ export type BoardView = {
   /** When a live entry on the board last changed (a claim, a boost, an edit). Null for an empty board. */
   lastChangedAt: Date | null;
 };
+
+/** The version an open page is drawn with (lib/live.ts). Matches getBoardVersion in server/live.ts. */
+export function versionOf(board: BoardView): string {
+  return boardVersion({
+    boardId: board.boardId,
+    people: board.entries.length,
+    totalCents: board.entries.reduce((sum, e) => sum + e.totalCents, 0),
+    lastChangedAt: board.lastChangedAt,
+  });
+}
 
 /** Settings of the birthday board type (per-board overrides come later). */
 export async function getBirthdaySettings(db: Executor): Promise<{ typeId: number; settings: BoardTypeSettings }> {

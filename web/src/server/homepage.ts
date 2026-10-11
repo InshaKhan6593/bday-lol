@@ -2,7 +2,7 @@ import type { BoardTypeSettings } from "@/config/board-types";
 import type { ThemeKey } from "@/config/themes";
 import type { Executor } from "@/db";
 import { boardClosesAt, nextDates, toKey, zonedDate, type MonthDay } from "@/lib/birthday";
-import { getBirthdaySettings, getCurrentBoard, getCurrentLeaders, type RankedEntry } from "./leaderboard";
+import { getBirthdaySettings, getCurrentBoard, getCurrentLeaders, versionOf, type RankedEntry } from "./leaderboard";
 
 /** How many dates the "Coming up" row shows (decided, 07 B10). */
 const COMING_UP_DAYS = 4;
@@ -24,6 +24,8 @@ export type HomepageData = {
   otherTotalsCents: number[];
   others: { count: number; preview: RankedEntry[] };
   comingUp: ComingUpDay[];
+  /** Version of today's board: the open page re-reads when the server's differs (lib/live.ts). */
+  version: string;
 };
 
 export async function getHomepageData(
@@ -57,5 +59,6 @@ export async function getHomepageData(
       leaderName: leaders[toKey(md)]?.name ?? null,
       topTotalCents: leaders[toKey(md)]?.totalCents ?? null,
     })),
+    version: versionOf(board),
   };
 }

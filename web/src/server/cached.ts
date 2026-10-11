@@ -1,10 +1,11 @@
 import { unstable_cache } from "next/cache";
 import { db } from "@/db";
 import { BIRTHDAY_BOARD_TYPE } from "@/config/board-types";
-import { zonedDate } from "@/lib/birthday";
+import { toKey, zonedDate, type MonthDay } from "@/lib/birthday";
 import type { SharedReads } from "./date-page";
 import { getFamousForDate } from "./famous";
 import { getBirthdaySettings, getCurrentTopTotals } from "./leaderboard";
+import { getBoardVersion } from "./live";
 
 /**
  * Cached versions of the reads that are the same for every visitor and change slowly.
@@ -18,9 +19,11 @@ import { getBirthdaySettings, getCurrentTopTotals } from "./leaderboard";
  * | Board settings | 5 minutes | (nothing changes them outside a deploy yet) |
  * | A date's famous people | 1 hour | the monthly refresh runs (/api/cron/famous) |
  * | Top bid per date (date picker) | 30 seconds | a payment lands (Stripe webhook) |
+ * | A board's version (open pages ask for it) | 5 seconds | a payment lands (Stripe webhook) |
  *
  * Money rules never read these: claims and boosts check settings and totals in the database.
- * TODO(step 10): the admin must revalidate `famous` after hiding a person and `settings` after editing them.
+ * TODO(step 10): the admin must revalidate `famous` after hiding a person, `settings` after editing them and
+ * `boards` after editing or removing a listing (then announce the board, as the Stripe webhook does).
  */
 export const CACHE_TAGS = { settings: "board-settings", famous: "famous", boards: "boards" } as const;
 
@@ -42,6 +45,19 @@ const topTotalsOn = (typeId: number, at: Date) =>
     revalidate: 30,
     tags: [CACHE_TAGS.boards],
   })();
+
+/**
+ * What every open page of a board asks, on a push and on a timer (lib/live.ts): however many people
+ * are watching, the database is read at most once every 5 seconds per board.
+ */
+export async function cachedBoardVersion(md: MonthDay, at: Date): Promise<string> {
+  const { typeId, settings: boardSettings } = await settings();
+  return unstable_cache(
+    () => getBoardVersion(db, typeId, boardSettings, md, at),
+    ["board-version", String(typeId), toKey(md), easternDate(at)],
+    { revalidate: 5, tags: [CACHE_TAGS.boards] },
+  )();
+}
 
 function easternDate(at: Date): string {
   const { year, month, day } = zonedDate(at, BIRTHDAY_BOARD_TYPE.settings.timezone);

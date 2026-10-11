@@ -11,11 +11,12 @@ import { OthersBar } from "@/components/home/OthersBar";
 import { ReminderSignup } from "@/components/home/ReminderSignup";
 import { Steps } from "@/components/home/Steps";
 import styles from "@/components/home/home.module.css";
+import { LiveBoard } from "@/components/site/LiveBoard";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Kicker, ThemeScope } from "@/components/ui";
 import { db } from "@/db";
-import { formatLong } from "@/lib/birthday";
+import { formatLong, toKey } from "@/lib/birthday";
 import { now } from "@/lib/clock";
 import { minToTakeTop } from "@/lib/money";
 import { jsonLdScript } from "@/lib/how-it-works";
@@ -52,6 +53,7 @@ export default async function HomePage({ searchParams }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdScript(homeJsonLd(homeDescription(today, leader))) }}
       />
+      <LiveBoard boardKey={toKey(today)} version={home.version} />
       <SiteHeader current="home" />
       <main className={styles.main}>
         <BoostNotice sessionId={(await searchParams).boosted} path={routes.home} />

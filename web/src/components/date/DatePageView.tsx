@@ -1,9 +1,10 @@
 import { BoostNotice } from "@/components/boost/BoostNotice";
 import { Countdown } from "@/components/site/Countdown";
+import { LiveBoard } from "@/components/site/LiveBoard";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { ThemeScope } from "@/components/ui";
-import { formatLongNb, type MonthDay } from "@/lib/birthday";
+import { formatLongNb, toKey, type MonthDay } from "@/lib/birthday";
 import { parseBoostLink } from "@/lib/boost";
 import { giftsOpenText, statusText } from "@/lib/date-page";
 import { absoluteUrl, routes } from "@/lib/routes";
@@ -32,6 +33,7 @@ export function DatePageView({ md, page, query, focusPublicId = null }: Props) {
 
   return (
     <ThemeScope theme={page.theme} paint>
+      <LiveBoard boardKey={toKey(md)} version={page.version} />
       <SiteHeader omit={["find"]} current="find" />
       <main className={styles.main}>
         <BoostNotice sessionId={query.boosted} path={routes.date(md)} />

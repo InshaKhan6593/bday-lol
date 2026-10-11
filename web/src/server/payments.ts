@@ -93,6 +93,8 @@ export type FulfillResult =
       status: "fulfilled";
       kind: "claim" | "boost";
       boardId: string;
+      /** The board's date ("10-07"): open pages of it are told to look again (server/live.ts). */
+      boardKey: string;
       entryId: string;
       /** #1 before and after this payment (equal when #1 didn't change; null when nobody is live). */
       previousTopEntryId: string | null;
@@ -190,6 +192,7 @@ export async function fulfillCheckout(db: Executor, paid: PaidSession, instant: 
       status: "fulfilled",
       kind,
       boardId: row.boardId,
+      boardKey: board!.key,
       entryId: row.entryId,
       previousTopEntryId,
       topEntryId,

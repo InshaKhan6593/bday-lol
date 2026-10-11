@@ -4,6 +4,7 @@ import { now } from "@/lib/clock";
 import { CACHE_TAGS } from "@/server/cached";
 import { getMailer } from "@/server/email/mailer";
 import { emailsAfterStripeEvent } from "@/server/email/payment-emails";
+import { announceBoardChange } from "@/server/live";
 import { handleStripeEvent } from "@/server/stripe-events";
 import { verifyStripeEvent } from "@/server/stripe";
 
@@ -29,6 +30,9 @@ export async function POST(request: Request) {
   if (outcome.handled && outcome.action === "fulfilled") {
     revalidatePath("/months/[month]", "page");
     revalidateTag(CACHE_TAGS.boards, { expire: 0 });
+    // Pages that are open on this board re-read it now (lib/live.ts). After the caches are dropped, so they
+    // read the new board; before the emails, which can take seconds.
+    if (outcome.result.status === "fulfilled") await announceBoardChange(outcome.result.boardKey);
   }
   const emails = await emailsAfterStripeEvent(db, getMailer(), outcome, instant);
   if (emails?.alerts.failed) console.error("Outbid alerts failed (the cron retries them):", emails.alerts.errors);

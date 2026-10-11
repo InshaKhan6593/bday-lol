@@ -85,6 +85,7 @@ describe("claim money path", () => {
         status: "fulfilled",
         kind: "claim",
         boardId: board.id,
+        boardKey: "10-07",
         entryId: ids.entryId,
         previousTopEntryId: null,
         topEntryId: ids.entryId,

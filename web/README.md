@@ -98,13 +98,35 @@ project is on the free plan it runs once a day (after 13:05 UTC, past 8 AM ET al
 throttled outbid alerts wait for that run. Locally there's no cron: run `pnpm emails:tick`.
 Each email is sent once (dedupe keys in `email_log`). Details in [../08-emails.md](../08-emails.md#how-theyre-sent-step-8).
 
+## Live boards
+
+An open homepage or date page follows its board without a reload (rules in `src/lib/live.ts`):
+
+1. A payment lands. The Stripe webhook drops the caches and announces "board 10-07 changed" through
+   **Supabase Realtime** (`server/live.ts`, sent with the service-role key).
+2. Every page open on that board hears it, waits up to a second (so a busy board's viewers don't all ask
+   at once) and asks `/api/board-version?key=10-07`. The answer is cached for 5 seconds and dropped by a
+   payment, so a crowd costs one small query.
+3. If the version is new, the page re-reads its data in place (`router.refresh()`): no reload, and an open
+   Boost box or a typed search stays as it is.
+
+The push only says "look now" and carries no data. The same check also runs when the tab comes back, when
+the phone is online again, and on a timer (every 60 seconds with the push channel up, every 15 without),
+so a dropped connection or a full push service only makes updates slower, never wrong. Hidden tabs don't check.
+
+Setup: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (both public), and
+`pnpm db:init` once on the Supabase database: it lets visitors listen to the `board:…` channels and nobody
+but the server send. Without the two values (local development) pages use the timer alone.
+Supabase limits how many pages can be connected at once (200 on Free, 500 on Pro, 10,000 with the spend cap
+off, as of 2026-10); pages beyond the limit fall back to the timer.
+
 ## Where things live
 
 ```
 src/
   app/                 routes (pages, API: api/stripe/webhook, api/cron/emails, api/unsubscribe)
   components/ui/       design-language primitives: Button, Chip, Surface, Avatar, Badge, Kicker, Field, Select, Menu, Icon…
-  components/site/     shared by every page: header, menu, countdown
+  components/site/     shared by every page: header, menu, countdown, LiveBoard (open pages follow the board)
   components/home/     homepage sections
   components/date/     date page ("Find your birthday"): date picker, ranked list, gift menu, About
   components/how/      How it works page styles

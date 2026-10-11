@@ -6,7 +6,7 @@ import { boardClosesAt, zonedDate, type MonthDay } from "@/lib/birthday";
 import { dateStatus, heldText, type DateStatus } from "@/lib/date-page";
 import { lastModified } from "@/lib/seo";
 import { getFamousForDate, type FamousForDate, type FamousPerson } from "./famous";
-import { getBirthdaySettings, getCurrentBoard, getCurrentTopTotals, getLeaderLog } from "./leaderboard";
+import { getBirthdaySettings, getCurrentBoard, getCurrentTopTotals, getLeaderLog, versionOf } from "./leaderboard";
 
 /** One person on the date page's list. Only public fields: this goes to the browser. */
 export type DateEntry = {
@@ -41,6 +41,8 @@ export type DatePageData = {
   famous: FamousPerson[];
   /** When this page's data last changed (a bid on the board, the famous list): dateModified. */
   updatedAt: string;
+  /** Version of the board shown: the open page re-reads when the server's differs (lib/live.ts). */
+  version: string;
   /** When today ends (midnight ET), for the countdown in the status line. */
   dayEndsAt: string;
   serverNow: string;
@@ -111,6 +113,7 @@ export async function getDatePageData(
     calendarTops,
     famous,
     updatedAt: updatedAt.toISOString(),
+    version: versionOf(board),
     dayEndsAt: boardClosesAt(today, todayDate.year, tz).toISOString(),
     serverNow: instant.toISOString(),
   };
