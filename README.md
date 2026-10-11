@@ -117,6 +117,6 @@ and hiding listings in the admin (step 10), privacy-friendly analytics (named in
 Stripe account's Terms URL (step 11), and testing Venmo/Cash App links on a real phone.
 
 **Design decisions** (details in [04-design-system.md](04-design-system.md#implementation-decisions)): keep the client's look exactly
-(rounded pastel shapes, Bricolage Grotesque); upgrade the mockup's hand-drawn icons to Phosphor Bold, with filled share icons in one fixed color
+(rounded pastel shapes, Bricolage Grotesque); upgrade the mockup's hand-drawn icons to Phosphor Bold, with filled black share icons from Streamline
 (approved by the client 2026-10-11, [07 D17](07-open-questions.md#d-handoff-v2-points-to-confirm-with-the-client)); build
 dropdowns and popups on Radix UI because native `<select>` lists can't be styled.

@@ -7,18 +7,18 @@ import {
   Badge,
   Button,
   Chip,
-  ColorIcon,
   Field,
   Icon,
   IconButton,
   Input,
   Kicker,
   Select,
+  ShareIcon,
   Surface,
   Textarea,
   ThemeScope,
-  type ColorIconName,
   type IconName,
+  type ShareIconName,
 } from "@/components/ui";
 import { THEME_KEYS, THEMES, type ThemeKey } from "@/config/themes";
 import { MONTHS } from "@/lib/birthday";
@@ -53,8 +53,8 @@ const ICONS: IconName[] = [
   "check", "calendar", "search", "close", "plus", "upload", "menu",
 ];
 
-/** The four share buttons have their own filled set (ColorIcon). */
-const SHARE_ICONS: Array<{ name: ColorIconName; label: string }> = [
+/** The four share buttons have their own filled set. */
+const SHARE_ICONS: Array<{ name: ShareIconName; label: string }> = [
   { name: "share", label: "Share" },
   { name: "facebook", label: "Facebook" },
   { name: "text", label: "Text" },
@@ -115,7 +115,7 @@ export function StyleGuide() {
         <Section title="Buttons" note="Hover lifts up-left with a hard shadow (mouse only). Click presses flat.">
           <div className={styles.row}>
             <Button variant="ink">Remind me</Button>
-            <Button variant="paper" iconStart={<ColorIcon name="share" />}>Share</Button>
+            <Button variant="paper" iconStart={<ShareIcon name="share" />}>Share</Button>
             <Button variant="accent" size="2xl" shape="large">Claim the top spot</Button>
             <Button variant="ink" shape="pill">Claim your birthday</Button>
             <Button variant="paper" shape="pill" hoverInvert iconStart={<Icon name="boost" size={16} />}>
@@ -243,26 +243,26 @@ export function StyleGuide() {
 
         <Section
           title="Share icons"
-          note="Streamline (streamlinehq.com), credited in the footer. One fixed color on every page; on a black button they sit on a white tile."
+          note="Streamline, Plump Solid (streamlinehq.com), credited in the footer. One color on every page: black on white buttons, white on black ones."
         >
           <div className={styles.row}>
             {SHARE_ICONS.map(({ name }) => (
               <span key={name} className={styles.iconCell} title={name}>
-                <ColorIcon name={name} />
+                <ShareIcon name={name} />
                 <code>{name}</code>
               </span>
             ))}
           </div>
           <div className={styles.row}>
             {SHARE_ICONS.map(({ name, label }) => (
-              <Button key={name} variant="paper" iconStart={<ColorIcon name={name} />}>
+              <Button key={name} variant="paper" iconStart={<ShareIcon name={name} />}>
                 {label}
               </Button>
             ))}
-            <Button variant="ink" iconStart={<ColorIcon name="share" tile />}>
+            <Button variant="ink" iconStart={<ShareIcon name="share" />}>
               Share
             </Button>
-            <Button variant="ink" iconStart={<ColorIcon name="text" tile />}>
+            <Button variant="ink" iconStart={<ShareIcon name="text" />}>
               Text them the link
             </Button>
           </div>

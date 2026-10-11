@@ -1,0 +1,13 @@
+@layer primitives {
+  /* Keeps its size inside a narrow flex button. */
+  .plain {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .svg {
+    display: block;
+  }
+}

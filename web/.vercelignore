@@ -3,7 +3,6 @@
 .env*
 !.env.example
 /public/uploads
-/public/_icon-options.html
 /scripts/k6-load.js
 /scripts/load-test.mjs
 *.tsbuildinfo

@@ -28,6 +28,3 @@ next-env.d.ts
 /AGENTS.md
 
 .vercel
-
-# Local-only comparison page (Vercel uploads are filtered by .vercelignore, not this file)
-/public/_icon-options.html

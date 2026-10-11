@@ -21,7 +21,7 @@ import type { Icon as PhosphorIcon, IconWeight } from "@phosphor-icons/react";
  * The site's icon set: Phosphor (https://phosphoricons.com), Bold weight.
  * Bold strokes match the design language's thick 3px ink outlines.
  * Icons draw in currentColor, so they follow the text color (white on black buttons).
- * The four share buttons (Share, Facebook, Text, Copy link) use ColorIcon instead.
+ * The four share buttons (Share, Facebook, Text, Copy link) use ShareIcon instead.
  *
  * To add an icon: find it on phosphoricons.com, import "<Name>Icon" from
  * "@phosphor-icons/react/ssr" and give it a name below.
