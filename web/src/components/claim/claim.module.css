@@ -443,31 +443,6 @@
   font-size: var(--text-label);
 }
 
-/* Venmo / your @username … then "Full links work too." */
-.accepted {
-  margin: 0;
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: var(--space-3xs) var(--space-md);
-  font-size: var(--text-caption);
-  line-height: var(--leading-relaxed);
-  color: var(--color-text-tertiary);
-}
-
-.accepted dt {
-  font-weight: var(--weight-bold);
-  color: var(--color-ink);
-}
-
-.accepted dd {
-  margin: 0;
-}
-
-.accepted .acceptedNote {
-  grid-column: 1 / -1;
-  margin-top: var(--space-2xs);
-}
-
 /* ---------- Your color ---------- */
 
 .colorHead {

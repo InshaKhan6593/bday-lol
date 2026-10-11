@@ -4,7 +4,7 @@ import styles from "./Field.module.css";
 
 type FieldProps = {
   label: ReactNode;
-  /** Muted text next to the label, e.g. "$241 or more to claim the homepage". */
+  /** Muted text on its own line under the label, e.g. "$241 or more to claim the homepage". */
   aside?: ReactNode;
   /** Text under the control. */
   hint?: ReactNode;

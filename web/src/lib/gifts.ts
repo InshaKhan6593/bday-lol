@@ -169,10 +169,7 @@ export function giftEntryHint(entry: GiftEntry): { text: string; tone: "strong" 
   return { text: `Your spot will show a “${GIFT_SERVICES[entry.service].label}” button`, tone: "strong" };
 }
 
-/**
- * Suggested help for an empty gift row: one line for the app picked in that row. Shown to the client on
- * /styleguide; the Claim page still has the mockup's four-line list (07 D17).
- */
+/** Help under an empty gift row: one line for the app picked in that row. */
 export const GIFT_ROW_HELP: Record<GiftService, string> = {
   venmo: "Your Venmo username, like @sam-rivera. A full link works too.",
   cashapp: "Your $cashtag, like $samrivera. A full link works too.",

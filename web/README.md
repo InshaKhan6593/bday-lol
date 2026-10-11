@@ -60,7 +60,7 @@ return to the page they started on with `?boosted=…` and a short "Your boost i
 | URL | What |
 |---|---|
 | http://localhost:3000 | The app |
-| http://localhost:3000/styleguide | The design language, then two suggested changes for the client with before/after screenshots (icons, gift link help). Also live in production, noindex |
+| http://localhost:3000/styleguide | The design language. Also live in production, noindex |
 | http://localhost:8030 | Mailpit: every email the app sends lands here |
 | http://localhost:3000/dev/emails | All 8 emails with demo data (dev only) |
 | `pnpm db:studio` | Browse the database |
@@ -73,6 +73,7 @@ return to the page they started on with `?boosted=…` and a short "Your boost i
 | `pnpm typecheck` / `pnpm lint` | Static checks |
 | `pnpm db:generate` | New migration from `src/db/schema.ts` changes |
 | `pnpm db:init` | Create the rows a new database needs (the birthday board type). Safe to rerun and on a live database; run it once after `pnpm db:migrate` on production, where the seed is never run |
+| `pnpm db:demo --host=<db host>` | For a deployed test copy: replaces every listing with the demo people (today's date, ET) and keeps famous people, Terms/Privacy and the board type. Never on the real site |
 | `pnpm db:reset` | Wipe the local DB, migrate, seed (refuses non-local databases) |
 | `pnpm emails:tick` | Send every scheduled email that is due now (what the production cron does). Respects `DEV_NOW` |
 | `pnpm famous:refresh [month]` | Fill "Famous people born on…" from Wikidata + Wikipedia pageviews: all 12 months (about an hour) or one (`pnpm famous:refresh 10`). What `/api/cron/famous` does on days 1–12 of each month |
@@ -102,7 +103,7 @@ Each email is sent once (dedupe keys in `email_log`). Details in [../08-emails.m
 ```
 src/
   app/                 routes (pages, API: api/stripe/webhook, api/cron/emails, api/unsubscribe)
-  components/ui/       design-language primitives: Button, Chip, Surface, Avatar, Badge, Kicker, Field, Select, Menu, Icon… (mockup-icons.tsx = the icon drawings and SITE_ICON_SET)
+  components/ui/       design-language primitives: Button, Chip, Surface, Avatar, Badge, Kicker, Field, Select, Menu, Icon…
   components/site/     shared by every page: header, menu, countdown
   components/home/     homepage sections
   components/date/     date page ("Find your birthday"): date picker, ranked list, gift menu, About
@@ -138,8 +139,9 @@ at the top of `src/styles/tokens.css`. Components use **tokens and primitives, n
 
 Decided (2026-10-09): keep the **client's look** exactly: rounded pastel shapes and Bricolage Grotesque.
 We compared it with neubrutalism.com's square style and its fonts (Syne is too wide for the giant homepage date).
-- **Icons:** the mockup's own line icons, via `<Icon name="…" />` (`components/ui/mockup-icons.tsx`). `SITE_ICON_SET` there switches the site to the suggested set (Phosphor Bold + colored share icons) that `/styleguide` shows the client
-- **Dropdowns and popups** (the one upgrade over the mockup): [Radix UI](https://www.radix-ui.com) primitives styled with our tokens (native `<select>` lists can't be styled)
+Two upgrades over the mockup:
+- **Icons:** [Phosphor](https://phosphoricons.com), Bold weight, one color, via `<Icon name="…" />` (approved by the client 2026-10-11)
+- **Dropdowns and popups:** [Radix UI](https://www.radix-ui.com) primitives styled with our tokens (native `<select>` lists can't be styled)
 
 ## Deploy (Vercel + Supabase)
 

@@ -70,7 +70,7 @@ Known conflicts are listed in [07-open-questions.md](07-open-questions.md).
 ## Build progress
 
 **Stack:** Next.js 16 (App Router) + TypeScript, Postgres via Drizzle ORM, CSS Modules on design tokens,
-Radix UI (dropdowns and popups), the mockup's own icons, Vitest. Local services run in Docker (Postgres on :5440,
+Radix UI (dropdowns and popups), Phosphor icons, Vitest. Local services run in Docker (Postgres on :5440,
 Mailpit on :8030). Production plan: Vercel Pro + Supabase (Postgres + Storage for photos, decided 2026-10-10 to match the Privacy Policy) + Stripe Checkout + Resend.
 
 | Step | Status |
@@ -78,7 +78,7 @@ Mailpit on :8030). Production plan: Vercel Pro + Supabase (Postgres + Storage fo
 | 1. Local setup (Next.js, Docker Postgres + Mailpit, Drizzle, fake clock `DEV_NOW`) | ✅ Done |
 | 2. Database schema: board_types → boards → entries → payments, leader_log, alerts, reminders, emails, famous people | ✅ Done (`web/src/db/schema.ts`, migration `web/drizzle/0000_init.sql`) |
 | 3. Date rules: Eastern Time, leap years, which year's board is open, open/close times | ✅ Done (`web/src/lib/birthday.ts`) |
-| Design system: tokens + UI components, style guide at `/styleguide` (live, noindex): the design language, then two suggested changes for the client next to what the site has now (icons, gift link help) | ✅ Done |
+| Design system: tokens + UI components, style guide at `/styleguide` (live, noindex) | ✅ Done |
 | 4. Seed data: the mockup's demo people on today's real date | ✅ Done (`pnpm db:seed`) |
 | 5a. Homepage from live data (desktop + mobile, #1 card, nobody-yet state, Boost box, countdown, Coming up, reminder signup) | ✅ Done (`web/src/app/page.tsx`, `web/src/components/home/`) |
 | 5b. Date page from live data (`/october-7`: date picker with top bids, ranked list, held lines, search, claim-this-rank, Boost box, gift menu, About facts; `/oct-7` redirects) | ✅ Done (`web/src/app/[slug]/page.tsx`, `web/src/components/date/`) |
@@ -117,6 +117,6 @@ and hiding listings in the admin (step 10), privacy-friendly analytics (named in
 Stripe account's Terms URL (step 11), and testing Venmo/Cash App links on a real phone.
 
 **Design decisions** (details in [04-design-system.md](04-design-system.md#implementation-decisions)): keep the client's look exactly
-(rounded pastel shapes, Bricolage Grotesque); use the mockup's own icons (Phosphor Bold and colored share icons are a
-suggestion shown to the client at `/styleguide`, [07 D17](07-open-questions.md#d-handoff-v2-points-to-confirm-with-the-client)); build
+(rounded pastel shapes, Bricolage Grotesque); upgrade the mockup's hand-drawn icons to Phosphor Bold, in one color
+(approved by the client 2026-10-11, [07 D17](07-open-questions.md#d-handoff-v2-points-to-confirm-with-the-client)); build
 dropdowns and popups on Radix UI because native `<select>` lists can't be styled.

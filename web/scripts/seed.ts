@@ -1,7 +1,12 @@
 // Fills the LOCAL database with the mockup's demo data, placed on today's real date (ET).
 // Respects DEV_NOW, so `DEV_NOW=... pnpm db:reset` seeds around any moment you want to test.
+//
+// `pnpm db:demo` (this script with --demo) is for a deployed TEST copy of the site: it replaces every
+// listing (boards, people, payments, alerts, reminders, sent-email log) with the demo people, and keeps
+// what the seed would wipe: the board type, famous people, Terms/Privacy pages and unsubscribes.
+// It runs on any database, so it asks for the host by name: `pnpm db:demo --host=<database host>`.
 import { assertLocalDatabase } from "./load-env";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { BIRTHDAY_BOARD_TYPE } from "@/config/board-types";
 import type { ThemeKey } from "@/config/themes";
 import { db } from "@/db";
@@ -20,7 +25,14 @@ import { publicId } from "@/lib/ids";
 import { ensureCurrentBoard } from "@/server/boards";
 import { freeSlug } from "@/server/payments";
 
-assertLocalDatabase();
+const DEMO = process.argv.includes("--demo");
+if (DEMO) {
+  const host = new URL(process.env.DATABASE_URL ?? "").hostname;
+  const named = process.argv.find((arg) => arg.startsWith("--host="))?.slice("--host=".length);
+  if (named !== host) throw new Error(`db:demo replaces every listing on "${host}". Confirm with --host=${host}`);
+} else {
+  assertLocalDatabase();
+}
 
 type Person = {
   name: string;
@@ -89,7 +101,13 @@ const UPCOMING: Array<Person | null> = [
 ];
 
 const cents = (usd: number) => usd * 100;
-const emailFor = (name: string) => `${name.toLowerCase().replace(/[^a-z]+/g, ".")}@example.com`;
+// On a deployed copy the demo people get Resend's test inbox, which accepts any mail: an example.com
+// address would be refused and fail the email timer and the Stripe webhook's emails.
+const emailFor = (name: string) => {
+  const local = name.toLowerCase().replace(/[^a-z]+/g, ".");
+  return DEMO ? `delivered+${local}@resend.dev` : `${local}@example.com`;
+};
+const FAN_EMAIL = DEMO ? "delivered+fan@resend.dev" : "fan@example.com";
 let sessionCounter = 0;
 // Letters and digits only, like real Stripe ids, so /claim/success?session_id=… works for seeded claims too.
 const fakeSession = () => `cs_test_seed${String(++sessionCounter).padStart(4, "0")}`;
@@ -99,10 +117,18 @@ const tz = BIRTHDAY_BOARD_TYPE.settings.timezone;
 const today = zonedDate(at, tz);
 
 await db.transaction(async (tx) => {
-  await tx.execute(sql`TRUNCATE board_types, boards, entries, payments, leader_log, alert_subscriptions,
-    outbid_alerts, reminders, email_suppressions, email_log, famous_people, famous_hidden, site_pages RESTART IDENTITY CASCADE`);
+  if (DEMO) {
+    await tx.execute(sql`TRUNCATE boards, entries, payments, leader_log, alert_subscriptions,
+      outbid_alerts, reminders, email_log RESTART IDENTITY CASCADE`);
+  } else {
+    await tx.execute(sql`TRUNCATE board_types, boards, entries, payments, leader_log, alert_subscriptions,
+      outbid_alerts, reminders, email_suppressions, email_log, famous_people, famous_hidden, site_pages RESTART IDENTITY CASCADE`);
+  }
 
-  const [type] = await tx.insert(boardTypes).values(BIRTHDAY_BOARD_TYPE).returning();
+  const [type] = DEMO
+    ? await tx.select().from(boardTypes).where(eq(boardTypes.slug, BIRTHDAY_BOARD_TYPE.slug))
+    : await tx.insert(boardTypes).values(BIRTHDAY_BOARD_TYPE).returning();
+  if (!type) throw new Error("No birthday board type. Run `pnpm db:init` first.");
 
   async function addPerson(md: MonthDay, person: Person, reachedAt: Date, claimedAt: Date) {
     const board = await ensureCurrentBoard(tx, type!, md, at);
@@ -133,10 +159,10 @@ await db.transaction(async (tx) => {
     });
     if (boost > 0) {
       await tx.insert(payments).values({
-        entryId: entry!.id, kind: "boost", status: "paid", amountCents: cents(boost), email: "fan@example.com",
+        entryId: entry!.id, kind: "boost", status: "paid", amountCents: cents(boost), email: FAN_EMAIL,
         alertOptIn: true, stripeSessionId: fakeSession(), createdAt: reachedAt, paidAt: reachedAt,
       });
-      await tx.insert(alertSubscriptions).values({ entryId: entry!.id, email: "fan@example.com" });
+      await tx.insert(alertSubscriptions).values({ entryId: entry!.id, email: FAN_EMAIL });
     }
     return { board, entry: entry! };
   }
@@ -173,11 +199,11 @@ await db.transaction(async (tx) => {
   }
 
   // A homepage reminder signup.
-  await tx.insert(reminders).values({ email: "reminder@example.com", month: 3, day: 14, source: "signup" });
+  if (!DEMO) await tx.insert(reminders).values({ email: "reminder@example.com", month: 3, day: 14, source: "signup" });
 });
 
 console.log(
   `Seeded: ${TODAY_PEOPLE.length} people on ${formatLong(today)} (today, ET), ` +
-    `${UPCOMING.filter(Boolean).length} upcoming claims, 1 reminder. Clock: ${at.toISOString()}`,
+    `${UPCOMING.filter(Boolean).length} upcoming claims${DEMO ? "" : ", 1 reminder"}. Clock: ${at.toISOString()}`,
 );
 process.exit(0);

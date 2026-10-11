@@ -312,17 +312,6 @@ export function ClaimForm({ header, footer, settings, md: serverMd, target, minC
               {errors.giftLinks && !giftLinks.some((row) => giftEntryHint(row)?.tone === "error") && (
                 <Hint tone="error">{errors.giftLinks}</Hint>
               )}
-              <dl className={cx(styles.accepted, isMinor && styles.locked)}>
-                <dt>Venmo</dt>
-                <dd>your @username</dd>
-                <dt>Cash App</dt>
-                <dd>your $cashtag</dd>
-                <dt>Amazon</dt>
-                <dd>your wishlist link</dd>
-                <dt>Throne</dt>
-                <dd>your username</dd>
-                <dd className={styles.acceptedNote}>Full links work too.</dd>
-              </dl>
             </section>
 
             <section className={cx(styles.section, styles.colorSection)} aria-label="Your color">

@@ -22,7 +22,6 @@ import { THEME_KEYS, THEMES, type ThemeKey } from "@/config/themes";
 import { MONTHS } from "@/lib/birthday";
 import { cx } from "@/lib/cx";
 import monthStyles from "@/components/month/month.module.css";
-import { SuggestedChanges } from "./DesignOptions";
 import styles from "./StyleGuide.module.css";
 import { ZODIAC_ICON_SETS, ZODIAC_SIGNS } from "./zodiac-options";
 
@@ -221,7 +220,7 @@ export function StyleGuide() {
           </Surface>
         </Section>
 
-        <Section title="Icons" note="The mockup’s line icons. Drawn in currentColor. ▲ is solid.">
+        <Section title="Icons" note="Phosphor, Bold weight (phosphoricons.com). One color: they take the text color. ▲ is solid.">
           <div className={styles.row}>
             {ICONS.map((name) => (
               <span key={name} className={styles.iconCell} title={name}>
@@ -258,7 +257,6 @@ export function StyleGuide() {
           </div>
         </Section>
 
-        <SuggestedChanges />
       </main>
     </ThemeScope>
   );

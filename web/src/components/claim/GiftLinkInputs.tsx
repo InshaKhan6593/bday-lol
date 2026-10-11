@@ -4,6 +4,7 @@ import { useMediaQuery } from "@/components/date/useMediaQuery";
 import { Button, Hint, IconButton, Input, Select } from "@/components/ui";
 import {
   GIFT_ENTRY,
+  GIFT_ROW_HELP,
   GIFT_SERVICE_ORDER,
   GIFT_SERVICES,
   giftEntryHint,
@@ -20,17 +21,17 @@ import styles from "./claim.module.css";
 type Props = {
   rows: GiftEntry[];
   onChange: (rows: GiftEntry[]) => void;
-  /** Help shown under a row while its box is empty (an option on /styleguide, not used on Claim yet). */
-  rowHelp?: (service: GiftService) => string;
 };
 
 /**
  * "Where should gifts go?" (handoff v2): each row is an app dropdown plus one
  * box. Venmo and Throne show a fixed @, Cash App a fixed $, Amazon takes the
  * wishlist link. One row per app, so up to four; apps used in another row are
- * greyed out. Pasting a full link switches the row to that link's app.
+ * greyed out. Pasting a full link switches the row to that link's app. An empty
+ * row shows one line of help for its app (the client chose this over the
+ * mockup's four-line list, 2026-10-11).
  */
-export function GiftLinkInputs({ rows, onChange, rowHelp }: Props) {
+export function GiftLinkInputs({ rows, onChange }: Props) {
   const usedElsewhere = (index: number): GiftService[] => rows.filter((_, i) => i !== index).map((r) => r.service);
   const update = (index: number, row: GiftEntry) => onChange(rows.map((r, i) => (i === index ? row : r)));
   const next = nextUnusedService(rows);
@@ -86,7 +87,7 @@ export function GiftLinkInputs({ rows, onChange, rowHelp }: Props) {
                 />
               )}
             </div>
-            {hint ? <Hint tone={hint.tone}>{hint.text}</Hint> : rowHelp && <Hint>{rowHelp(row.service)}</Hint>}
+            {hint ? <Hint tone={hint.tone}>{hint.text}</Hint> : <Hint>{GIFT_ROW_HELP[row.service]}</Hint>}
           </div>
         );
       })}

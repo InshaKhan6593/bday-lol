@@ -12,7 +12,10 @@
     font-weight: var(--weight-medium);
   }
 
+  /* On its own line under the label, as in the mockup (its label is a column: text, hint, control). */
   .aside {
+    display: block;
+    margin-top: var(--space-xs);
     font-weight: var(--weight-regular);
     color: var(--color-text-secondary);
   }
