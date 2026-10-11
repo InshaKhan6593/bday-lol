@@ -98,6 +98,30 @@ project is on the free plan it runs once a day (after 13:05 UTC, past 8 AM ET al
 throttled outbid alerts wait for that run. Locally there's no cron: run `pnpm emails:tick`.
 Each email is sent once (dedupe keys in `email_log`). Details in [../08-emails.md](../08-emails.md#how-theyre-sent-step-8).
 
+## Saved pages (why the site is fast)
+
+The homepage and the date pages are **saved copies**, served from Vercel's nearest location instead of
+being built in the US on every visit (rules in `src/lib/day-cache.ts`):
+
+- **One copy per Eastern day.** `src/proxy.ts` runs before the cache and sends `/` to `/home/2026-10-11`
+  and `/october-7` to `/october-7/~day/2026-10-11`. The address in the browser doesn't change. At
+  midnight ET the address changes, so yesterday's homepage is never served. Asking for the internal
+  addresses directly redirects to the public ones.
+- **A payment throws the copies away.** The Stripe webhook calls `revalidatePath` for both routes
+  (`SAVED_PAGE_ROUTES` in `src/server/cached.ts`), then announces the board, so the next visitor and every
+  open page get the new board. Without a payment a copy is rebuilt at most every 5 minutes (date pages
+  every 30 seconds, because of the date picker's top bids).
+- **Nothing in a copy depends on the visitor or the clock.** The countdown starts as `--:--:--` and is
+  filled in by the browser from the server's time (`src/lib/server-clock.ts`); the "Your boost is in" note
+  and an outbid email's boost link are read from the address in the browser.
+- `src/app/page.tsx` and `src/app/[slug]/page.tsx` still draw the same pages per request. They answer
+  `/oct-7`, `/february-30`, and everything if the proxy is ever missing. Personal links
+  (`/october-7/sam-rivera`) are still drawn per request.
+- A month of date links (the date picker, the month pages) is fetched on click, not prefetched.
+
+Whatever changes what these pages show must throw them away: the admin (step 10) has to call
+`revalidatePath` for `SAVED_PAGE_ROUTES` after an edit, then `announceBoardChange`.
+
 ## Live boards
 
 An open homepage or date page follows its board without a reload (rules in `src/lib/live.ts`):

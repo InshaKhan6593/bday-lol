@@ -26,6 +26,9 @@ export function livePollMs(pushConnected: boolean): number {
   return pushConnected ? LIVE_POLL_MS.pushed : LIVE_POLL_MS.unpushed;
 }
 
+/** A push channel that connects this soon after a check has missed nothing: no second check. */
+export const LIVE_RECHECK_MS = 5_000;
+
 /** After a push, each page waits up to this long before checking, so a busy board's viewers don't all ask at once. */
 export const LIVE_JITTER_MS = 1_000;
 

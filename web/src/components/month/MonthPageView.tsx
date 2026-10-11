@@ -45,6 +45,8 @@ export function MonthPageView({ page }: { page: MonthPageData }) {
               <Link
                 key={cell.md.day}
                 href={routes.date(cell.md)}
+                // A month of dates: fetched when clicked, not all 30 as soon as they are on screen.
+                prefetch={false}
                 aria-label={cell.aria}
                 className={cx(dateStyles.cell, "lift", cell.state === "today" && dateStyles.cellToday)}
               >
@@ -72,6 +74,7 @@ export function MonthPageView({ page }: { page: MonthPageData }) {
                 <li key={md.day}>
                   <Link
                     href={routes.date(md)}
+                    prefetch={false}
                     style={leaderStyle}
                     className={cx(styles.dateRow, leader && styles.dateRowClaimed, isToday && styles.dateRowToday, "lift")}
                   >

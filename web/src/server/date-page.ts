@@ -45,7 +45,6 @@ export type DatePageData = {
   version: string;
   /** When today ends (midnight ET), for the countdown in the status line. */
   dayEndsAt: string;
-  serverNow: string;
 };
 
 /**
@@ -115,6 +114,5 @@ export async function getDatePageData(
     updatedAt: updatedAt.toISOString(),
     version: versionOf(board),
     dayEndsAt: boardClosesAt(today, todayDate.year, tz).toISOString(),
-    serverNow: instant.toISOString(),
   };
 }

@@ -91,6 +91,8 @@ export function DateNav({ md, today, todayTheme, calendarTops }: Props) {
               <Link
                 key={cell.md.day}
                 href={routes.date(cell.md)}
+                // A month of dates: fetched when clicked, not all 30 as soon as they are on screen.
+                prefetch={false}
                 aria-label={cell.aria}
                 aria-current={cell.state === "selected" ? "page" : undefined}
                 onClick={() => setOpen(false)}

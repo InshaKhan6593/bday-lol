@@ -1,3 +1,4 @@
+import type { BoostNoticeOutcome } from "@/lib/boost";
 import { and, eq } from "drizzle-orm";
 import type { Executor } from "@/db";
 import { boards, entries, payments } from "@/db/schema";
@@ -35,11 +36,7 @@ export async function getBoostableEntry(
   return { ok: true, entry: { entryId: row.entryId, boardId: row.boardId, name: row.name, md } };
 }
 
-export type BoostOutcome =
-  | { status: "missing" }
-  | { status: "expired" }
-  | { status: "pending" }
-  | { status: "done"; name: string; amountCents: number; rank: number; totalCents: number };
+export type BoostOutcome = BoostNoticeOutcome;
 
 /** What happened to a boost checkout, for the note shown when Stripe sends the booster back. */
 export async function getBoostOutcome(db: Executor, sessionId: string): Promise<BoostOutcome> {

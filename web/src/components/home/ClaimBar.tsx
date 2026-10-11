@@ -11,11 +11,10 @@ type Props = {
   /** Top total + $1, or the opening bid when empty. */
   ownPriceCents: number;
   dayEndsAt: string;
-  serverNow: string;
 };
 
 /** Black "Claim the top spot" bar with the price to own today and the countdown. */
-export function ClaimBar({ empty, today, ownPriceCents, dayEndsAt, serverNow }: Props) {
+export function ClaimBar({ empty, today, ownPriceCents, dayEndsAt }: Props) {
   return (
     <Surface tone="ink" radius="section" padding="none" className={styles.claimBar}>
       <div className={styles.claimPrice}>
@@ -26,7 +25,7 @@ export function ClaimBar({ empty, today, ownPriceCents, dayEndsAt, serverNow }: 
       </div>
       <div className={styles.claimTimer}>
         <Kicker tone="muted">Day ends in</Kicker>
-        <Countdown endsAt={dayEndsAt} serverNow={serverNow} className={styles.countdown} />
+        <Countdown endsAt={dayEndsAt} className={styles.countdown} />
       </div>
       <Button href={routes.claim(today)} variant="accent" size="2xl" shape="large" className={styles.claimCta}>
         {empty ? "Claim today first" : "Claim the top spot"}

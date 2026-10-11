@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { DatePageView, type DateQuery } from "@/components/date/DatePageView";
+import { DatePageView } from "@/components/date/DatePageView";
 import { db } from "@/db";
 import { formatLong } from "@/lib/birthday";
 import { now } from "@/lib/clock";
@@ -15,7 +15,6 @@ import { dateFromSlug } from "../date-from-slug";
 
 type Props = {
   params: Promise<{ slug: string; person: string }>;
-  searchParams: Promise<DateQuery>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -40,12 +39,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * followed Sam's link…" banner. Someone no longer on this year's board
  * (removed, or last year's link) lands on the date's board instead.
  */
-export default async function PersonPage({ params, searchParams }: Props) {
+export default async function PersonPage({ params }: Props) {
   const { slug, person } = await params;
   const md = dateFromSlug(slug);
   await connection();
   const page = await getDatePageData(db, md, now(), cachedReads);
   const focus = page.entries.find((e) => e.slug === person);
   if (!focus) redirect(routes.date(md));
-  return <DatePageView md={md} page={page} query={await searchParams} focusPublicId={focus.publicId} />;
+  return <DatePageView md={md} page={page} focusPublicId={focus.publicId} />;
 }

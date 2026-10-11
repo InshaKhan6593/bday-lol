@@ -33,7 +33,12 @@ const nextConfig: NextConfig = {
   },
   // The internal path is not a second URL for the same page.
   async redirects() {
-    return [{ source: `/months/${MONTH}`, destination: `/${MONTH}`, permanent: true }];
+    return [
+      { source: `/months/${MONTH}`, destination: `/${MONTH}`, permanent: true },
+      // The saved copies of the homepage and date pages (src/lib/day-cache.ts).
+      { source: "/home/:date", destination: "/", permanent: true },
+      { source: "/:slug/~day/:date", destination: "/:slug", permanent: true },
+    ];
   },
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];

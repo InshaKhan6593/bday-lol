@@ -15,7 +15,7 @@ type Props = {
   theme: ThemeKey;
   settings: Pick<BoardTypeSettings, "boostChipsCents" | "defaultBoostCents" | "minBoostCents">;
   /** Today's end, for the "Today ends in 12 min…" warning. */
-  dayEnd: { endsAt: string; serverNow: string };
+  dayEnd: { endsAt: string };
   className?: string;
 };
 

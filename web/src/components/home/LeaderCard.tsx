@@ -17,7 +17,7 @@ type Props = {
   theme: ThemeKey;
   otherTotalsCents: number[];
   settings: BoardTypeSettings;
-  dayEnd: { endsAt: string; serverNow: string };
+  dayEnd: { endsAt: string };
 };
 
 /** Homepage #1 card: who owns today, their gift links and share buttons. */

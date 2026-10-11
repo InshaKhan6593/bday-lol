@@ -1,4 +1,4 @@
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/db";
 import { now } from "@/lib/clock";
 import { CACHE_TAGS } from "@/server/cached";
@@ -29,5 +29,7 @@ export async function GET(request: Request) {
   const run = await refreshFamousMonth(db, wikidataProvider, month, instant);
   // Date pages cache each date's list for an hour (server/cached.ts): show the new lists now.
   revalidateTag(CACHE_TAGS.famous, { expire: 0 });
+  // The saved date pages list these people.
+  revalidatePath("/[slug]/~day/[date]", "page");
   return Response.json({ month, ...run });
 }

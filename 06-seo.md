@@ -86,5 +86,8 @@ The real plugin audit ([seo-audit/reports/claude-seo/2026-10-10/](seo-audit/repo
 Build note: Terms and Privacy are now built ahead, so `pnpm build` needs the database running (`pnpm db:up`).
 When the admin (step 10) saves Terms or Privacy it should call `revalidatePath` for that page, or the edit shows up to 5 minutes later.
 
-Still open, in [ACTION-PLAN.md](seo-audit/reports/claude-seo/2026-10-10/audit/ACTION-PLAN.md): caching for the homepage and date
-pages, lazy-loading the menus, `llms.txt`, a share image for Terms/Privacy, and the points that need the client.
+**Update 2026-10-11 (later): the homepage and date pages are saved too.** One copy per Eastern day, thrown away by a
+payment, so most visits are served from Vercel's nearest location (details in [web/README.md](web/README.md#saved-pages-why-the-site-is-fast)).
+Titles, descriptions, canonical links and share images are the same as before; the countdown is filled in by the browser.
+
+Still open, in [ACTION-PLAN.md](seo-audit/reports/claude-seo/2026-10-10/audit/ACTION-PLAN.md): lazy-loading the menus, `llms.txt`, a share image for Terms/Privacy, and the points that need the client.

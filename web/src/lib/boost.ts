@@ -83,9 +83,30 @@ export function boostedText(p: { name: string; amountCents: number; rank: number
   return `Thanks! Your ${formatUsd(p.amountCents)} boost is in. ${standing} with ${formatUsd(p.totalCents)}.`;
 }
 
+/** What happened to a boost checkout (server/boosts.ts answers it). */
+export type BoostNoticeOutcome =
+  | { status: "missing" }
+  | { status: "expired" }
+  | { status: "pending" }
+  | { status: "done"; name: string; amountCents: number; rank: number; totalCents: number };
+
+/** The note shown when Stripe sends a booster back. Null when there is nothing to say. */
+export function boostNoticeText(outcome: BoostNoticeOutcome): string | null {
+  switch (outcome.status) {
+    case "missing":
+      return null;
+    case "pending":
+      return "Adding your boost… This takes a few seconds.";
+    case "expired":
+      return "Your boost checkout expired. Nothing was charged.";
+    case "done":
+      return boostedText(outcome);
+  }
+}
+
 /** Reads "?boost=<publicId>&amount=16" from an outbid email link. Null when it isn't a usable link. */
 export function parseBoostLink(
-  params: { boost?: string | string[]; amount?: string | string[] },
+  params: { boost?: string | string[] | null; amount?: string | string[] | null },
   minBoostCents: number,
 ): { publicId: string; amountCents: number } | null {
   const { boost, amount } = params;

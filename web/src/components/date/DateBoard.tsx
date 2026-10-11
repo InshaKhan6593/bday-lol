@@ -8,7 +8,7 @@ import { Button, Icon, IconButton, Surface } from "@/components/ui";
 import type { BoardTypeSettings } from "@/config/board-types";
 import type { ThemeKey } from "@/config/themes";
 import { formatLong, formatLongNb, type MonthDay } from "@/lib/birthday";
-import { boostBoxTop } from "@/lib/boost";
+import { boostBoxTop, parseBoostLink } from "@/lib/boost";
 import { BOARD_PAGE_SIZE, ctaCopy, filterByName, landingRank, moreText, searchCountText } from "@/lib/date-page";
 import { firstName } from "@/lib/people";
 import { absoluteUrl, routes } from "@/lib/routes";
@@ -30,9 +30,7 @@ type Props = {
     "minOpenBidCents" | "minStepCents" | "minBoostCents" | "boostChipsCents" | "defaultBoostCents"
   >;
   /** Today's end, when this is today's board: the Boost box warns near midnight. */
-  dayEnd: { endsAt: string; serverNow: string } | null;
-  /** From an outbid email's "Boost to take #1 back" link: open the Boost box for this person with the amount filled in. */
-  initialBoost?: { publicId: string; amountCents: number } | null;
+  dayEnd: { endsAt: string } | null;
   /** A followed personal link: this person's card is highlighted, scrolled to and introduced by a banner. */
   focusPublicId?: string | null;
 };
@@ -54,7 +52,6 @@ export function DateBoard({
   shareUrl,
   settings,
   dayEnd,
-  initialBoost,
   focusPublicId = null,
 }: Props) {
   const [pickedRank, setPickedRank] = useState<number | null>(null);
@@ -97,11 +94,25 @@ export function DateBoard({
     };
   }, [focusPublicId]);
   const mobile = useMediaQuery("(max-width: 640px)");
-  // Opened from an email link ("Boost to take #1 back"): the Boost box starts open, at the top edge of the screen.
-  const [boosting, setBoosting] = useState<{ entry: DateEntry; top: number } | null>(() => {
-    const entry = initialBoost && entries.find((e) => e.publicId === initialBoost.publicId);
-    return entry ? { entry, top: boostBoxTop(0, 0) } : null;
-  });
+  const [boosting, setBoosting] = useState<{ entry: DateEntry; top: number } | null>(null);
+  // An outbid email's "Boost to take #1 back" link (?boost=<person>&amount=16): the Boost box opens for
+  // that person at the top edge of the screen, with the amount filled in. Read in the browser, once,
+  // because the page may be a saved copy that never saw the address.
+  const [boostLink, setBoostLink] = useState<{ publicId: string; amountCents: number } | null>(null);
+  const linkRead = useRef(false);
+  useEffect(() => {
+    if (linkRead.current) return;
+    linkRead.current = true;
+    const open = () => {
+      const params = new URLSearchParams(window.location.search);
+      const link = parseBoostLink({ boost: params.get("boost"), amount: params.get("amount") }, settings.minBoostCents);
+      const entry = link && entries.find((e) => e.publicId === link.publicId);
+      if (!link || !entry) return;
+      setBoostLink(link);
+      setBoosting({ entry, top: boostBoxTop(0, 0) });
+    };
+    open();
+  }, [entries, settings.minBoostCents]);
   const opener = useRef<HTMLButtonElement | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -285,7 +296,7 @@ export function DateBoard({
         returnPath={routes.date(md)}
         dayEnd={dayEnd}
         initialAmountCents={
-          initialBoost && boosting?.entry.publicId === initialBoost.publicId ? initialBoost.amountCents : undefined
+          boostLink && boosting?.entry.publicId === boostLink.publicId ? boostLink.amountCents : undefined
         }
       />
     </>

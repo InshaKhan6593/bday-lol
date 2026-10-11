@@ -10,9 +10,9 @@ import { getBoardVersion } from "./live";
 /**
  * Cached versions of the reads that are the same for every visitor and change slowly.
  *
- * The homepage and date pages are rendered per request, because bids, the countdown and midnight ET
- * must be exact: the board being viewed and today's board are always read fresh. These three reads
- * don't need that, and under load they were most of each page's database work (load test, 2026-10-11).
+ * The homepage and date pages are themselves saved, one copy per Eastern day (lib/day-cache.ts), and
+ * thrown away by a payment. When one is built, the board being viewed and today's board are read
+ * fresh; these reads don't need that and are shared between pages.
  *
  * | Read | Kept for | Dropped early when |
  * |---|---|---|
@@ -25,6 +25,13 @@ import { getBoardVersion } from "./live";
  * TODO(step 10): the admin must revalidate `famous` after hiding a person, `settings` after editing them and
  * `boards` after editing or removing a listing (then announce the board, as the Stripe webhook does).
  */
+/**
+ * The routes of the saved homepage and date pages (lib/day-cache.ts), for revalidatePath(route, "page").
+ * Whatever changes what those pages show must throw them away: a payment (Stripe webhook), the monthly
+ * famous-people refresh, and the admin's edits (step 10).
+ */
+export const SAVED_PAGE_ROUTES = ["/home/[date]", "/[slug]/~day/[date]"] as const;
+
 export const CACHE_TAGS = { settings: "board-settings", famous: "famous", boards: "boards" } as const;
 
 const settings = unstable_cache(() => getBirthdaySettings(db), ["birthday-settings"], {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { boostedText, boostReturnPath, parseBoostLink } from "./boost";
+import { boostNoticeText, boostedText, boostReturnPath, parseBoostLink } from "./boost";
 import { boostCheckoutParams } from "./checkout";
 import { endingSoonText } from "./countdown";
 import { routes } from "./routes";
@@ -84,6 +84,18 @@ describe("boost notes and links", () => {
     expect(parseBoostLink({ boost: "<script>", amount: "16" }, 200)).toBeNull();
     expect(parseBoostLink({ boost: ["a", "b"], amount: "16" }, 200)).toBeNull();
     expect(parseBoostLink({}, 200)).toBeNull();
+    // Read from the browser's address, where a missing value is null.
+    expect(parseBoostLink({ boost: null, amount: null }, 200)).toBeNull();
+    expect(parseBoostLink({ boost: "abc123XYZ_", amount: null }, 200)).toEqual({ publicId: "abc123XYZ_", amountCents: 200 });
+  });
+
+  it("words the note for each outcome of a boost checkout", () => {
+    expect(boostNoticeText({ status: "missing" })).toBeNull();
+    expect(boostNoticeText({ status: "pending" })).toBe("Adding your boost… This takes a few seconds.");
+    expect(boostNoticeText({ status: "expired" })).toBe("Your boost checkout expired. Nothing was charged.");
+    expect(boostNoticeText({ status: "done", name: "Jess Moreno", amountCents: 500, rank: 1, totalCents: 24_500 })).toBe(
+      "Thanks! Your $5 boost is in. Jess is #1 with $245.",
+    );
   });
 });
 

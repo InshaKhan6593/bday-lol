@@ -1,7 +1,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/db";
 import { now } from "@/lib/clock";
-import { CACHE_TAGS } from "@/server/cached";
+import { CACHE_TAGS, SAVED_PAGE_ROUTES } from "@/server/cached";
 import { getMailer } from "@/server/email/mailer";
 import { emailsAfterStripeEvent } from "@/server/email/payment-emails";
 import { announceBoardChange } from "@/server/live";
@@ -29,6 +29,8 @@ export async function POST(request: Request) {
   // The date picker's top bids are cached too (server/cached.ts): drop them at once, not stale-while-revalidate.
   if (outcome.handled && outcome.action === "fulfilled") {
     revalidatePath("/months/[month]", "page");
+    // The saved homepage and date pages too (lib/day-cache.ts): every date page shows the date picker's top bids.
+    for (const route of SAVED_PAGE_ROUTES) revalidatePath(route, "page");
     revalidateTag(CACHE_TAGS.boards, { expire: 0 });
     // Pages that are open on this board re-read it now (lib/live.ts). After the caches are dropped, so they
     // read the new board; before the emails, which can take seconds.

@@ -16,8 +16,6 @@ export type HomepageData = {
   today: MonthDay;
   /** The instant today's board closes (midnight ET). Drives the countdown. */
   dayEndsAt: string;
-  /** Server "now", so the countdown agrees with DEV_NOW in development. */
-  serverNow: string;
   theme: ThemeKey;
   leader: RankedEntry | null;
   /** Totals of everyone else on today's board, for Boost box ranks. */
@@ -49,7 +47,6 @@ export async function getHomepageData(
     settings,
     today,
     dayEndsAt: boardClosesAt(today, todayDate.year, settings.timezone).toISOString(),
-    serverNow: instant.toISOString(),
     theme: leader?.theme ?? settings.defaultTheme,
     leader,
     otherTotalsCents: rest.map((e) => e.totalCents),

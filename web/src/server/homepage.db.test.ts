@@ -48,7 +48,6 @@ describe("homepage data", () => {
       await addBirthdayType(tx);
       const home = await getHomepageData(tx, NOON_OCT_7);
       expect(home.dayEndsAt).toBe("2026-10-08T04:00:00.000Z");
-      expect(home.serverNow).toBe(NOON_OCT_7.toISOString());
     });
   });
 

@@ -5,6 +5,9 @@ export function formatCountdown(ms: number): string {
   return `${pad(Math.floor(total / 3600))}:${pad(Math.floor((total % 3600) / 60))}:${pad(total % 60)}`;
 }
 
+/** Shown until the browser knows the time: a saved page can't carry a running clock. */
+export const COUNTDOWN_PLACEHOLDER = "--:--:--";
+
 /** The last stretch of a day when payers are warned to finish before midnight (07 B5). */
 export const ENDING_SOON_MS = 30 * 60 * 1000;
 

@@ -35,7 +35,7 @@ type Props = {
   /** The page the box is on ("/" or "/october-7"): Stripe sends the booster back there. */
   returnPath: string;
   /** Today's end, when the person is on today's board: shows "Today ends in 12 min…" near midnight. */
-  dayEnd?: { endsAt: string; serverNow: string } | null;
+  dayEnd?: { endsAt: string } | null;
   /** "Boost to take #1 back" email links open the box with this amount filled in. */
   initialAmountCents?: number;
 };
@@ -161,7 +161,7 @@ function BoostBox({
               {server.error}
             </p>
           )}
-          {dayEnd && <EndingSoon endsAt={dayEnd.endsAt} serverNow={dayEnd.serverNow} className={styles.notice} />}
+          {dayEnd && <EndingSoon endsAt={dayEnd.endsAt} className={styles.notice} />}
 
           <p className={styles.fine}>
             Boosts are final and add to {first}’s total. They’re paid to mybday.lol, not to {first}. Gifts still go

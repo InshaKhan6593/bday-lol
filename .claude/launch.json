@@ -4,16 +4,43 @@
     {
       "name": "web",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["-C", "web", "dev"],
+      "runtimeArgs": [
+        "-C",
+        "web",
+        "dev"
+      ],
       "port": 3000,
       "autoPort": true
     },
     {
       "name": "web-prod",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["-C", "web", "start", "-p", "3100"],
-      "env": { "NEXT_PUBLIC_SITE_URL": "http://localhost:3100" },
+      "runtimeArgs": [
+        "-C",
+        "web",
+        "start",
+        "-p",
+        "3100"
+      ],
+      "env": {
+        "NEXT_PUBLIC_SITE_URL": "http://localhost:3100"
+      },
       "port": 3100
+    },
+    {
+      "name": "web-prod-3210",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "-C",
+        "web",
+        "start",
+        "-p",
+        "3210"
+      ],
+      "env": {
+        "NEXT_PUBLIC_SITE_URL": "http://localhost:3210"
+      },
+      "port": 3210
     }
   ]
 }
