@@ -28,3 +28,6 @@ next-env.d.ts
 /AGENTS.md
 
 .vercel
+
+# Local-only comparison page: keep it out of git and out of Vercel CLI uploads
+/public/_icon-options.html
