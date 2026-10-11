@@ -1,0 +1,9 @@
+# The Vercel CLI uploads everything in this folder except what is listed here (it does not read .gitignore).
+# Environment variables are set in the Vercel project, never uploaded as files.
+.env*
+!.env.example
+/public/uploads
+/public/_icon-options.html
+/scripts/k6-load.js
+/scripts/load-test.mjs
+*.tsbuildinfo

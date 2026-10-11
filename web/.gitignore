@@ -29,5 +29,5 @@ next-env.d.ts
 
 .vercel
 
-# Local-only comparison page: keep it out of git and out of Vercel CLI uploads
+# Local-only comparison page (Vercel uploads are filtered by .vercelignore, not this file)
 /public/_icon-options.html
