@@ -7,6 +7,7 @@ import {
   Badge,
   Button,
   Chip,
+  ColorIcon,
   Field,
   Icon,
   IconButton,
@@ -16,6 +17,7 @@ import {
   Surface,
   Textarea,
   ThemeScope,
+  type ColorIconName,
   type IconName,
 } from "@/components/ui";
 import { THEME_KEYS, THEMES, type ThemeKey } from "@/config/themes";
@@ -47,8 +49,16 @@ const MONTH_OPTIONS = MONTHS.map((label, i) => ({ value: String(i + 1), label })
 const DAY_OPTIONS = Array.from({ length: 31 }, (_, i) => ({ value: String(i + 1), label: String(i + 1) }));
 
 const ICONS: IconName[] = [
-  "boost", "share", "facebook", "text", "link", "arrowUpRight", "arrowRight", "chevronLeft",
-  "chevronRight", "chevronDown", "chevronUp", "check", "calendar", "search", "close", "plus", "upload", "menu",
+  "boost", "arrowUpRight", "arrowRight", "chevronLeft", "chevronRight", "chevronDown", "chevronUp",
+  "check", "calendar", "search", "close", "plus", "upload", "menu",
+];
+
+/** The four share buttons have their own filled set (ColorIcon). */
+const SHARE_ICONS: Array<{ name: ColorIconName; label: string }> = [
+  { name: "share", label: "Share" },
+  { name: "facebook", label: "Facebook" },
+  { name: "text", label: "Text" },
+  { name: "link", label: "Copy link" },
 ];
 
 export function StyleGuide() {
@@ -105,7 +115,7 @@ export function StyleGuide() {
         <Section title="Buttons" note="Hover lifts up-left with a hard shadow (mouse only). Click presses flat.">
           <div className={styles.row}>
             <Button variant="ink">Remind me</Button>
-            <Button variant="paper" iconStart={<Icon name="share" size={20} />}>Share</Button>
+            <Button variant="paper" iconStart={<ColorIcon name="share" />}>Share</Button>
             <Button variant="accent" size="2xl" shape="large">Claim the top spot</Button>
             <Button variant="ink" shape="pill">Claim your birthday</Button>
             <Button variant="paper" shape="pill" hoverInvert iconStart={<Icon name="boost" size={16} />}>
@@ -220,7 +230,7 @@ export function StyleGuide() {
           </Surface>
         </Section>
 
-        <Section title="Icons" note="Phosphor, Bold weight (phosphoricons.com), in the text color. ▲ is solid. The four share buttons use filled icons in one fixed color.">
+        <Section title="Icons" note="Phosphor, Bold weight (phosphoricons.com), in the text color. ▲ is solid.">
           <div className={styles.row}>
             {ICONS.map((name) => (
               <span key={name} className={styles.iconCell} title={name}>
@@ -228,6 +238,33 @@ export function StyleGuide() {
                 <code>{name}</code>
               </span>
             ))}
+          </div>
+        </Section>
+
+        <Section
+          title="Share icons"
+          note="Streamline (streamlinehq.com), credited in the footer. One fixed color on every page; on a black button they sit on a white tile."
+        >
+          <div className={styles.row}>
+            {SHARE_ICONS.map(({ name }) => (
+              <span key={name} className={styles.iconCell} title={name}>
+                <ColorIcon name={name} />
+                <code>{name}</code>
+              </span>
+            ))}
+          </div>
+          <div className={styles.row}>
+            {SHARE_ICONS.map(({ name, label }) => (
+              <Button key={name} variant="paper" iconStart={<ColorIcon name={name} />}>
+                {label}
+              </Button>
+            ))}
+            <Button variant="ink" iconStart={<ColorIcon name="share" tile />}>
+              Share
+            </Button>
+            <Button variant="ink" iconStart={<ColorIcon name="text" tile />}>
+              Text them the link
+            </Button>
           </div>
         </Section>
 

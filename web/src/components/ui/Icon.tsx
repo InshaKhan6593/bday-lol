@@ -7,15 +7,11 @@ import {
   CaretLeftIcon,
   CaretRightIcon,
   CaretUpIcon,
-  ChatCircleTextIcon,
   CheckIcon,
   ExportIcon,
-  FacebookLogoIcon,
-  LinkIcon,
   ListIcon,
   MagnifyingGlassIcon,
   PlusIcon,
-  ShareNetworkIcon,
   TriangleIcon,
   XIcon,
 } from "@phosphor-icons/react/ssr";
@@ -25,16 +21,13 @@ import type { Icon as PhosphorIcon, IconWeight } from "@phosphor-icons/react";
  * The site's icon set: Phosphor (https://phosphoricons.com), Bold weight.
  * Bold strokes match the design language's thick 3px ink outlines.
  * Icons draw in currentColor, so they follow the text color (white on black buttons).
+ * The four share buttons (Share, Facebook, Text, Copy link) use ColorIcon instead.
  *
  * To add an icon: find it on phosphoricons.com, import "<Name>Icon" from
  * "@phosphor-icons/react/ssr" and give it a name below.
  */
 const ICONS = {
   boost: TriangleIcon,
-  share: ShareNetworkIcon,
-  facebook: FacebookLogoIcon,
-  text: ChatCircleTextIcon,
-  link: LinkIcon,
   arrowUpRight: ArrowUpRightIcon,
   arrowRight: ArrowRightIcon,
   chevronLeft: CaretLeftIcon,
