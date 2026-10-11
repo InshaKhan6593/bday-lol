@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  @page {
+    size: A4;
+    margin: 22mm 18mm 25mm 18mm;
+    @bottom-center {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 9pt;
+      color: #6b7280;
+      font-family: 'DejaVu Serif', 'Times New Roman', Georgia, serif;
+    }
+    @bottom-left {
+      content: "Confidential";
+      font-size: 7pt;
+      color: #d6d3cc;
+      font-family: 'DejaVu Serif', 'Times New Roman', Georgia, serif;
+    }
+    @bottom-right {
+      content: "mybday.lol Google SEO Report";
+      font-size: 8pt;
+      color: #cbd5e1;
+      font-family: 'DejaVu Serif', 'Times New Roman', Georgia, serif;
+    }
+  }
+
+  @page :first {
+    margin: 0;
+    @bottom-left { content: none; }
+    @bottom-center { content: none; }
+    @bottom-right { content: none; }
+  }
+
+  @page toc {
+    @bottom-center {
+      content: counter(page);
+      font-size: 9pt;
+      color: #6b7280;
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Times New Roman', 'DejaVu Serif', Georgia, serif;
+    font-size: 10pt;
+    line-height: 1.55;
+    color: #1e293b;
+    background: white;
+  }
+
+  /* ─── Title Page (Clean White) ─── */
+  .title-page {
+    page: first;
+    width: 210mm;
+    height: 297mm;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: #1a1a2e;
+    position: relative;
+    padding: 50mm 30mm 40mm 30mm;
+    border-top: 6mm solid #1e3a5f;
+  }
+
+  .title-page .badge {
+    background: #f7f6f3;
+    border: 1px solid #d6d3cc;
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 9pt;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 15mm;
+    color: #1e3a5f;
+  }
+
+  .title-page h1 {
+    font-size: 28pt;
+    font-weight: bold;
+    margin-bottom: 5mm;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    color: #1a1a2e;
+  }
+
+  .title-page .subtitle {
+    font-size: 13pt;
+    color: #6b7280;
+    margin-bottom: 12mm;
+    font-weight: 300;
+  }
+
+  .title-page .url {
+    font-size: 12pt;
+    color: #1e3a5f;
+    margin-bottom: 15mm;
+    padding: 4mm 8mm;
+    border: 1px solid #d6d3cc;
+    border-radius: 6px;
+    background: #faf9f7;
+  }
+
+  .title-page .score-box {
+    background: #faf9f7;
+    border: 2px solid #d6d3cc;
+    border-radius: 12px;
+    padding: 6mm 12mm;
+    margin-bottom: 15mm;
+  }
+
+  .title-page .score-number {
+    font-size: 42pt;
+    font-weight: bold;
+    color: #1e3a5f;
+    line-height: 1;
+  }
+
+  .title-page .score-label {
+    font-size: 10pt;
+    color: #6b7280;
+    margin-top: 2mm;
+  }
+
+  .title-page .meta {
+    font-size: 9pt;
+    color: #6b7280;
+    margin-top: 8mm;
+    padding-top: 5mm;
+    border-top: 1px solid #d6d3cc;
+  }
+
+  .title-page .meta span {
+    margin: 0 8px;
+  }
+
+  /* ─── Table of Contents ─── */
+  .toc-page {
+    page: toc;
+    page-break-before: always;
+  }
+
+  .toc-page h2 {
+    font-size: 18pt;
+    color: #1e3a5f;
+    margin-bottom: 8mm;
+    padding-bottom: 3mm;
+    border-bottom: 2px solid #1e3a5f;
+  }
+
+  .toc-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .toc-list li {
+    padding: 2mm 0;
+    border-bottom: 1px solid #f1f5f9;
+    overflow: hidden;
+  }
+
+  .toc-list li.toc-section {
+    font-weight: bold;
+    font-size: 11pt;
+    padding-top: 4mm;
+    color: #0f172a;
+  }
+
+  .toc-list li.toc-sub {
+    padding-left: 8mm;
+    font-size: 9.5pt;
+    color: #475569;
+  }
+
+  .toc-score {
+    display: inline-block;
+    float: right;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 9pt;
+    font-weight: bold;
+    color: white;
+  }
+
+  .score-good { background: #2d6a4f; }
+  .score-warn { background: #d4740e; }
+  .score-bad { background: #c53030; }
+
+  /* ─── Section Styles ─── */
+  div.section {
+    page-break-before: always;
+  }
+
+  .section-header {
+    background: #faf9f7;
+    border-left: 4px solid #1e3a5f;
+    padding: 5mm 6mm;
+    margin-bottom: 6mm;
+    page-break-after: avoid;
+  }
+
+  .section-header h2 {
+    font-size: 16pt;
+    color: #0f172a;
+    margin-bottom: 1mm;
+  }
+
+  .section-header .section-score {
+    font-size: 12pt;
+    font-weight: bold;
+    float: right;
+    margin-top: -6mm;
+  }
+
+  h3 {
+    font-size: 12pt;
+    color: #1e3a5f;
+    margin-top: 6mm;
+    margin-bottom: 3mm;
+    padding-bottom: 1.5mm;
+    border-bottom: 1px solid #d6d3cc;
+    page-break-after: avoid;
+  }
+
+  h4 {
+    font-size: 10.5pt;
+    color: #334155;
+    margin-top: 4mm;
+    margin-bottom: 2mm;
+    page-break-after: avoid;
+  }
+
+  p {
+    margin-bottom: 3mm;
+    color: #334155;
+  }
+
+  .highlight {
+    background: #fef3c7;
+    border-left: 3px solid #d4740e;
+    padding: 3mm 4mm;
+    margin: 4mm 0;
+    font-size: 9.5pt;
+    /* allow page breaks to prevent white gaps */
+  }
+
+  .critical-box {
+    background: #fef2f2;
+    border-left: 3px solid #c53030;
+    padding: 3mm 4mm;
+    margin: 4mm 0;
+    font-size: 9.5pt;
+    /* allow page breaks to prevent white gaps */
+  }
+
+  .success-box {
+    background: #f0fdf4;
+    border-left: 3px solid #2d6a4f;
+    padding: 3mm 4mm;
+    margin: 4mm 0;
+    font-size: 9.5pt;
+    /* allow page breaks to prevent white gaps */
+  }
+
+  /* ─── Tables ─── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 4mm 0 6mm 0;
+    font-size: 9pt;
+  }
+
+  thead th {
+    background: #f7f6f3;
+    color: #0f172a;
+    font-weight: bold;
+    padding: 3mm 4mm;
+    text-align: left;
+    border-bottom: 2px solid #d6d3cc;
+    font-size: 9pt;
+  }
+
+  tbody td {
+    padding: 2.5mm 3mm;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: top;
+  }
+
+  tbody tr:nth-child(even) {
+    background: #fdfcfa;
+  }
+
+  .status-pass {
+    color: #2d6a4f;
+    font-weight: bold;
+  }
+
+  .status-fail {
+    color: #c53030;
+    font-weight: bold;
+  }
+
+  .status-warn {
+    color: #d4740e;
+    font-weight: bold;
+  }
+
+  .status-partial {
+    color: #4a5568;
+    font-weight: bold;
+  }
+
+  /* ─── Charts ─── */
+  .chart-container {
+    text-align: center;
+    margin: 4mm 0;
+  }
+
+  .chart-container img {
+    max-width: 100%;
+    max-height: 120mm;
+    height: auto;
+  }
+
+  .chart-caption {
+    font-size: 8.5pt;
+    color: #6b7280;
+    font-style: italic;
+    margin-top: 2mm;
+    text-align: center;
+  }
+
+  .chart-half {
+    display: inline-block;
+    width: 48%;
+    vertical-align: top;
+    text-align: center;
+    margin: 2mm 0;
+  }
+
+  .chart-half img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* ─── Two column layout ─── */
+  .two-col {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    margin: 3mm 0;
+  }
+
+  .two-col .col {
+    display: table-cell;
+    vertical-align: top;
+    padding: 0 2mm;
+  }
+
+  .four-col {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    margin: 3mm 0;
+  }
+
+  .four-col .col {
+    display: table-cell;
+    vertical-align: top;
+    padding: 0 1.5mm;
+  }
+
+  /* ─── Metric Cards ─── */
+  .metric-card {
+    background: #faf9f7;
+    border: 1px solid #d6d3cc;
+    border-radius: 6px;
+    padding: 2.5mm 3mm;
+    text-align: center;
+    margin: 2mm 0;
+  }
+
+  .metric-card .value {
+    font-size: 14pt;
+    font-weight: bold;
+    line-height: 1.2;
+  }
+
+  .metric-card .label {
+    font-size: 7.5pt;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 1mm;
+  }
+
+  /* ─── Action Plan ─── */
+  .action-item {
+    background: #faf9f7;
+    border-radius: 4px;
+    padding: 3mm 4mm;
+    margin: 3mm 0;
+    border-left: 3px solid #cbd5e1;
+    /* allow page breaks to prevent white gaps */
+  }
+
+  .action-item.critical {
+    border-left-color: #c53030;
+    background: #fdf2f2;
+  }
+
+  .action-item.high {
+    border-left-color: #d4740e;
+    background: #fdf8ef;
+  }
+
+  .action-item.medium {
+    border-left-color: #1e3a5f;
+    background: #f0f4f8;
+  }
+
+  .action-item.low {
+    border-left-color: #94a3b8;
+  }
+
+  .action-item h4 {
+    margin-top: 0;
+    margin-bottom: 1.5mm;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .action-item .effort {
+    font-size: 8.5pt;
+    color: #64748b;
+    float: right;
+  }
+
+  .priority-tag {
+    display: inline-block;
+    padding: 0.5mm 3mm;
+    border-radius: 3px;
+    font-size: 8pt;
+    font-weight: bold;
+    color: white;
+    margin-right: 2mm;
+    vertical-align: middle;
+  }
+
+  .priority-critical { background: #c53030; }
+  .priority-high { background: #d4740e; }
+  .priority-medium { background: #1e3a5f; }
+  .priority-low { background: #94a3b8; }
+
+  /* ─── Code blocks ─── */
+  .code-block {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 3mm 4mm;
+    border-radius: 4px;
+    font-family: 'DejaVu Sans Mono', monospace;
+    font-size: 8pt;
+    line-height: 1.6;
+    margin: 3mm 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+    /* allow page breaks to prevent white gaps */
+  }
+
+  /* ─── Divider ─── */
+  .divider {
+    border: none;
+    border-top: 1px solid #d6d3cc;
+    margin: 5mm 0;
+  }
+
+  /* ─── Roadmap ─── */
+  .roadmap-phase {
+    background: #faf9f7;
+    border-radius: 6px;
+    padding: 4mm 5mm;
+    margin: 4mm 0;
+    border: 1px solid #d6d3cc;
+    /* allow page breaks to prevent white gaps */
+  }
+
+  .roadmap-phase h4 {
+    margin-top: 0;
+    border-bottom: none;
+    color: #1e3a5f;
+  }
+
+  .roadmap-phase ul {
+    margin: 2mm 0 0 5mm;
+    padding: 0;
+  }
+
+  .roadmap-phase li {
+    margin-bottom: 1.5mm;
+    font-size: 9.5pt;
+    color: #334155;
+  }
+
+  /* ─── Lists ─── */
+  ul {
+    margin-left: 5mm;
+    margin-bottom: 3mm;
+  }
+
+  li {
+    margin-bottom: 1.5mm;
+  }
+
+  /* ─── Data freshness ─── */
+  .data-freshness {
+    font-size: 8pt;
+    color: #6b7280;
+    font-style: italic;
+    margin-top: 4mm;
+    padding-top: 2mm;
+    border-top: 1px solid #d6d3cc;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- ======================================================= TITLE PAGE === -->
+<div class="title-page">
+  <div class="badge">Full SEO Audit Report</div>
+  <h1>mybday.lol</h1>
+  <div class="subtitle">Prepared by Claude SEO</div>
+  <div class="score-box">
+    <div class="score-number">80<span style="font-size: 20pt; color: #94a3b8;">/100</span></div>
+    <div class="score-label">SEO Health Score</div>
+  </div>
+  <div class="meta">
+    <span>October 11, 2026</span>
+    <span>Full Audit</span>
+  </div>
+</div>
+
+
+<!-- ======================================================= TABLE OF CONTENTS === -->
+<div class="toc-page">
+  <h2>Table of Contents</h2>
+  <ul class="toc-list">
+    <li class="toc-section"><span>1. Executive Summary</span></li>
+    <li class="toc-sub"><span>Key Metrics, Critical Issues &amp; Quick Wins</span></li>
+    <li class="toc-section"><span>2. Audit Categories</span></li>
+    <li class="toc-sub"><span>What Works</span></li>
+    <li class="toc-sub"><span>Findings by Severity</span></li>
+    <li class="toc-section"><span>3. Action Plan</span></li>
+    <li class="toc-sub"><span>Phased Roadmap</span></li>
+    <li class="toc-section"><span>4. Data Sources &amp; Methodology</span></li>
+  </ul>
+</div>
+
+
+<!-- ======================================================= 1. EXECUTIVE SUMMARY === -->
+<div class="section">
+  <div class="section-header">
+    <h2>1. Executive Summary</h2>
+  </div>
+
+  <p>This report presents a comprehensive SEO audit of <strong>mybday.lol</strong> for a <strong>Consumer web app with paid listings (birthday leaderboard)</strong> site, generated on October 11, 2026. Findings combine technical, content, schema, performance, visual, and search-readiness evidence as available.</p>
+
+  <div class="two-col">
+    <div class="col">
+      <div class="metric-card">
+        <div class="value" style="color: #d4740e;">80/100</div>
+        <div class="label">SEO Health Score</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="critical-box">
+    <strong>Critical Issues Found:</strong>
+    <ol>
+      <li>Every page is sent no-store: nothing can be cached on the CDN</li>
+      <li>No page answers &#x27;famous birthdays today&#x27; (homepage has no famous people)</li>
+      <li>&#x27;Age 48&#x27; is the age at the board&#x27;s next date and reads as wrong today</li>
+      <li>404 pages have an empty server-rendered body</li>
+      <li>Date pages are 37% unique on the strict measure; no holiday context</li>
+    </ol>
+  </div>
+
+  <div class="success-box">
+    <strong>Quick Wins:</strong>
+    <ol>
+      <li>Server-rendered not-found page</li>
+      <li>One sentence with sign, birthstone and flower on date pages</li>
+      <li>dateModified in JSON-LD from the sitemap&#x27;s lastmod</li>
+      <li>Remove X-Powered-By; share image for Terms and Privacy</li>
+      <li>Publish llms.txt</li>
+    </ol>
+  </div>
+
+</div>
+
+<!-- ======================================================= 2. AUDIT CATEGORIES === -->
+<div class="section">
+  <div class="section-header">
+    <h2>2. Audit Categories</h2>
+  </div>
+
+  <h3>2.1 Technical SEO</h3>
+  <p><strong>Score:</strong> <span class="status-pass">84/100</span></p>
+  <h4>What Works</h4>
+  <ul>
+    <li>382 sitemap URLs, all 200, all self-canonical</li>
+    <li>Fully server-rendered; valid robots.txt; single-hop redirects</li>
+    <li>Five security headers on every response</li>
+  </ul>
+  <h4>Findings</h4>
+  <div class="action-item medium">
+    <h4>Every page is sent no-store <span class="status-warn">High</span></h4>
+    <p>All public pages answer Cache-Control: private, no-cache, no-store, so a CDN can&#x27;t cache anything.</p>
+    <p><strong>Recommendation:</strong> Static/ISR for content pages; short revalidate plus revalidateTag from the Stripe webhook for boards.</p>
+  </div>
+  <div class="action-item medium">
+    <h4>404 body is empty without JavaScript <span class="status-warn">Medium</span></h4>
+    <p>Right status and noindex, but no message, links or lang in the HTML.</p>
+    <p><strong>Recommendation:</strong> Add a server-rendered app/not-found.tsx.</p>
+  </div>
+  <div class="action-item medium">
+    <h4>About 240 KB gzipped JS/CSS on every page <span class="status-warn">Medium</span></h4>
+    <p>Radix UI loads on content-only pages such as Terms.</p>
+    <p><strong>Recommendation:</strong> Lazy-load the Boost, Share and Gift menus and the date picker.</p>
+  </div>
+  <div class="action-item medium">
+    <h4>X-Powered-By header exposed <span class="status-warn">Low</span></h4>
+    <p>Responses carry X-Powered-By: Next.js.</p>
+    <p><strong>Recommendation:</strong> Set poweredByHeader: false.</p>
+  </div>
+  <hr class="divider">
+  <h3>2.2 Content Quality</h3>
+  <p><strong>Score:</strong> <span class="status-warn">68/100</span></p>
+  <h4>What Works</h4>
+  <ul>
+    <li>Facts verified by script on all 366 date pages: 0 errors</li>
+    <li>No filler or AI-pattern text (content_quality.py 91-92)</li>
+    <li>Cited commonness rank on every date page</li>
+  </ul>
+  <h4>Findings</h4>
+  <div class="action-item medium">
+    <h4>Age label reads as wrong today <span class="status-warn">Medium</span></h4>
+    <p>The number is the age the person turns on the board&#x27;s next date.</p>
+    <p><strong>Recommendation:</strong> Label it &#x27;Turns 48&#x27; (client&#x27;s copy, 07 D12).</p>
+  </div>
+  <div class="action-item medium">
+    <h4>No holiday or observance context <span class="status-warn">Medium</span></h4>
+    <p>/december-25 never mentions Christmas; strict uniqueness is 37%.</p>
+    <p><strong>Recommendation:</strong> A small holidays table feeding the About paragraph (client OK, 07 D9).</p>
+  </div>
+  <div class="action-item medium">
+    <h4>Placeholders on legal pages <span class="status-warn">Medium</span></h4>
+    <p>&#x27;[Launch date]&#x27; and &#x27;[If required: ... Article 27 GDPR.]&#x27; are visible.</p>
+    <p><strong>Recommendation:</strong> Client fills them in or edits them in the admin.</p>
+  </div>
+  <div class="action-item medium">
+    <h4>Famous-people data bugs <span class="status-warn">Info</span></h4>
+    <p>Adult performers, duplicate dates, &#x27;footballer&#x27; labels, cut-off labels and February&#x27;s rarest date.</p>
+    <p><strong>Recommendation:</strong> Fixed during the audit with tests; data refreshed.</p>
+  </div>
+  <hr class="divider">
+  <h3>2.3 On-Page SEO</h3>
+  <p><strong>Score:</strong> <span class="status-pass">88/100</span></p>
+  <h4>What Works</h4>
+  <ul>
+    <li>Unique titles (45-58 chars) and descriptions (123-159) on all 382 pages</li>
+    <li>One H1 per page, no skipped heading levels</li>
+    <li>Every date page is 3 clicks from anywhere</li>
+  </ul>
+  <h4>Findings</h4>
+  <div class="action-item medium">
+    <h4>Date page H1 has no &#x27;birthday&#x27; <span class="status-warn">Info</span></h4>
+    <p>&#x27;Everyone celebrating October 7&#x27; is the client&#x27;s mockup copy.</p>
+    <p><strong>Recommendation:</strong> Leave as is; the title carries the keyword.</p>
+  </div>
+  <div class="action-item medium">
+    <h4>Famous list is the third block on date pages <span class="status-warn">Medium</span></h4>
+    <p>On unclaimed boards the H1 is followed by nobody.</p>
+    <p><strong>Recommendation:</strong> Show 3-5 names under the H1 (client).</p>
+  </div>
+  <hr class="divider">
+  <h3>2.4 Schema / Structured Data</h3>
+  <p><strong>Score:</strong> <span class="status-pass">84/100</span></p>
+  <h4>What Works</h4>
+  <ul>
+    <li>Valid JSON-LD on every template; 5,490 Person nodes linked to Wikidata</li>
+    <li>BreadcrumbList on all date and month pages</li>
+  </ul>
+  <h4>Findings</h4>
+  <div class="action-item medium">
+    <h4>No dateModified <span class="status-warn">Low</span></h4>
+    <p>WebPage and CollectionPage nodes carry no dateModified.</p>
+    <p><strong>Recommendation:</strong> Reuse the sitemap&#x27;s lastmod.</p>
+  </div>
+  <div class="action-item medium">
+    <h4>Homepage WebSite description changes daily <span class="status-warn">Low</span></h4>
+    <p>It embeds today&#x27;s #1 and amount.</p>
+    <p><strong>Recommendation:</strong> Use a stable description.</p>
+  </div>
+  <div class="action-item medium">
+    <h4>No breadcrumbs on How it works, Terms, Privacy <span class="status-warn">Low</span></h4>
+    <p>Those pages have no BreadcrumbList or WebPage node.</p>
+    <p><strong>Recommendation:</strong> Add them; JSON-LD is in findings/schema.md.</p>
+  </div>
+  <hr class="divider">
+  <h3>2.5 Performance (CWV)</h3>
+  <p><strong>Score:</strong> <span class="status-pass">84/100</span></p>
+  <h4>What Works</h4>
+  <ul>
+    <li>Lighthouse 94-95 (lab, mobile)</li>
+    <li>CLS 0 on every page</li>
+    <li>No third-party scripts; no images to load</li>
+  </ul>
+  <h4>Findings</h4>
+  <div class="action-item medium">
+    <h4>Simulated mobile LCP 2.9-3.0 s <span class="status-warn">Medium</span></h4>
+    <p>Over the 2.5 s limit; caused by render-blocking CSS and the 77 KB font, not the server.</p>
+    <p><strong>Recommendation:</strong> Shrink shared CSS; confirm with field data after launch.</p>
+  </div>
+  <div class="action-item medium">
+    <h4>Every page is sent no-store <span class="status-warn">High</span></h4>
+    <p>All public pages answer Cache-Control: private, no-cache, no-store, so a CDN can&#x27;t cache anything.</p>
+    <p><strong>Recommendation:</strong> Static/ISR for content pages; short revalidate plus revalidateTag from the Stripe webhook for boards.</p>
+  </div>
+  <hr class="divider">
+  <h3>2.6 AI Search Readiness</h3>
+  <p><strong>Score:</strong> <span class="status-warn">76/100</span></p>
+  <h4>What Works</h4>
+  <ul>
+    <li>All AI crawlers allowed and served full HTML</li>
+    <li>Lighthouse Agentic Browsing 2/2</li>
+    <li>Answer-first FAQ and About paragraphs</li>
+  </ul>
+  <h4>Findings</h4>
+  <div class="action-item medium">
+    <h4>Sign, birthstone and flower only in fact cards <span class="status-warn">Medium</span></h4>
+    <p>Text extractors drop them on date pages.</p>
+    <p><strong>Recommendation:</strong> One sentence in the About paragraph.</p>
+  </div>
+  <div class="action-item medium">
+    <h4>No llms.txt <span class="status-warn">Low</span></h4>
+    <p>/llms.txt answers 404.</p>
+    <p><strong>Recommendation:</strong> Publish one at launch.</p>
+  </div>
+  <div class="action-item medium">
+    <h4>No freshness signal <span class="status-warn">Low</span></h4>
+    <p>Extractors guessed 2026-01-01 from the footer year.</p>
+    <p><strong>Recommendation:</strong> dateModified and a visible &#x27;updated&#x27; line.</p>
+  </div>
+  <hr class="divider">
+  <h3>2.7 Images</h3>
+  <p><strong>Score:</strong> <span class="status-pass">85/100</span></p>
+  <h4>What Works</h4>
+  <ul>
+    <li>No content images, so no alt-text or CLS issues</li>
+    <li>Share image on every date, month and personal page</li>
+  </ul>
+  <h4>Findings</h4>
+  <div class="action-item medium">
+    <h4>Terms and Privacy have no share image <span class="status-warn">Low</span></h4>
+    <p>They still declare summary_large_image.</p>
+    <p><strong>Recommendation:</strong> Add the default share image.</p>
+  </div>
+  <hr class="divider">
+</div>
+
+<!-- ======================================================= 3. ACTION PLAN === -->
+<div class="section">
+  <div class="section-header">
+    <h2>3. Action Plan</h2>
+  </div>
+
+  <div class="roadmap-phase">
+    <h4>Phase 1: Critical Fixes <span class="effort">Before launch</span></h4>
+    <ul>
+      <li>Make pages cacheable (ISR + revalidateTag from the Stripe webhook)</li>
+      <li>Server-rendered 404 page</li>
+      <li>Sign/birthstone/flower sentence on date pages</li>
+      <li>dateModified in JSON-LD; honest lastmod</li>
+      <li>Backfill famous people for all 12 months on production</li>
+    </ul>
+  </div>
+  <div class="roadmap-phase">
+    <h4>Phase 2: High-Impact Improvements <span class="effort">Before launch</span></h4>
+    <ul>
+      <li>Lazy-load menus and the date picker</li>
+      <li>Remove X-Powered-By; share image for legal pages; stable WebSite description</li>
+      <li>Skip link and aria fixes</li>
+      <li>Publish llms.txt</li>
+    </ul>
+  </div>
+  <div class="roadmap-phase">
+    <h4>Phase 3: Content &amp; Authority <span class="effort">With the client</span></h4>
+    <ul>
+      <li>&#x27;Turns 48&#x27; label</li>
+      <li>&#x27;Famous birthdays today&#x27; strip on the homepage</li>
+      <li>Holiday/observance line per date</li>
+      <li>Fill in legal-page placeholders</li>
+    </ul>
+  </div>
+  <div class="roadmap-phase">
+    <h4>Phase 4: Monitoring &amp; Iteration <span class="effort">After launch</span></h4>
+    <ul>
+      <li>Run /seo audit on https://mybday.lol</li>
+      <li>Submit the sitemap; watch &#x27;Crawled - currently not indexed&#x27; for 2-4 weeks</li>
+      <li>Connect Search Console and CrUX data</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ======================================================= DATA SOURCES & METHODOLOGY === -->
+<div class="section" style="text-align: center; padding-top: 15mm;">
+  <hr class="divider">
+  <h3 style="text-align: left;">Data Sources &amp; Methodology</h3>
+  <table>
+    <thead>
+      <tr><th>Source</th><th>Description</th><th>Update Frequency</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>PageSpeed Insights API</td>
+          <td>Lighthouse lab audit (mobile emulation, Moto G Power, slow 4G)</td>
+          <td>Real-time</td></tr>
+      <tr><td>Chrome UX Report (CrUX)</td>
+          <td>28-day rolling field data from real Chrome users</td>
+          <td>Daily ~04:00 UTC</td></tr>
+      <tr><td>CrUX History API</td>
+          <td>25-week p75 trend data per metric</td>
+          <td>Weekly</td></tr>
+      <tr><td>Google Search Console</td>
+          <td>Search Analytics (clicks, impressions, CTR, position)</td>
+          <td>2-3 day lag</td></tr>
+      <tr><td>URL Inspection API</td>
+          <td>Per-URL index status, coverage state, crawl info</td>
+          <td>Real-time (2,000/day)</td></tr>
+    </tbody>
+  </table>
+  <p style="color: #94a3b8; font-size: 9pt; margin-top: 5mm;">
+    Report generated by Claude SEO &mdash; Google SEO Intelligence Skill &mdash; October 11, 2026<br>
+    Methodology based on Google Web Vitals thresholds, Search Console documentation, and Lighthouse scoring algorithms.
+  </p>
+</div>
+
+</body>
+</html>

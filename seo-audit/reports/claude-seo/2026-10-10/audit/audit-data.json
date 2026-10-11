@@ -1,0 +1,259 @@
+{
+  "summary": {
+    "health_score": 80,
+    "business_type": "Consumer web app with paid listings (birthday leaderboard)",
+    "top_findings": [
+      "Every page is sent no-store: nothing can be cached on the CDN",
+      "No page answers 'famous birthdays today' (homepage has no famous people)",
+      "'Age 48' is the age at the board's next date and reads as wrong today",
+      "404 pages have an empty server-rendered body",
+      "Date pages are 37% unique on the strict measure; no holiday context"
+    ],
+    "quick_wins": [
+      "Server-rendered not-found page",
+      "One sentence with sign, birthstone and flower on date pages",
+      "dateModified in JSON-LD from the sitemap's lastmod",
+      "Remove X-Powered-By; share image for Terms and Privacy",
+      "Publish llms.txt"
+    ]
+  },
+  "categories": [
+    {
+      "name": "Technical SEO",
+      "score": 84,
+      "what_works": [
+        "382 sitemap URLs, all 200, all self-canonical",
+        "Fully server-rendered; valid robots.txt; single-hop redirects",
+        "Five security headers on every response"
+      ],
+      "findings": [
+        {
+          "title": "Every page is sent no-store",
+          "severity": "High",
+          "description": "All public pages answer Cache-Control: private, no-cache, no-store, so a CDN can't cache anything.",
+          "recommendation": "Static/ISR for content pages; short revalidate plus revalidateTag from the Stripe webhook for boards."
+        },
+        {
+          "title": "404 body is empty without JavaScript",
+          "severity": "Medium",
+          "description": "Right status and noindex, but no message, links or lang in the HTML.",
+          "recommendation": "Add a server-rendered app/not-found.tsx."
+        },
+        {
+          "title": "About 240 KB gzipped JS/CSS on every page",
+          "severity": "Medium",
+          "description": "Radix UI loads on content-only pages such as Terms.",
+          "recommendation": "Lazy-load the Boost, Share and Gift menus and the date picker."
+        },
+        {
+          "title": "X-Powered-By header exposed",
+          "severity": "Low",
+          "description": "Responses carry X-Powered-By: Next.js.",
+          "recommendation": "Set poweredByHeader: false."
+        }
+      ]
+    },
+    {
+      "name": "Content Quality",
+      "score": 68,
+      "what_works": [
+        "Facts verified by script on all 366 date pages: 0 errors",
+        "No filler or AI-pattern text (content_quality.py 91-92)",
+        "Cited commonness rank on every date page"
+      ],
+      "findings": [
+        {
+          "title": "Age label reads as wrong today",
+          "severity": "Medium",
+          "description": "The number is the age the person turns on the board's next date.",
+          "recommendation": "Label it 'Turns 48' (client's copy, 07 D12)."
+        },
+        {
+          "title": "No holiday or observance context",
+          "severity": "Medium",
+          "description": "/december-25 never mentions Christmas; strict uniqueness is 37%.",
+          "recommendation": "A small holidays table feeding the About paragraph (client OK, 07 D9)."
+        },
+        {
+          "title": "Placeholders on legal pages",
+          "severity": "Medium",
+          "description": "'[Launch date]' and '[If required: ... Article 27 GDPR.]' are visible.",
+          "recommendation": "Client fills them in or edits them in the admin."
+        },
+        {
+          "title": "Famous-people data bugs",
+          "severity": "Info",
+          "description": "Adult performers, duplicate dates, 'footballer' labels, cut-off labels and February's rarest date.",
+          "recommendation": "Fixed during the audit with tests; data refreshed."
+        }
+      ]
+    },
+    {
+      "name": "On-Page SEO",
+      "score": 88,
+      "what_works": [
+        "Unique titles (45-58 chars) and descriptions (123-159) on all 382 pages",
+        "One H1 per page, no skipped heading levels",
+        "Every date page is 3 clicks from anywhere"
+      ],
+      "findings": [
+        {
+          "title": "Date page H1 has no 'birthday'",
+          "severity": "Info",
+          "description": "'Everyone celebrating October 7' is the client's mockup copy.",
+          "recommendation": "Leave as is; the title carries the keyword."
+        },
+        {
+          "title": "Famous list is the third block on date pages",
+          "severity": "Medium",
+          "description": "On unclaimed boards the H1 is followed by nobody.",
+          "recommendation": "Show 3-5 names under the H1 (client)."
+        }
+      ]
+    },
+    {
+      "name": "Schema / Structured Data",
+      "score": 84,
+      "what_works": [
+        "Valid JSON-LD on every template; 5,490 Person nodes linked to Wikidata",
+        "BreadcrumbList on all date and month pages"
+      ],
+      "findings": [
+        {
+          "title": "No dateModified",
+          "severity": "Low",
+          "description": "WebPage and CollectionPage nodes carry no dateModified.",
+          "recommendation": "Reuse the sitemap's lastmod."
+        },
+        {
+          "title": "Homepage WebSite description changes daily",
+          "severity": "Low",
+          "description": "It embeds today's #1 and amount.",
+          "recommendation": "Use a stable description."
+        },
+        {
+          "title": "No breadcrumbs on How it works, Terms, Privacy",
+          "severity": "Low",
+          "description": "Those pages have no BreadcrumbList or WebPage node.",
+          "recommendation": "Add them; JSON-LD is in findings/schema.md."
+        }
+      ]
+    },
+    {
+      "name": "Performance (CWV)",
+      "score": 84,
+      "what_works": [
+        "Lighthouse 94-95 (lab, mobile)",
+        "CLS 0 on every page",
+        "No third-party scripts; no images to load"
+      ],
+      "findings": [
+        {
+          "title": "Simulated mobile LCP 2.9-3.0 s",
+          "severity": "Medium",
+          "description": "Over the 2.5 s limit; caused by render-blocking CSS and the 77 KB font, not the server.",
+          "recommendation": "Shrink shared CSS; confirm with field data after launch."
+        },
+        {
+          "title": "Every page is sent no-store",
+          "severity": "High",
+          "description": "All public pages answer Cache-Control: private, no-cache, no-store, so a CDN can't cache anything.",
+          "recommendation": "Static/ISR for content pages; short revalidate plus revalidateTag from the Stripe webhook for boards."
+        }
+      ]
+    },
+    {
+      "name": "AI Search Readiness",
+      "score": 76,
+      "what_works": [
+        "All AI crawlers allowed and served full HTML",
+        "Lighthouse Agentic Browsing 2/2",
+        "Answer-first FAQ and About paragraphs"
+      ],
+      "findings": [
+        {
+          "title": "Sign, birthstone and flower only in fact cards",
+          "severity": "Medium",
+          "description": "Text extractors drop them on date pages.",
+          "recommendation": "One sentence in the About paragraph."
+        },
+        {
+          "title": "No llms.txt",
+          "severity": "Low",
+          "description": "/llms.txt answers 404.",
+          "recommendation": "Publish one at launch."
+        },
+        {
+          "title": "No freshness signal",
+          "severity": "Low",
+          "description": "Extractors guessed 2026-01-01 from the footer year.",
+          "recommendation": "dateModified and a visible 'updated' line."
+        }
+      ]
+    },
+    {
+      "name": "Images",
+      "score": 85,
+      "what_works": [
+        "No content images, so no alt-text or CLS issues",
+        "Share image on every date, month and personal page"
+      ],
+      "findings": [
+        {
+          "title": "Terms and Privacy have no share image",
+          "severity": "Low",
+          "description": "They still declare summary_large_image.",
+          "recommendation": "Add the default share image."
+        }
+      ]
+    }
+  ],
+  "action_plan": {
+    "phases": [
+      {
+        "name": "Phase 1: Critical Fixes",
+        "timeframe": "Before launch",
+        "items": [
+          "Make pages cacheable (ISR + revalidateTag from the Stripe webhook)",
+          "Server-rendered 404 page",
+          "Sign/birthstone/flower sentence on date pages",
+          "dateModified in JSON-LD; honest lastmod",
+          "Backfill famous people for all 12 months on production"
+        ]
+      },
+      {
+        "name": "Phase 2: High-Impact Improvements",
+        "timeframe": "Before launch",
+        "items": [
+          "Lazy-load menus and the date picker",
+          "Remove X-Powered-By; share image for legal pages; stable WebSite description",
+          "Skip link and aria fixes",
+          "Publish llms.txt"
+        ]
+      },
+      {
+        "name": "Phase 3: Content & Authority",
+        "timeframe": "With the client",
+        "items": [
+          "'Turns 48' label",
+          "'Famous birthdays today' strip on the homepage",
+          "Holiday/observance line per date",
+          "Fill in legal-page placeholders"
+        ]
+      },
+      {
+        "name": "Phase 4: Monitoring & Iteration",
+        "timeframe": "After launch",
+        "items": [
+          "Run /seo audit on https://mybday.lol",
+          "Submit the sitemap; watch 'Crawled - currently not indexed' for 2-4 weeks",
+          "Connect Search Console and CrUX data"
+        ]
+      }
+    ]
+  },
+  "artifacts": {
+    "findings_dir": "findings/",
+    "screenshots_dir": "screenshots/"
+  }
+}
