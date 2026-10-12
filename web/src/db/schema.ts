@@ -63,7 +63,7 @@ export const boardTypes = pgTable("board_types", {
   name: text("name").notNull(),
   settings: jsonb("settings").$type<BoardTypeSettings>().notNull(),
   createdAt: createdAt(),
-});
+}).enableRLS();
 
 /**
  * One leaderboard instance: a key within a type, for one period.
@@ -89,7 +89,7 @@ export const boards = pgTable(
     index("boards_type_closes_idx").on(t.boardTypeId, t.closesAt),
     check("boards_window_chk", sql`${t.closesAt} > ${t.opensAt}`),
   ],
-);
+).enableRLS();
 
 // ---------------------------------------------------------------------------
 // Entries
@@ -142,7 +142,7 @@ export const entries = pgTable(
     check("entries_minor_no_gifts_chk", sql`NOT ${t.isMinor} OR jsonb_array_length(${t.giftLinks}) = 0`),
     check("entries_live_has_total_chk", sql`${t.status} <> 'live' OR ${t.totalReachedAt} IS NOT NULL`),
   ],
-);
+).enableRLS();
 
 // ---------------------------------------------------------------------------
 // Payments (every claim, boost and comp is its own row)
@@ -182,7 +182,7 @@ export const payments = pgTable(
     check("payments_amount_chk", sql`${t.amountCents} > 0 AND ${t.amountCents} % 100 = 0`),
     check("payments_stripe_chk", sql`${t.kind} = 'comp' OR ${t.stripeSessionId} IS NOT NULL`),
   ],
-);
+).enableRLS();
 
 // ---------------------------------------------------------------------------
 // #1 history (powers "Held the homepage 9:12 AM – 2:40 PM" and outbid alerts)
@@ -202,7 +202,7 @@ export const leaderLog = pgTable(
     // At most one current #1 per board.
     uniqueIndex("leader_log_one_open_uq").on(t.boardId).where(sql`${t.endedAt} IS NULL`),
   ],
-);
+).enableRLS();
 
 // ---------------------------------------------------------------------------
 // Alerts and emails
@@ -217,7 +217,7 @@ export const alertSubscriptions = pgTable(
     createdAt: createdAt(),
   },
   (t) => [primaryKey({ columns: [t.entryId, t.email] })],
-);
+).enableRLS();
 
 /**
  * Outbid alerts waiting to be sent. The cron sends rows whose due_at has passed
@@ -238,7 +238,7 @@ export const outbidAlerts = pgTable(
     uniqueIndex("outbid_alerts_pending_uq").on(t.entryId, t.email).where(sql`${t.sentAt} IS NULL`),
     index("outbid_alerts_due_idx").on(t.dueAt).where(sql`${t.sentAt} IS NULL`),
   ],
-);
+).enableRLS();
 
 /** Yearly birthday reminders: homepage signups and auto-added claimers. */
 export const reminders = pgTable(
@@ -259,7 +259,7 @@ export const reminders = pgTable(
     check("reminders_month_chk", sql`${t.month} BETWEEN 1 AND 12`),
     check("reminders_day_chk", sql`${t.day} BETWEEN 1 AND 31`),
   ],
-);
+).enableRLS();
 
 /** "Unsubscribe" clicks for non-transactional email categories. */
 export const emailSuppressions = pgTable(
@@ -270,7 +270,7 @@ export const emailSuppressions = pgTable(
     createdAt: createdAt(),
   },
   (t) => [primaryKey({ columns: [t.email, t.category] })],
-);
+).enableRLS();
 
 /** Every email sent. dedupe_key stops the same email going out twice. */
 export const emailLog = pgTable(
@@ -285,7 +285,7 @@ export const emailLog = pgTable(
     sentAt: tstz("sent_at").notNull().defaultNow(),
   },
   (t) => [index("email_log_to_type_idx").on(t.to, t.type, t.sentAt)],
-);
+).enableRLS();
 
 // ---------------------------------------------------------------------------
 // Editable pages (handoff v2 §11): Terms and Privacy, edited in the admin
@@ -297,7 +297,7 @@ export const sitePages = pgTable("site_pages", {
   slug: text("slug").primaryKey(),
   body: text("body").notNull(),
   updatedAt: tstz("updated_at").notNull().defaultNow(),
-});
+}).enableRLS();
 
 // ---------------------------------------------------------------------------
 // Admin sign-in attempts (login rate limit, 07 B14)
@@ -313,7 +313,7 @@ export const adminLogins = pgTable(
     at: tstz("at").notNull().defaultNow(),
   },
   (t) => [index("admin_logins_at_idx").on(t.at)],
-);
+).enableRLS();
 
 // ---------------------------------------------------------------------------
 // "About [date] birthdays": famous people (refreshed monthly)
@@ -339,7 +339,7 @@ export const famousPeople = pgTable(
     uniqueIndex("famous_people_key_source_uq").on(t.key, t.source, t.sourceId),
     index("famous_people_key_rank_idx").on(t.key, t.rank),
   ],
-);
+).enableRLS();
 
 /** People the admin hid. Survives monthly refreshes. */
 export const famousHidden = pgTable(
@@ -351,7 +351,7 @@ export const famousHidden = pgTable(
     hiddenAt: tstz("hidden_at").notNull().defaultNow(),
   },
   (t) => [primaryKey({ columns: [t.source, t.sourceId] })],
-);
+).enableRLS();
 
 // ---------------------------------------------------------------------------
 // Relations (for the Drizzle query API)

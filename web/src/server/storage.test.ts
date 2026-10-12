@@ -1,7 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PhotoError, savePhoto } from "./storage";
 
-const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
+/** The start of a PNG file that declares the given pixel size. */
+function png(width: number, height: number): Uint8Array {
+  const size = (n: number) => [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255];
+  return new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52, ...size(width), ...size(height), 8, 6, 0, 0, 0]);
+}
+
+const PNG = png(512, 512);
 
 function supabaseEnv() {
   vi.stubEnv("STORAGE_DRIVER", "supabase");
@@ -46,6 +52,21 @@ describe("savePhoto on Supabase Storage", () => {
 });
 
 describe("savePhoto checks", () => {
+  it("rejects a small file that declares a huge picture, before any upload", async () => {
+    supabaseEnv();
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(savePhoto(png(12000, 12000))).rejects.toBeInstanceOf(PhotoError);
+    await expect(savePhoto(png(512, 1025))).rejects.toBeInstanceOf(PhotoError);
+    await expect(savePhoto(png(0, 512))).rejects.toBeInstanceOf(PhotoError);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects an image whose size can't be read", async () => {
+    const noHeader = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
+    await expect(savePhoto(noHeader)).rejects.toBeInstanceOf(PhotoError);
+  });
+
   it("rejects a file that isn't an image before any upload", async () => {
     supabaseEnv();
     const fetchMock = vi.fn();

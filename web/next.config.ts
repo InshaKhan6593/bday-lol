@@ -17,6 +17,8 @@ const SECURITY_HEADERS = [
 const MONTH_NAMES = "january|february|march|april|may|june|july|august|september|october|november|december";
 const SHORT_MONTH_NAMES = "jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec";
 const MONTH = `:month(${MONTH_NAMES})`;
+/** The Eastern day in a saved page's address (src/lib/day-cache.ts): 2026-10-11. */
+const DAY = ":date(\\d{4}-\\d{2}-\\d{2})";
 
 const nextConfig: NextConfig = {
   typedRoutes: true,
@@ -36,8 +38,9 @@ const nextConfig: NextConfig = {
     return [
       { source: `/months/${MONTH}`, destination: `/${MONTH}`, permanent: true },
       // The saved copies of the homepage and date pages (src/lib/day-cache.ts).
-      { source: "/home/:date", destination: "/", permanent: true },
-      { source: "/:slug/~day/:date", destination: "/:slug", permanent: true },
+      // Only the shapes the proxy writes are sent back: nothing else is ever copied into a redirect.
+      { source: `/home/${DAY}`, destination: "/", permanent: true },
+      { source: `/:slug((?:${MONTH_NAMES})-[1-9]\\d?)/~day/${DAY}`, destination: "/:slug", permanent: true },
     ];
   },
   async headers() {

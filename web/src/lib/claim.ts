@@ -5,6 +5,7 @@ import { DAYS_IN_MONTH, parseSlug, type MonthDay } from "./birthday";
 import { parseAmountCents } from "./boost";
 import { GIFT_ENTRY, parseGiftEntry, type GiftEntry } from "./gifts";
 import { formatUsd, minToTakeTop } from "./money";
+import { isEmailAddress } from "./email-address";
 import { cleanName, stripWrappingQuotes } from "./people";
 
 /** Rules for the Claim page, worded exactly like the mockup (ClaimDesktop.dc.html / Claim.dc.html). */
@@ -116,7 +117,8 @@ export type ClaimResult = { ok: true; claim: ValidClaim } | { ok: false; errors:
 
 type FormRules = Pick<BoardTypeSettings, "nameMaxLength" | "bioMaxLength" | "maxGiftLinks">;
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** Longer than any real bio; checked before the text is cleaned so junk input costs nothing. */
+const BIO_RAW_MAX_LENGTH = 1000;
 
 /** One space between words, no leading or trailing spaces. */
 function tidy(text: string): string {
@@ -138,7 +140,7 @@ export function validateClaim(input: ClaimInput, minCents: number, target: Claim
   if (!listing.ok) Object.assign(errors, listing.errors);
 
   const email = input.email.trim();
-  if (!EMAIL.test(email) || email.length > 254) errors.email = "Enter your email for the receipt.";
+  if (!isEmailAddress(email)) errors.email = "Enter your email for the receipt.";
 
   if (!listing.ok || Object.keys(errors).length > 0) return { ok: false, errors };
   return { ok: true, claim: { md: input.md, amountCents, ...listing.listing, email: email.toLowerCase() } };
@@ -162,8 +164,9 @@ export function validateListing(input: ListingInput, rules: FormRules): ListingR
   else if (name.length > rules.nameMaxLength) errors.name = `Names can be up to ${rules.nameMaxLength} characters.`;
   else if (input.isMinor && name.includes(" ")) errors.name = MINOR_NAME_ERROR;
 
-  const bio = stripWrappingQuotes(tidy(input.bio));
-  if (bio.length > rules.bioMaxLength) errors.bio = `Bios can be up to ${rules.bioMaxLength} characters.`;
+  const tooLong = input.bio.length > BIO_RAW_MAX_LENGTH;
+  const bio = tooLong ? "" : stripWrappingQuotes(tidy(input.bio));
+  if (tooLong || bio.length > rules.bioMaxLength) errors.bio = `Bios can be up to ${rules.bioMaxLength} characters.`;
 
   // One link per app (handoff v2): Venmo, Cash App, Amazon, Throne.
   const rows = input.giftLinks.filter((row) => row.value.trim());

@@ -40,7 +40,8 @@ export function getMailer(): Mailer {
   const replyTo = process.env.EMAIL_REPLY_TO || undefined;
   mailer = {
     async send(email) {
-      const info = await transport.sendMail({ from, replyTo, ...email });
+      // An address object, not a string: a string is parsed as a list ("a,b@x.com" would reach b@x.com).
+      const info = await transport.sendMail({ from, replyTo, ...email, to: { name: "", address: email.to } });
       return { id: info.messageId ?? null };
     },
   };

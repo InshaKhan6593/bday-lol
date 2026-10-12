@@ -45,17 +45,26 @@ export async function recentFails(db: Executor, ip: string, instant: Date): Prom
   return { fromThisIp: row?.fromThisIp ?? 0, total: row?.total ?? 0 };
 }
 
+/** Any fixed number: the advisory lock that puts sign-in tries in single file. */
+const SIGN_IN_LOCK = 760_612_001;
+
 export type SignInResult = { ok: true } | { ok: false; error: string };
 
 /** Checks a password try and records it. Kept apart from the cookie so it can be tested. */
 export async function checkPassword(db: Executor, password: string, ip: string, instant: Date): Promise<SignInResult> {
   if (!process.env.ADMIN_PASSWORD_HASH) return { ok: false, error: "The admin isn’t set up yet: ADMIN_PASSWORD_HASH is missing." };
-  if (!loginAllowed(await recentFails(db, ip, instant))) {
-    return { ok: false, error: "Too many wrong passwords. Wait 15 minutes and try again." };
-  }
-  const ok = verifyPassword(password, process.env.ADMIN_PASSWORD_HASH);
-  await db.insert(adminLogins).values({ ip, ok, at: instant });
-  return ok ? { ok: true } : { ok: false, error: "That password isn’t right." };
+  const hash = process.env.ADMIN_PASSWORD_HASH;
+  // One try at a time, across every server instance: tries sent together would otherwise all read
+  // the same count before any of them had recorded a failure, and each get a guess past the limit.
+  return db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(${SIGN_IN_LOCK})`);
+    if (!loginAllowed(await recentFails(tx, ip, instant))) {
+      return { ok: false, error: "Too many wrong passwords. Wait 15 minutes and try again." };
+    }
+    const ok = verifyPassword(password, hash);
+    await tx.insert(adminLogins).values({ ip, ok, at: instant });
+    return ok ? { ok: true } : { ok: false, error: "That password isn’t right." };
+  });
 }
 
 /** The caller's address, as the host reports it. */

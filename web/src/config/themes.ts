@@ -22,8 +22,9 @@ export type Theme = (typeof THEMES)[ThemeKey];
 
 export const THEME_KEYS = Object.keys(THEMES) as ThemeKey[];
 
+/** Own keys only: `in` would also accept names every object inherits ("__proto__", "constructor"). */
 export function isThemeKey(value: string): value is ThemeKey {
-  return value in THEMES;
+  return Object.hasOwn(THEMES, value);
 }
 
 export function getTheme(key: string | null | undefined, fallback: ThemeKey = "butter"): Theme {

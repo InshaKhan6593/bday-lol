@@ -29,6 +29,16 @@ const input = (over: Partial<SendInput> = {}): SendInput => ({
 });
 
 describe("sendEmail", () => {
+  it("leaves nothing reserved when the email can't be drawn, so a later try still sends", async () => {
+    await inRollback(async (tx) => {
+      const mailer = memoryMailer();
+      const broken = { ...content, reason: undefined as unknown as string };
+      await expect(sendEmail(tx, mailer, input({ content: broken }))).rejects.toThrow();
+      expect(await tx.select().from(emailLog)).toHaveLength(0);
+      expect(await sendEmail(tx, mailer, input())).toBe("sent");
+    });
+  });
+
   it("sends once per dedupe key and logs it", async () => {
     await inRollback(async (tx) => {
       const mailer = memoryMailer();

@@ -41,13 +41,7 @@ export async function sendEmail(db: Executor, mailer: Mailer, input: SendInput):
   const to = input.to.trim().toLowerCase();
   if (input.category && (await isSuppressed(db, to, input.category))) return "suppressed";
 
-  const [reserved] = await db
-    .insert(emailLog)
-    .values({ type: input.type, to, dedupeKey: input.dedupeKey, meta: input.meta ?? {}, sentAt: input.at })
-    .onConflictDoNothing({ target: emailLog.dedupeKey })
-    .returning({ id: emailLog.id });
-  if (!reserved) return "duplicate";
-
+  // Rendered first: an error here must not leave a reserved row that blocks every later try.
   const token = input.category ? unsubscribeToken(to, input.category, unsubscribeSecret()) : null;
   const rendered = renderEmail(input.content, {
     origin: siteOrigin(),
@@ -60,6 +54,13 @@ export async function sendEmail(db: Executor, mailer: Mailer, input: SendInput):
         "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
       }
     : undefined;
+
+  const [reserved] = await db
+    .insert(emailLog)
+    .values({ type: input.type, to, dedupeKey: input.dedupeKey, meta: input.meta ?? {}, sentAt: input.at })
+    .onConflictDoNothing({ target: emailLog.dedupeKey })
+    .returning({ id: emailLog.id });
+  if (!reserved) return "duplicate";
 
   try {
     const { id } = await mailer.send({ to, subject: rendered.subject, html: rendered.html, text: rendered.text, headers });

@@ -2,13 +2,19 @@ function words(name: string): string[] {
   return name.trim().split(/\s+/).filter(Boolean);
 }
 
+const WRAPPING = /["“”„«»\s]/;
+
 /**
  * Removes double quote marks wrapped around a bio ("Hi!" → Hi!). The homepage
  * #1 card adds its own pair, so typed quotes would show up doubled. Single
  * quotes stay: "kids' party" or "'90s kid" need their apostrophes.
  */
 export function stripWrappingQuotes(text: string): string {
-  return text.replace(/^["“”„«»\s]+|["“”„«»\s]+$/g, "");
+  let start = 0;
+  let end = text.length;
+  while (start < end && WRAPPING.test(text[start]!)) start++;
+  while (end > start && WRAPPING.test(text[end - 1]!)) end--;
+  return text.slice(start, end);
 }
 
 /** How a name is saved: trimmed, with runs of spaces collapsed ("  Sam   Rivera " → "Sam Rivera"). */

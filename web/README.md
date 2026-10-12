@@ -245,6 +245,11 @@ A test copy runs on the developer's own accounts; the client's accounts replace 
 8. **Admin:** run `pnpm admin:password` and set the line it prints as `ADMIN_PASSWORD_HASH`. `APP_SECRET` must be a
    long random string (32+ characters): it signs admin sessions and unsubscribe links.
 9. **After every deploy with a new file in `drizzle/`:** run `pnpm db:migrate` against the session pooler URL first.
+10. **Keep the tables closed to the public key:** the publishable key is in every visitor's browser, so nothing but
+    Realtime may accept it. Migration `0007_enable_row_security` switches row-level security on for every table with
+    no policies (the app connects as the tables' owner, which is not affected), and every new table in
+    `src/db/schema.ts` ends in `.enableRLS()`. In Supabase, also turn the **Data API** off (Integrations → Data API):
+    the site never calls `/rest/v1/`.
 
 ## Load and concurrency tests
 

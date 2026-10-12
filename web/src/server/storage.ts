@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { MAX_PHOTO_BYTES, sniffImage } from "@/lib/checkout";
+import { imageSize, MAX_PHOTO_BYTES, MAX_PHOTO_PIXELS, sniffImage } from "@/lib/checkout";
 
 export class PhotoError extends Error {}
 
@@ -9,8 +9,8 @@ const CONTENT_TYPES = { jpg: "image/jpeg", png: "image/png", webp: "image/webp" 
 
 /**
  * Saves a claim photo and returns its public URL. Photos arrive already
- * cropped to 512px by the browser; the server still checks the real file type
- * and size. Locally they go to public/uploads (git-ignored), in production to
+ * cropped to 512px by the browser; the server still checks the real file type,
+ * byte size and pixel size. Locally they go to public/uploads (git-ignored), in production to
  * a public Supabase Storage bucket.
  */
 export async function savePhoto(bytes: Uint8Array): Promise<string> {
@@ -18,6 +18,9 @@ export async function savePhoto(bytes: Uint8Array): Promise<string> {
   if (bytes.byteLength > MAX_PHOTO_BYTES) throw new PhotoError("That photo is too large. Try a smaller one.");
   const ext = sniffImage(bytes);
   if (!ext) throw new PhotoError("Photos must be JPG, PNG or WebP.");
+  const size = imageSize(bytes, ext);
+  if (!size || size.width < 1 || size.height < 1) throw new PhotoError("That photo can’t be read. Try another one.");
+  if (size.width > MAX_PHOTO_PIXELS || size.height > MAX_PHOTO_PIXELS) throw new PhotoError("That photo is too large. Try a smaller one.");
 
   const name = `${randomUUID()}.${ext}`;
   const driver = process.env.STORAGE_DRIVER ?? "local";
