@@ -138,6 +138,14 @@
   }
 }
 
+/* The narrowest phones (320px): logo + "Claim yours" + menu button only fit with a tighter bar. */
+@media (max-width: 340px) {
+  .header {
+    gap: var(--space-sm);
+    padding-inline: var(--space-md);
+  }
+}
+
 /* Claim and Success on phones: round back button, centered logo (Claim.dc.html). */
 @media (max-width: 640px) {
   .backMode {
