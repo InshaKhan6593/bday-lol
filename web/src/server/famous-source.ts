@@ -1,5 +1,6 @@
 import { DAYS_IN_MONTH, occursIn, toKey, type MonthDay } from "@/lib/birthday";
 import {
+  englishName,
   ENTERTAINMENT_ROOTS,
   EXCLUDED_ROOTS,
   FAMOUS_KEEP,
@@ -173,7 +174,12 @@ async function rootsOf(occupations: string[]): Promise<Map<string, Set<string>>>
 }
 
 /** Views of the English Wikipedia article over the last two full months. */
-async function pageviews(article: string, instant: Date): Promise<number> {
+/**
+ * Last two full months of English Wikipedia views. 0 for an article with no views recorded (renamed or
+ * brand new: it is ranked on language editions alone). Null when the lookup itself failed (rate limit,
+ * timeout): a 0 there would push a very well-known person out of the list, so the caller asks again.
+ */
+async function pageviews(article: string, instant: Date): Promise<number | null> {
   const end = new Date(Date.UTC(instant.getUTCFullYear(), instant.getUTCMonth(), 0));
   const start = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - 1, 1));
   const fmt = (d: Date) => d.toISOString().slice(0, 10).replace(/-/g, "");
@@ -182,12 +188,16 @@ async function pageviews(article: string, instant: Date): Promise<number> {
       `${PAGEVIEWS}/${article}/monthly/${fmt(start)}/${fmt(end)}`,
     );
     return data.items.reduce((sum, item) => sum + item.views, 0);
-  } catch {
-    return 0; // a renamed or brand-new article: rank it on language editions alone
+  } catch (error) {
+    return error instanceof Error && /HTTP 404/.test(error.message) ? 0 : null;
   }
 }
 
-/** English names and descriptions, 50 ids per call (the API's limit). */
+/**
+ * English names and descriptions, 50 ids per call (the API's limit). A name that is spelled the same
+ * in every language is stored once under "mul" (Wikidata's default-for-all-languages label) with no
+ * English copy: Cardi B is one. Asking for English alone silently dropped those people from the list.
+ */
 async function labels(
   ids: string[],
 ): Promise<{ found: Map<string, { name?: string; description?: string }>; failed: Set<string> }> {
@@ -198,15 +208,18 @@ async function labels(
       action: "wbgetentities",
       ids: ids.slice(i, i + 50).join("|"),
       props: "labels|descriptions",
-      languages: "en",
+      languages: "en|mul",
       format: "json",
     });
     try {
       const data = await getJson<{
-        entities: Record<string, { labels?: { en?: { value: string } }; descriptions?: { en?: { value: string } } }>;
+        entities: Record<
+          string,
+          { labels?: { en?: { value: string }; mul?: { value: string } }; descriptions?: { en?: { value: string } } }
+        >;
       }>(`${WIKIDATA_API}?${params}`);
       for (const [id, e] of Object.entries(data.entities)) {
-        out.set(id, { name: e.labels?.en?.value, description: e.descriptions?.en?.value });
+        out.set(id, { name: englishName(e.labels), description: e.descriptions?.en?.value });
       }
     } catch (error) {
       // Their dates are left out of this refresh (keeping last month's list); the rest still lands.
@@ -270,7 +283,18 @@ export const wikidataProvider: FamousBirthdaysProvider = {
     );
     const flat = [...shortlist.values()].flat();
     const views = await mapLimit(flat, 8, (c) => pageviews(c.article, instant));
-    const viewsOf = new Map(flat.map((c, i) => [c.sourceId, views[i]!]));
+    // Lookups that failed are asked again, a few at a time. A date that still has one is left out of
+    // this refresh (its last list stays) instead of being saved with someone wrongly at the bottom.
+    for (let i = 0; i < views.length; i++) {
+      if (views[i] === null) views[i] = await pageviews(flat[i]!.article, instant);
+    }
+    const viewsOf = new Map(flat.map((c, i) => [c.sourceId, views[i] ?? null]));
+    for (const [key, list] of shortlist) {
+      if (list.some((c) => viewsOf.get(c.sourceId) === null)) {
+        console.error(`famous: ${key} skipped: pageviews unavailable`);
+        shortlist.delete(key);
+      }
+    }
 
     const ranked = new Map(
       [...shortlist].map(([key, list]) => [

@@ -65,10 +65,10 @@ export async function HomeRoute({ day }: Props) {
           <BoostNotice path={routes.home} />
         </Suspense>
         <div className={styles.hero}>
-          <Kicker size="lg" className={styles.kicker}>
+          <h1 className={styles.date}>{dateLabel}</h1>
+          <Kicker as="p" size="lg" className={styles.kicker}>
             {leader ? "Today’s birthday belongs to" : "Today’s birthday is up for grabs"}
           </Kicker>
-          <h1 className={styles.date}>{dateLabel}</h1>
         </div>
 
         <div className={styles.today}>

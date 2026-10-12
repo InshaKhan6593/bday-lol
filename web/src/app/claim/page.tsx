@@ -25,7 +25,7 @@ export default async function ClaimPage({ searchParams }: Props) {
   return (
     <ClaimForm
       header={<SiteHeader omit={["claim"]} mobile="back" />}
-      footer={<SiteFooter />}
+      footer={<SiteFooter months={false} />}
       settings={page.settings}
       md={page.md}
       target={page.target}

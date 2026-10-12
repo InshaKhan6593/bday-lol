@@ -26,21 +26,17 @@ type IntroInput = {
   md: MonthDay;
   /** The board's year: the next time this date comes round. */
   year: number;
-  /** Best-known names first (the famous list). */
-  famous: string[];
-  /** Today's #1 on this date's board, if anyone has bid. */
-  leader: { name: string; total: string } | null;
-  openBid: string;
 };
 
 /**
  * The paragraph under "About [date] birthdays". Every sentence carries a fact
- * that is different for each date (day of the year, weekday, how common it is,
- * who's famous, who leads), so the 366 pages read as 366 pages and not one
- * template with the date swapped (claude-seo seo-programmatic). Sign, stone and
- * flower are left to the cards right below it.
+ * that is different for each date (day of the year, weekday, how common it is),
+ * so the 366 pages read as 366 pages and not one template with the date swapped
+ * (claude-seo seo-programmatic). Sign, stone and flower are left to the cards right
+ * below it, famous people to their own list, and who leads to the board above
+ * (the client asked for those two sentences to go, 2026-10-12).
  */
-export function aboutIntro({ md, year, famous, leader, openBid }: IntroInput): string[] {
+export function aboutIntro({ md, year }: IntroInput): string[] {
   const label = formatLong(md);
   const c = commonness(md);
   const sentences: string[] = [];
@@ -62,12 +58,6 @@ export function aboutIntro({ md, year, famous, leader, openBid }: IntroInput): s
     );
   }
 
-  if (famous.length > 0) sentences.push(`Famous ${label} birthdays include ${listNames(famous.slice(0, 3))}.`);
-  sentences.push(
-    leader
-      ? `On mybday.lol, ${leader.name} leads the ${label}, ${year} board with ${leader.total}.`
-      : `Nobody has claimed ${label}, ${year} on mybday.lol yet. The first bid takes the top spot from ${openBid}.`,
-  );
   return sentences;
 }
 

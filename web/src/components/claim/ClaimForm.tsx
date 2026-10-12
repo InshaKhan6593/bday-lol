@@ -339,8 +339,8 @@ export function ClaimForm({ header, footer, settings, md: serverMd, target, minC
               <Kicker className={styles.sectionTitle}>Preview</Kicker>
               <Surface radius="section" elevation="section" padding="none" className={styles.previewCard}>
                 <div className={styles.previewHead}>
-                  <Kicker className={styles.previewKicker}>Today’s birthday belongs to</Kicker>
                   <p className={styles.previewDate}>{md ? formatLong(md) : "Your birthday"}</p>
+                  <Kicker className={styles.previewKicker}>Today’s birthday belongs to</Kicker>
                 </div>
                 <div className={styles.previewBody}>
                   <Avatar name={name.trim() || "?"} photoUrl={photo?.url} size="card" />

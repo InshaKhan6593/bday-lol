@@ -17,6 +17,15 @@ export function stripWrappingQuotes(text: string): string {
   return text.slice(start, end);
 }
 
+/**
+ * The line the homepage #1 card shows when no bio was written, so the card never sits blank.
+ * A child's listing was added by a parent, so it speaks about them; everyone else speaks for themselves.
+ */
+export function fallbackBio(name: string, isMinor: boolean): string {
+  if (!isMinor) return "It’s my birthday! 🎂";
+  return `It’s ${firstName(name)}’s birthday! 🎂`;
+}
+
 /** How a name is saved: trimmed, with runs of spaces collapsed ("  Sam   Rivera " → "Sam Rivera"). */
 export function cleanName(name: string): string {
   return words(name).join(" ");

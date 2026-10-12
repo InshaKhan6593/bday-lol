@@ -5,7 +5,6 @@ import { aboutIntro, calendarFacts } from "@/lib/about";
 import { commonness } from "@/lib/commonness";
 import { adjacentDay } from "@/lib/date-page";
 import { birthFlower, birthstone, zodiacSign } from "@/lib/facts";
-import { formatUsd } from "@/lib/money";
 import { routes } from "@/lib/routes";
 import { FAMOUS_LISTED } from "@/lib/famous";
 import type { FamousPerson } from "@/server/famous";
@@ -19,25 +18,17 @@ type Props = {
   /** The board's year (the next time this date comes round). */
   year: number;
   famous: FamousPerson[];
-  leader: { name: string; totalCents: number } | null;
-  openBidCents: number;
 };
 
 /**
  * "About [date] birthdays" (SEO content under the list): a paragraph of this
- * date's facts, how common it is (FiveThirtyEight births data), sign, stone
+ * date's facts, how common it is (FiveThirtyEight births data, credited in the README), sign, stone
  * and flower, famous people, and links to the neighbouring days and the month page.
  */
-export function About({ md, year, famous, leader, openBidCents }: Props) {
+export function About({ md, year, famous }: Props) {
   const label = formatLongNb(md);
   const rank = commonness(md);
-  const intro = aboutIntro({
-    md,
-    year,
-    famous: famous.map((p) => p.name),
-    leader: leader && { name: leader.name, total: formatUsd(leader.totalCents) },
-    openBid: formatUsd(openBidCents),
-  });
+  const intro = aboutIntro({ md, year });
   const month = MONTHS[md.month - 1]!;
   const prev = adjacentDay(md, -1);
   const next = adjacentDay(md, 1);
@@ -63,9 +54,6 @@ export function About({ md, year, famous, leader, openBidCents }: Props) {
           <span className={styles.rankSub}>{rank.sub}</span>
         </span>
       </Surface>
-      {/* CC BY 4.0 attribution for the births data (07 B22). */}
-      <p className={styles.source}>Source: FiveThirtyEight (CDC/NCHS, SSA), US births 1994–2014.</p>
-
       {/* A description list: text extractors and AI answers read "Zodiac sign: Libra" as a fact, not loose spans. */}
       <dl className={styles.factGrid}>
         {facts.map((fact) => (

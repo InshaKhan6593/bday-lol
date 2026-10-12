@@ -458,7 +458,8 @@
 
 .swatches {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-columns: repeat(12, minmax(0, var(--control-sm)));
+  justify-content: space-between;
   gap: 10px;
 }
 
@@ -467,9 +468,9 @@
  * box-shadow wins over the hover rule); the picked one keeps its ring.
  */
 .swatches .swatch {
+  /* Always a circle: no minimum height, which made ovals when a column was narrower than it. */
   aspect-ratio: 1;
   width: 100%;
-  min-height: var(--control-sm);
   padding: 0;
   border: var(--border);
   border-radius: var(--radius-pill);

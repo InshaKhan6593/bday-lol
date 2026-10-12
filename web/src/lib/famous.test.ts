@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { knownFor, occupationLabel, oneBirthDateEach, qualifies, rankFamous, type FamousCandidate } from "./famous";
+import { englishName, knownFor, occupationLabel, oneBirthDateEach, qualifies, rankFamous, type FamousCandidate } from "./famous";
 
 // Occupation → the root classes it falls under (what the subclass lookup returns).
 const roots = new Map<string, Set<string>>([
@@ -32,6 +32,16 @@ describe("who counts as entertainment", () => {
   it("labels the first entertainment occupation", () => {
     expect(occupationLabel(["Q40348", "Q937857"], roots)).toBe("athlete");
     expect(occupationLabel(["Q10800557"], roots)).toBe("actor");
+  });
+});
+
+describe("the name shown", () => {
+  it("uses the English label, or the all-languages one when there is no English copy", () => {
+    expect(englishName({ en: { value: "Joan Cusack" }, mul: { value: "Joan Cusack (mul)" } })).toBe("Joan Cusack");
+    // Cardi B on Wikidata: the name sits under "mul" only. Asking for English alone dropped her from October 11.
+    expect(englishName({ mul: { value: "Cardi B" } })).toBe("Cardi B");
+    expect(englishName({})).toBeUndefined();
+    expect(englishName(undefined)).toBeUndefined();
   });
 });
 

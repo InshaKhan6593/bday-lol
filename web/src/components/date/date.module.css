@@ -708,12 +708,6 @@
   color: var(--color-text-tertiary);
 }
 
-.source {
-  margin-top: -6px;
-  font-size: var(--text-fine);
-  color: var(--color-text-tertiary);
-}
-
 .factGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

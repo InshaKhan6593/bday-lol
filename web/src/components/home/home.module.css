@@ -369,6 +369,7 @@
 }
 
 .reminderForm {
+  --reminder-side: 180px;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -380,9 +381,9 @@
   font-size: var(--text-caption);
 }
 
+/* Month and the button share one width, so the row reads Month · Day · wide Email · Remind me. */
 .monthField {
-  flex: 1 1 140px;
-  max-width: 200px;
+  flex: 0 0 var(--reminder-side);
 }
 
 .dayField {
@@ -394,7 +395,7 @@
 }
 
 .remindButton {
-  flex: 1 1 260px;
+  flex: 0 0 var(--reminder-side);
   font-size: var(--text-body-lg);
 }
 
@@ -428,5 +429,24 @@
   .ownerText {
     order: 2;
     flex-basis: 100%;
+  }
+
+  /* Full-width button, like "Remind me" in the form below. */
+  .claimCta {
+    flex: 1 1 100%;
+  }
+
+  /* Month and Day fill the row together, so Day ends where the email field ends. */
+  .monthField {
+    flex: 3 1 0;
+  }
+
+  .dayField {
+    flex: 2 1 0;
+  }
+
+  .emailField,
+  .remindButton {
+    flex: 1 1 100%;
   }
 }

@@ -37,7 +37,7 @@ The client can still override any decision in A or B. They are listed in the mes
 | B20 | User report/flag button | No. Not requested. Moderation happens through admin alert emails |
 | B21 | Feb 29 on the calendar every year | Yes. The client said the picker shows all 366 dates. The board year is the next leap year ("Next one: Feb 29, 2028") |
 | B24 | Mockup icons are hand-drawn and look rough | Use **Phosphor icons, Bold weight** (phosphoricons.com) for the whole site. Same icon in each place, cleaner drawing. Told to the client as FYI, since it differs slightly from the mockup |
-| B22 | Data credits | Small "Source: FiveThirtyEight (CDC/NCHS, SSA)" line under the commonness card (the data is CC BY, so attribution is required). Wikidata is CC0, no credit needed |
+| B22 | Data credits | Was a small "Source: FiveThirtyEight (CDC/NCHS, SSA)" line under the commonness card (the data is CC BY, so attribution is required). The client asked for it to be deleted on 2026-10-12; the credit now lives in web/README.md › Credits, like the Streamline one. Wikidata is CC0, no credit needed |
 | B23 | Claim page: bid typed **below the minimum** (mockup doesn't cover it) | Show an error in the gift-link red (#B3132B) under the bid box: "Bid at least $241 to take the homepage." (or "…to take #2."). "Pay & claim" is disabled until it's fixed. The server checks the amount again before creating the Checkout Session |
 
 ## C. Needs the client (cannot be decided by us)

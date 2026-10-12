@@ -221,8 +221,16 @@ at the top of `src/styles/tokens.css`. Components use **tokens and primitives, n
 Decided (2026-10-09): keep the **client's look** exactly: rounded pastel shapes and Bricolage Grotesque.
 We compared it with neubrutalism.com's square style and its fonts (Syne is too wide for the giant homepage date).
 Two upgrades over the mockup:
-- **Icons:** [Phosphor](https://phosphoricons.com), Bold weight, via `<Icon name="…" />`; the four share buttons use Streamline's icons via `<ShareIcon>` (filled with the theme accent; `SHARE_ICON_STYLE = "plain"` brings back the black ones the client approved; needs the footer credit). Approved by the client 2026-10-11
+- **Icons:** [Phosphor](https://phosphoricons.com), Bold weight, via `<Icon name="…" />`; the four share buttons use Streamline's icons via `<ShareIcon>` (filled with the theme accent; `SHARE_ICON_STYLE = "plain"` brings back the black ones the client approved; credited below). Approved by the client 2026-10-11
 - **Dropdowns and popups:** [Radix UI](https://www.radix-ui.com) primitives styled with our tokens (native `<select>` lists can't be styled)
+
+## Credits
+
+On 2026-10-12 the client asked for both credits to come off the site, so they are kept here.
+
+- Share icons: [Streamline](https://www.streamlinehq.com) Plump set, CC BY 4.0. The free licence asks for a visible
+  credit; a paid Streamline plan removes that need.
+- "How common is this birthday": FiveThirtyEight's US births data (CDC/NCHS and SSA, 1994–2014), CC BY 4.0.
 
 ## Deploy (Vercel + Supabase)
 

@@ -72,8 +72,6 @@ export function DatePageView({ md, page, focusPublicId = null }: Props) {
           md={md}
           year={page.year}
           famous={page.famous}
-          leader={page.entries[0] ?? null}
-          openBidCents={page.settings.minOpenBidCents}
         />
       </main>
       <SiteFooter currentMonth={md.month} />

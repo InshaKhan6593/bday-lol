@@ -84,6 +84,14 @@ export function qualifies(occupations: string[], rootsOf: Map<string, Set<string
   return entertainment;
 }
 
+/**
+ * The name to show from a Wikidata entity's labels: the English one, or the one stored under "mul"
+ * when the name is spelled the same in every language and no English copy exists.
+ */
+export function englishName(labels: { en?: { value: string }; mul?: { value: string } } | undefined): string | undefined {
+  return labels?.en?.value || labels?.mul?.value || undefined;
+}
+
 /** The plain label of someone's first entertainment occupation, the fallback for "known for". */
 export function occupationLabel(occupations: string[], rootsOf: Map<string, Set<string>>): string {
   for (const occ of occupations) {

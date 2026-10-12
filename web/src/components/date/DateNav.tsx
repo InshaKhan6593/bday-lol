@@ -22,11 +22,30 @@ type Props = {
 /** Window event that opens the date picker. */
 export const OPEN_DATE_PICKER = "mybday:open-date-picker";
 
+/**
+ * Whether the picker is open, kept outside the component: each date is its own page, so the
+ * component starts again on every date change, and the picker must still be open when it does.
+ * A full page load starts closed.
+ */
+let pickerOpen = false;
+
 /** ◀ Pick a date ▶ and "Back to today". The picker shows every date's current top bid. */
 export function DateNav({ md, today, todayTheme, calendarTops }: Props) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpenState] = useState(pickerOpen);
+  const setOpen = (next: boolean) => {
+    pickerOpen = next;
+    setOpenState(next);
+  };
   const [month, setMonth] = useState(md.month);
   const isToday = compareMonthDay(md, today) === 0;
+
+  // The picker stays open while dates change behind it: when the date shown changes, show its month.
+  const dateKey = `${md.month}-${md.day}`;
+  const [shownFor, setShownFor] = useState(dateKey);
+  if (shownFor !== dateKey) {
+    setShownFor(dateKey);
+    setMonth(md.month);
+  }
   const pickerStyle = { "--today-ground": getTheme(todayTheme).ground } as CSSProperties;
 
   function toggle(next: boolean) {
@@ -45,10 +64,11 @@ export function DateNav({ md, today, todayTheme, calendarTops }: Props) {
     return () => window.removeEventListener(OPEN_DATE_PICKER, openPicker);
   }, [md.month]);
 
+
   return (
     <Popover.Root open={open} onOpenChange={toggle}>
       <Popover.Anchor asChild>
-        <div className={styles.nav}>
+        <div className={styles.nav} data-date-nav>
           <IconButton href={routes.date(adjacentDay(md, -1))} icon="chevronLeft" label="Previous day" />
           <Popover.Trigger asChild>
             <Button variant="paper" className={styles.pickDate} iconStart={<Icon name="calendar" size={20} />}>
@@ -72,6 +92,16 @@ export function DateNav({ md, today, todayTheme, calendarTops }: Props) {
           aria-label="Pick a date"
           className={styles.calendar}
           style={pickerStyle}
+          // The picker itself takes focus, not its first button: on phones that drew a ring around "Previous month".
+          onOpenAutoFocus={(event) => {
+            event.preventDefault();
+            (event.currentTarget as HTMLElement).focus();
+          }}
+          // A click anywhere else closes it, except ◀ ▶ beside "Pick a date": those change the date behind the open picker.
+          onInteractOutside={(event) => {
+            const target = event.target as Element | null;
+            if (target?.closest("[data-date-nav] a")) event.preventDefault();
+          }}
         >
           <div className={styles.calHead}>
             <IconButton
@@ -95,7 +125,6 @@ export function DateNav({ md, today, todayTheme, calendarTops }: Props) {
                 prefetch={false}
                 aria-label={cell.aria}
                 aria-current={cell.state === "selected" ? "page" : undefined}
-                onClick={() => setOpen(false)}
                 className={cx(
                   styles.cell,
                   "lift",

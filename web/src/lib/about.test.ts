@@ -30,7 +30,7 @@ describe("calendar facts", () => {
 });
 
 describe("the About paragraph", () => {
-  const base = { md: oct7, year: 2026, famous: [], leader: null, openBid: "$5" };
+  const base = { md: oct7, year: 2026 };
 
   it("states the date's own facts", () => {
     const text = aboutIntro(base).join(" ");
@@ -46,21 +46,11 @@ describe("the About paragraph", () => {
     );
   });
 
-  it("names up to three famous people and the board's leader", () => {
-    const text = aboutIntro({
-      ...base,
-      famous: ["Simon Cowell", "Toni Braxton", "Yo-Yo Ma", "Fourth Person"],
-      leader: { name: "Jess Moreno", total: "$240" },
-    }).join(" ");
-    expect(text).toContain("Famous October 7 birthdays include Simon Cowell, Toni Braxton and Yo-Yo Ma.");
-    expect(text).not.toContain("Fourth Person");
-    expect(text).toContain("On mybday.lol, Jess Moreno leads the October 7, 2026 board with $240.");
-  });
-
-  it("invites the first bid on an empty board", () => {
-    expect(aboutIntro(base).at(-1)).toBe(
-      "Nobody has claimed October 7, 2026 on mybday.lol yet. The first bid takes the top spot from $5.",
-    );
+  it("leaves famous people and the board's leader to their own parts of the page", () => {
+    const text = aboutIntro(base).join(" ");
+    expect(text).not.toContain("Famous");
+    expect(text).not.toContain("mybday.lol");
+    expect(aboutIntro(base)).toHaveLength(2);
   });
 
   it("explains leap day", () => {
@@ -96,7 +86,7 @@ describe("the month paragraph", () => {
 
 describe("numbers in the paragraphs", () => {
   it("rounds births to the nearest 100, like the rank card", () => {
-    expect(aboutIntro({ md: oct7, year: 2026, famous: [], leader: null, openBid: "$5" }).join(" ")).toMatch(
+    expect(aboutIntro({ md: oct7, year: 2026 }).join(" ")).toMatch(
       /with about \d{1,2},\d00 babies born on it each year/,
     );
     expect(monthIntro(10, 31, 0).join(" ")).toMatch(/with about \d{1,2},\d00 babies a year/);

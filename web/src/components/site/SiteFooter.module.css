@@ -15,6 +15,7 @@
   flex-basis: 100%;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--space-md);
   padding-bottom: var(--space-xl);
 }
@@ -23,6 +24,7 @@
 .monthList {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: var(--space-sm);
   margin: 0;
   padding: 0;
@@ -70,13 +72,6 @@
   font-weight: var(--weight-bold);
 }
 
-.credit {
-  font-size: var(--text-fine);
-  font-weight: var(--weight-regular);
-  color: var(--color-text-tertiary);
-  text-decoration: none;
-}
-
 .links {
   display: flex;
   flex-wrap: wrap;
@@ -95,6 +90,12 @@
  */
 @media (max-width: 640px) {
   .footer {
-    padding: 0 var(--space-lg) var(--space-5xl);
+    padding: 0 var(--space-lg) var(--space-3xl);
+  }
+
+  /* The month strip is its own block: clear air before the © line, and the label back on the left. */
+  .months {
+    align-items: stretch;
+    padding-bottom: var(--space-3xl);
   }
 }

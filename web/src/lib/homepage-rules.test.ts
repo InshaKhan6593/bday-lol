@@ -4,7 +4,7 @@ import { formatCountdown } from "./countdown";
 import { giftButtons } from "./gifts";
 import { comingUpCopy, othersText } from "./homepage-copy";
 import { formatUsd, minToTakeTop } from "./money";
-import { cleanName, firstName, personSlug, shortName, uniqueSlug } from "./people";
+import { cleanName, fallbackBio, firstName, personSlug, shortName, uniqueSlug } from "./people";
 import { parseReminderInput } from "./reminders";
 import { birthdayShareText, facebookShareUrl, smsShareUrl } from "./share";
 
@@ -28,6 +28,13 @@ describe("names", () => {
     expect(shortName("Mary-Catherine Featherstonehaugh-Worthington")).toBe("Mary-Catherine F.");
     expect(shortName("Cher")).toBe("Cher");
     expect(firstName("Jess Moreno")).toBe("Jess");
+  });
+
+  it("gives the homepage card a line when no bio was written", () => {
+    expect(fallbackBio("Jess Moreno", false)).toBe("It’s my birthday! 🎂");
+    // A child's listing was added by a parent, so it speaks about the child.
+    expect(fallbackBio("Jess", true)).toBe("It’s Jess’s birthday! 🎂");
+    expect(fallbackBio("James", true)).toBe("It’s James’s birthday! 🎂");
   });
 
   it("picks the first name like the handoff says", () => {
