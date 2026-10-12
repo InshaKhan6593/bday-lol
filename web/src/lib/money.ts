@@ -3,6 +3,9 @@ import type { BoardTypeSettings } from "@/config/board-types";
 type MoneyRules = Pick<BoardTypeSettings, "minOpenBidCents" | "minStepCents">;
 
 /** "$12,500". Whole dollars only, like the mockup. */
+/** The most one payment can be: Stripe's ceiling for a Checkout payment ($999,999.99), in whole dollars. */
+export const MAX_PAYMENT_CENTS = 999_999_00;
+
 export function formatUsd(cents: number): string {
   return "$" + Math.round(cents / 100).toLocaleString("en-US");
 }

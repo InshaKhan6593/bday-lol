@@ -57,6 +57,13 @@
       "when": 1791807718222,
       "tag": "0007_enable_row_security",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791832446776,
+      "tag": "0008_presentment_amount_bigint",
+      "breakpoints": true
     }
   ]
 }

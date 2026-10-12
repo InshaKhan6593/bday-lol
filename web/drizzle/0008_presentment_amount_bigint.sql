@@ -1,0 +1,1 @@
+ALTER TABLE "payments" ALTER COLUMN "presentment_amount" SET DATA TYPE bigint;

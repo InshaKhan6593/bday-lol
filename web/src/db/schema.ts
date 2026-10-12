@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import {
+  bigint,
   boolean,
   check,
   date,
@@ -165,7 +166,9 @@ export const payments = pgTable(
     stripePaymentIntentId: text("stripe_payment_intent_id"),
     /** What the payer actually saw with Adaptive Pricing, e.g. GBP 400. */
     presentmentCurrency: varchar("presentment_currency", { length: 3 }),
-    presentmentAmount: integer("presentment_amount"),
+    // 64-bit: in the payer's own currency a large bid is a huge number of minor units ($9,999 is over
+    // 2 billion in Indonesian rupiah), which a 32-bit column refused, so the paid claim never went live.
+    presentmentAmount: bigint("presentment_amount", { mode: "number" }),
     /** "Visa •••• 4242" for the receipt, read from Stripe when the payment lands. */
     paymentMethod: text("payment_method"),
     /** Set when this boost was included in a "You got boosted" digest. */

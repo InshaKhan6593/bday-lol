@@ -4,7 +4,7 @@ import type { GiftLink } from "@/db/schema";
 import { DAYS_IN_MONTH, parseSlug, type MonthDay } from "./birthday";
 import { parseAmountCents } from "./boost";
 import { GIFT_ENTRY, parseGiftEntry, type GiftEntry } from "./gifts";
-import { formatUsd, minToTakeTop } from "./money";
+import { formatUsd, MAX_PAYMENT_CENTS, minToTakeTop } from "./money";
 import { isEmailAddress } from "./email-address";
 import { cleanName, stripWrappingQuotes } from "./people";
 
@@ -74,6 +74,7 @@ export function bidHint(target: ClaimTarget, minCents: number): string {
 
 /** Under the bid box when it's too low (decided, 07 B23). Null when the bid is fine. */
 export function bidError(amountCents: number, minCents: number, target: ClaimTarget): string | null {
+  if (amountCents > MAX_PAYMENT_CENTS) return `Bids can be up to ${formatUsd(MAX_PAYMENT_CENTS)}.`;
   if (amountCents >= minCents) return null;
   return `Bid at least ${formatUsd(minCents)} to ${goal(target, "take the homepage")}.`;
 }

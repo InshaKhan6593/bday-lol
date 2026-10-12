@@ -7,7 +7,7 @@ import { db } from "@/db";
 import { boostReturnPath, parseAmountCents } from "@/lib/boost";
 import { boostCheckoutParams } from "@/lib/checkout";
 import { now } from "@/lib/clock";
-import { formatUsd } from "@/lib/money";
+import { formatUsd, MAX_PAYMENT_CENTS } from "@/lib/money";
 import { siteOrigin } from "@/lib/routes";
 import { getBoostableEntry } from "../boosts";
 import { getBirthdaySettings } from "../leaderboard";
@@ -15,9 +15,6 @@ import { createPendingBoost } from "../payments";
 import { getStripe } from "../stripe";
 
 export type BoostActionState = { error?: string };
-
-/** Stripe's ceiling for one Checkout payment ($999,999.99), in whole dollars. */
-const MAX_BOOST_CENTS = 999_999_00;
 
 /**
  * "Boost $X": checks the amount and that the person can still be boosted,
@@ -33,7 +30,7 @@ export async function startBoostCheckout(_prev: BoostActionState, form: FormData
 
   const { settings } = await getBirthdaySettings(db);
   if (amountCents < settings.minBoostCents) return { error: `Boosts start at ${formatUsd(settings.minBoostCents)}.` };
-  if (amountCents > MAX_BOOST_CENTS) return { error: `Boosts can be up to ${formatUsd(MAX_BOOST_CENTS)}.` };
+  if (amountCents > MAX_PAYMENT_CENTS) return { error: `Boosts can be up to ${formatUsd(MAX_PAYMENT_CENTS)}.` };
 
   const found = typeof publicId === "string" ? await getBoostableEntry(db, publicId, instant) : null;
   if (!found?.ok) {

@@ -79,6 +79,9 @@ describe("claim target", () => {
     const leader = claimTarget(ranked, 1);
     expect(bidError(24_000, 24_100, leader)).toBe("Bid at least $241 to take the homepage.");
     expect(bidError(24_100, 24_100, leader)).toBeNull();
+    // One payment can't be more than Stripe's ceiling, for a claim as for a boost.
+    expect(bidError(999_999_00, 24_100, leader)).toBeNull();
+    expect(bidError(1_000_000_00, 24_100, leader)).toBe("Bids can be up to $999,999.");
     expect(bidError(0, 22_600, claimTarget(ranked, 2))).toBe("Bid at least $226 to take #2.");
   });
 });

@@ -70,6 +70,26 @@ describe("claim money path", () => {
     });
   });
 
+  it("goes live when the payer's own currency makes a very large number", async () => {
+    await inRollback(async (tx) => {
+      const type = await addBirthdayType(tx);
+      const board = await ensureBoard(tx, type, oct7, 2026);
+      const ids = await pending(tx, board.id, "cs_test_big", claim("Areeb", 999_999));
+
+      // $999,999 charged in Pakistani rupees is 28.8 billion paisa: more than a 32-bit column holds.
+      const result = await fulfillCheckout(
+        tx,
+        { sessionId: "cs_test_big", presentment: { currency: "pkr", amount: 28_801_176_418 }, paymentIntentId: "pi_big", paymentMethod: null, customerEmail: null },
+        NOON,
+      );
+      expect(result.status).toBe("fulfilled");
+      const [payment] = await tx.select().from(payments).where(eq(payments.id, ids.paymentId));
+      expect(payment).toMatchObject({ status: "paid", presentmentCurrency: "PKR", presentmentAmount: 28_801_176_418 });
+      const [entry] = await tx.select().from(entries).where(eq(entries.id, ids.entryId));
+      expect(entry).toMatchObject({ status: "live", totalCents: 99_999_900 });
+    });
+  });
+
   it("puts the entry live, records the payment and opens the #1 log", async () => {
     await inRollback(async (tx) => {
       const type = await addBirthdayType(tx);
