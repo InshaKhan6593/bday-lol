@@ -55,7 +55,12 @@
     font-family: var(--font-sans);
   }
 
+  /* The list itself scrolls, with the page held still behind it. */
   .viewport {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     padding: var(--space-sm);
     display: flex;
     flex-direction: column;
@@ -97,13 +102,5 @@
 
   .check {
     display: flex;
-  }
-
-  .scroll {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 28px;
-    cursor: default;
   }
 }

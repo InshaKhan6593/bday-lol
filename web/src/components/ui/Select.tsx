@@ -31,7 +31,9 @@ type Props = {
  * keyboard, screen reader and touch support.
  *
  * The list renders in place (no portal) so it inherits the page theme's
- * --ground and --accent.
+ * --ground and --accent. A long list (months, days) scrolls like any list: Radix's
+ * hover-to-scroll arrows are left out, because they appear and vanish while
+ * scrolling and made the list jump.
  */
 export function Select({ options, placeholder, className, "aria-label": ariaLabel, id, ...root }: Props) {
   return (
@@ -44,9 +46,6 @@ export function Select({ options, placeholder, className, "aria-label": ariaLabe
       </RadixSelect.Trigger>
 
       <RadixSelect.Content position="popper" sideOffset={8} collisionPadding={16} className={styles.menu}>
-        <RadixSelect.ScrollUpButton className={styles.scroll}>
-          <Icon name="chevronUp" size={16} />
-        </RadixSelect.ScrollUpButton>
         <RadixSelect.Viewport className={styles.viewport}>
           {options.map((option) => (
             <RadixSelect.Item key={option.value} value={option.value} disabled={option.disabled} className={styles.item}>
@@ -57,9 +56,6 @@ export function Select({ options, placeholder, className, "aria-label": ariaLabe
             </RadixSelect.Item>
           ))}
         </RadixSelect.Viewport>
-        <RadixSelect.ScrollDownButton className={styles.scroll}>
-          <Icon name="chevronDown" size={16} />
-        </RadixSelect.ScrollDownButton>
       </RadixSelect.Content>
     </RadixSelect.Root>
   );

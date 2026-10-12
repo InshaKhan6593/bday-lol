@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Popover } from "radix-ui";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState, type ComponentProps, type CSSProperties, type ReactNode } from "react";
 import { Button, Icon, IconButton } from "@/components/ui";
 import { getTheme, type ThemeKey } from "@/config/themes";
 import { compareMonthDay, MONTHS, type MonthDay } from "@/lib/birthday";
@@ -37,6 +37,7 @@ export function DateNav({ md, today, todayTheme, calendarTops }: Props) {
     setOpenState(next);
   };
   const [month, setMonth] = useState(md.month);
+  const [picked, setPicked] = useState<string | null>(null);
   const isToday = compareMonthDay(md, today) === 0;
 
   // The picker stays open while dates change behind it: when the date shown changes, show its month.
@@ -69,13 +70,14 @@ export function DateNav({ md, today, todayTheme, calendarTops }: Props) {
     <Popover.Root open={open} onOpenChange={toggle}>
       <Popover.Anchor asChild>
         <div className={styles.nav} data-date-nav>
-          <IconButton href={routes.date(adjacentDay(md, -1))} icon="chevronLeft" label="Previous day" />
+          {/* The neighbouring days are fetched ahead, so ◀ ▶ change the page at once. */}
+          <IconButton href={routes.date(adjacentDay(md, -1))} prefetch icon="chevronLeft" label="Previous day" />
           <Popover.Trigger asChild>
             <Button variant="paper" className={styles.pickDate} iconStart={<Icon name="calendar" size={20} />}>
               Pick a date
             </Button>
           </Popover.Trigger>
-          <IconButton href={routes.date(adjacentDay(md, 1))} icon="chevronRight" label="Next day" />
+          <IconButton href={routes.date(adjacentDay(md, 1))} prefetch icon="chevronRight" label="Next day" />
           {!isToday && (
             <Link href={routes.date(today)} className={styles.backToday}>
               Back to today
@@ -117,30 +119,63 @@ export function DateNav({ md, today, todayTheme, calendarTops }: Props) {
           </div>
 
           <div className={styles.calGrid}>
-            {calendarCells(month, calendarTops, md, today).map((cell) => (
-              <Link
-                key={cell.md.day}
-                href={routes.date(cell.md)}
-                // A month of dates: fetched when clicked, not all 30 as soon as they are on screen.
-                prefetch={false}
-                aria-label={cell.aria}
-                aria-current={cell.state === "selected" ? "page" : undefined}
-                className={cx(
-                  styles.cell,
-                  "lift",
-                  cell.state === "today" && styles.cellToday,
-                  cell.state === "selected" && styles.cellSelected,
-                )}
-              >
-                <span className={styles.cellNum}>{cell.md.day}</span>
-                <span className={styles.cellSub}>{cell.sub}</span>
-              </Link>
-            ))}
+            {calendarCells(month, calendarTops, md, today).map((cell) => {
+              const key = `${cell.md.month}-${cell.md.day}`;
+              // The tapped date turns black at once; the page behind follows when it arrives.
+              const selected = picked ? picked === key : cell.state === "selected";
+              return (
+                <DateCell
+                  key={cell.md.day}
+                  href={routes.date(cell.md)}
+                  label={cell.aria}
+                  selected={selected}
+                  onPick={() => setPicked(key)}
+                  className={cx(styles.cell, "lift", cell.state === "today" && !selected && styles.cellToday, selected && styles.cellSelected)}
+                >
+                  <span className={styles.cellNum}>{cell.md.day}</span>
+                  <span className={styles.cellSub}>{cell.sub}</span>
+                </DateCell>
+              );
+            })}
           </div>
 
           <p className={styles.calNote}>Under each date: the current top bid.</p>
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
+  );
+}
+
+type DateCellProps = {
+  href: ComponentProps<typeof Link>["href"];
+  label: string;
+  selected: boolean;
+  onPick: () => void;
+  className: string;
+  children: ReactNode;
+};
+
+/**
+ * One date in the picker. A month of dates isn't fetched just for being on screen: a date is
+ * fetched as soon as the pointer or a finger reaches it, so by the time the click lands the page
+ * is usually already there.
+ */
+function DateCell({ href, label, selected, onPick, className, children }: DateCellProps) {
+  const [warm, setWarm] = useState(false);
+  const warmUp = () => setWarm(true);
+  return (
+    <Link
+      href={href}
+      prefetch={warm}
+      aria-label={label}
+      aria-current={selected ? "page" : undefined}
+      onPointerEnter={warmUp}
+      onTouchStart={warmUp}
+      onFocus={warmUp}
+      onClick={onPick}
+      className={className}
+    >
+      {children}
+    </Link>
   );
 }
