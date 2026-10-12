@@ -23,7 +23,7 @@ export function ShareButtons({ url, message, large, className }: Props) {
 
   return (
     <div className={cx(styles.grid, large && styles.large, className)}>
-      <Button variant={lead} onClick={() => share(url, message)} iconStart={<ShareIcon name="share" />}>
+      <Button variant={lead} onClick={() => share(url, message)} iconStart={<ShareIcon name="share" tile={large} />}>
         Share
       </Button>
       <Button
@@ -32,7 +32,7 @@ export function ShareButtons({ url, message, large, className }: Props) {
         href={facebookShareUrl(url)}
         target="_blank"
         rel="noopener noreferrer"
-        iconStart={<ShareIcon name="facebook" />}
+        iconStart={<ShareIcon name="facebook" tile={large} />}
       >
         Facebook
       </Button>
@@ -60,7 +60,7 @@ export function InviteButtons({ url, message, className }: Props) {
         href={smsShareUrl(message, url)}
         size="lg"
         className={styles.inviteText}
-        iconStart={<ShareIcon name="text" />}
+        iconStart={<ShareIcon name="text" tile />}
       >
         Text them the link
       </Button>
