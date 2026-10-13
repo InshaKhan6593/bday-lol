@@ -9,10 +9,11 @@ type Props = { searchParams: Promise<{ page?: string }> };
 export default async function AdminPagesPage({ searchParams }: Props) {
   await requireAdmin();
   const asked = (await searchParams).page;
-  const pages: EditablePage[] = [];
-  for (const slug of Object.keys(EDITABLE_PAGES) as EditablePageSlug[]) {
-    const { body, edited } = await getEditablePage(db, slug);
-    pages.push({ slug, title: EDITABLE_PAGES[slug].title, path: EDITABLE_PAGES[slug].path, body, edited });
-  }
+  const pages: EditablePage[] = await Promise.all(
+    (Object.keys(EDITABLE_PAGES) as EditablePageSlug[]).map(async (slug) => {
+      const { body, edited } = await getEditablePage(db, slug);
+      return { slug, title: EDITABLE_PAGES[slug].title, path: EDITABLE_PAGES[slug].path, body, edited };
+    }),
+  );
   return <PagesScreen pages={pages} current={isEditablePage(asked) ? asked : "terms"} />;
 }

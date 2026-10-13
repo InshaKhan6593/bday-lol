@@ -9,7 +9,7 @@ import { formatLong, parseKey } from "@/lib/birthday";
 import { routes } from "@/lib/routes";
 import { adminSetFamousHidden } from "@/server/actions/admin";
 import type { AdminFamous } from "@/server/admin";
-import { PageHead } from "./AdminShell";
+import { LoadingBar, PageHead } from "./AdminShell";
 import { DateSelect } from "./DateSelect";
 import classes from "./admin.module.css";
 
@@ -25,6 +25,8 @@ type Props = {
 export function FamousScreen({ date, people, listed }: Props) {
   const router = useRouter();
   const [working, startWork] = useTransition();
+  // Picking another date asks the server: the list dims and the bar runs until it answers.
+  const [loading, startLoading] = useTransition();
   const md = parseKey(date)!;
   let position = 0;
 
@@ -34,7 +36,6 @@ export function FamousScreen({ date, people, listed }: Props) {
       notifications.show(
         result.ok ? { message: result.message, color: "green" } : { message: result.errors?.form ?? "That didn’t work.", color: "red" },
       );
-      router.refresh();
     });
   }
 
@@ -45,9 +46,10 @@ export function FamousScreen({ date, people, listed }: Props) {
         lead={`Born on ${formatLong(md)}, best known first. The date page shows the first ${listed} that aren’t hidden.`}
       />
       <div className={classes.filters}>
-        <DateSelect compact value={date} onChange={(key) => key && router.push(`${routes.admin.famous}?date=${key}` as Route)} />
+        <DateSelect compact value={date} onChange={(key) => key && startLoading(() => router.push(`${routes.admin.famous}?date=${key}` as Route))} />
       </div>
-      <Paper className={classes.tableCard}>
+      <LoadingBar active={loading || working} />
+      <Paper className={classes.tableCard} data-busy={loading || undefined} aria-busy={loading}>
         {people.length === 0 ? (
           <p className={classes.empty}>No famous people are stored for this date yet. The list fills in with the monthly refresh.</p>
         ) : (

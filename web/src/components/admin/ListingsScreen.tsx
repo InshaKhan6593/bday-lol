@@ -14,7 +14,7 @@ import { initials } from "@/lib/people";
 import { routes } from "@/lib/routes";
 import { adminSaveListing, adminSetStatus, type AdminActionState } from "@/server/actions/admin";
 import type { AdminCounts, AdminEntry, AdminSort, AdminView } from "@/server/admin";
-import { PageHead } from "./AdminShell";
+import { LoadingBar, PageHead } from "./AdminShell";
 import { DateSelect } from "./DateSelect";
 import { ListingFields } from "./ListingFields";
 import classes from "./admin.module.css";
@@ -61,8 +61,6 @@ type Props = {
   timeZone: string;
   /** Which page this is, and how many listings match in all. */
   paging: { page: number; total: number; pageSize: number };
-  /** The comped part of each comped listing's total. */
-  compedCents: Record<string, number>;
   limits: { nameMaxLength: number; bioMaxLength: number };
   /** Just added a comped listing: say so once. */
   justAdded: boolean;
@@ -83,14 +81,16 @@ function listingsUrl(filter: Filter, page = 1): Route {
 }
 
 /** Everyone on the open boards: find a listing, edit it, take it down or put it back. */
-export function ListingsScreen({ entries, filter, counts, timeZone, paging, compedCents, limits, justAdded }: Props) {
+export function ListingsScreen({ entries, filter, counts, timeZone, paging, limits, justAdded }: Props) {
   const router = useRouter();
   const [q, setQ] = useState(filter.q);
   const [editing, setEditing] = useState<AdminEntry | null>(null);
   const [confirming, setConfirming] = useState<AdminEntry | null>(null);
   const [working, startWork] = useTransition();
+  // Sorting, filtering and paging ask the server: the list dims and the bar runs until it answers.
+  const [loading, startLoading] = useTransition();
   // A new search starts again from the first page.
-  const go = (next: Partial<Filter>) => router.push(listingsUrl({ ...filter, q, ...next }));
+  const go = (next: Partial<Filter>) => startLoading(() => router.push(listingsUrl({ ...filter, q, ...next })));
   const pages = Math.max(1, Math.ceil(paging.total / paging.pageSize));
   const firstShown = (paging.page - 1) * paging.pageSize + 1;
 
@@ -105,8 +105,8 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, comp
       notifications.show(
         result.ok ? { message: result.message, color: "green" } : { message: result.errors?.form ?? "That didn’t work.", color: "red" },
       );
+      // The fresh list arrives with the action's own answer.
       setConfirming(null);
-      router.refresh();
     });
   }
 
@@ -180,7 +180,8 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, comp
         />
       </form>
 
-      <Paper className={classes.tableCard}>
+      <LoadingBar active={loading || working} />
+      <Paper className={classes.tableCard} data-busy={loading || undefined} aria-busy={loading}>
         {entries.length === 0 ? (
           <p className={classes.empty}>No listings match. Try another date or name.</p>
         ) : (
@@ -231,7 +232,16 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, comp
                       </div>
                     </Table.Td>
                     <Table.Td className={classes.dateCell}>
-                      <Anchor component={Link} href={routes.person(date, removed ? null : entry.slug)} target="_blank" c="inherit" fw={600} underline="always">
+                      {/* Not loaded ahead: 50 rows would each ask the server for a public page nobody may open. */}
+                      <Anchor
+                        component={Link}
+                        prefetch={false}
+                        href={routes.person(date, removed ? null : entry.slug)}
+                        target="_blank"
+                        c="inherit"
+                        fw={600}
+                        underline="always"
+                      >
                         {formatShort(date)}
                       </Anchor>
                       <Text size="xs" c="dimmed" className={classes.dateYear}>
@@ -295,7 +305,7 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, comp
             <Pagination
               total={pages}
               value={paging.page}
-              onChange={(page) => router.push(listingsUrl({ ...filter, q: filter.q }, page))}
+              onChange={(page) => startLoading(() => router.push(listingsUrl({ ...filter, q: filter.q }, page)))}
               radius="xl"
               getControlProps={(control) => ({ "aria-label": `${control} page` })}
             />
@@ -308,12 +318,9 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, comp
           <EditForm
             key={editing.id}
             entry={editing}
-            compedCents={compedCents[editing.id] ?? null}
+            compedCents={editing.compedCents}
             limits={limits}
-            onDone={() => {
-              setEditing(null);
-              router.refresh();
-            }}
+            onDone={() => setEditing(null)}
           />
         )}
       </Modal>

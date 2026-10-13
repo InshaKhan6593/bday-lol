@@ -1,4 +1,5 @@
 import { and, asc, eq, gt, ilike, inArray, isNull, lte, ne, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import type { BoardTypeSettings } from "@/config/board-types";
 import type { Executor } from "@/db";
 import { boards, entries, famousHidden, famousPeople, leaderLog, payments, type GiftLink } from "@/db/schema";
@@ -43,6 +44,8 @@ export type AdminEntry = {
   totalCents: number;
   ownerEmail: string | null;
   liveAt: string | null;
+  /** The comped part of a comped listing's total (boosts people paid on top are not in it). Null when it isn't comped. */
+  compedCents: number | null;
 };
 
 /** The listings tabs: everything, what's on the boards, what was taken down, and the free spots. */
@@ -130,6 +133,8 @@ export async function listAdminEntries(db: Executor, filter: AdminEntryFilter, i
     .from(entries)
     .where(eq(entries.status, "live"))
     .as("ranked");
+  // A comped listing has exactly one "comp" payment: the amount the admin set.
+  const comp = alias(payments, "comp");
   const page = Math.max(1, Math.floor(filter.page ?? 1));
   const { by, dir } = filter.sort ?? DEFAULT_ADMIN_SORT;
   const way = dir === "asc" ? sql`asc` : sql`desc`;
@@ -161,10 +166,12 @@ export async function listAdminEntries(db: Executor, filter: AdminEntryFilter, i
       totalCents: entries.totalCents,
       ownerEmail: entries.ownerEmail,
       liveAt: entries.liveAt,
+      compedCents: comp.amountCents,
     })
     .from(entries)
     .innerJoin(boards, eq(boards.id, entries.boardId))
     .leftJoin(ranked, eq(ranked.id, entries.id))
+    .leftJoin(comp, and(eq(comp.entryId, entries.id), eq(comp.kind, "comp")))
     .where(entriesWhere(filter, instant))
     // The id settles ties, so a listing is never on two pages or on none.
     .orderBy(order, asc(entries.id))

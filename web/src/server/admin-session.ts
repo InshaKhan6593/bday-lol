@@ -1,5 +1,6 @@
 import { and, eq, gt, sql } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { db, type Executor } from "@/db";
 import { adminLogins, adminSettings } from "@/db/schema";
@@ -66,11 +67,14 @@ export async function passwordHash(db: Executor): Promise<string | undefined> {
   return (await setting(db, PASSWORD_KEY)) ?? (process.env.ADMIN_PASSWORD_HASH || undefined);
 }
 
+/** Read once while a page is drawn: the layout and the page both check the sign-in. */
+const hashForThisRequest = cache(() => passwordHash(db));
+
 /** Is the visitor signed in as the admin? */
 export async function isAdmin(): Promise<boolean> {
   const token = (await cookies()).get(ADMIN_COOKIE)?.value;
   if (!token) return false;
-  const hash = await passwordHash(db);
+  const hash = await hashForThisRequest();
   return Boolean(hash) && isValidSession(token, sessionSecret(unsubscribeSecret(), hash!), now().getTime());
 }
 

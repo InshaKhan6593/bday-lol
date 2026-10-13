@@ -138,6 +138,12 @@ by a comped or restored listing gets the usual outbid email; a taken-down listin
 `src/server/actions/admin.ts` then drop the caches, throw away the saved pages and tell open pages to look again.
 A listing keeps its personal link when its name is edited, so shared links keep working.
 
+**Why every click shows a bar.** The admin always shows live data, so each click is a trip to the server (about 0.4 s
+from South Asia to the US east coast, measured 2026-10-13, against about 50 ms of work). A thin bar runs and the list
+dims the moment a click starts (`LoadingBar`, `data-busy`), a menu click shows the screen's outline at once
+(`(panel)/loading.tsx`), a change comes back with its own fresh screen (`refresh()` in the actions, no second trip),
+and the listings' links to public pages are not loaded ahead (`prefetch={false}`: 50 rows were 50 background requests).
+
 **The look.** [Mantine](https://mantine.dev) draws the components and loads only under `/admin`; the page editor is
 Mantine's [Tiptap](https://tiptap.dev) editor. The theme
 (`src/components/admin/theme.ts`, `admin.module.css`) is built from the site's own tokens: Bricolage Grotesque, ink

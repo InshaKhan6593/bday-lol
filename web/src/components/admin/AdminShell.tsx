@@ -2,7 +2,7 @@
 
 import { ChartBarIcon, FileTextIcon, KeyIcon, ListBulletsIcon, PlusCircleIcon, SignOutIcon, StarIcon } from "@phosphor-icons/react";
 import type { Route } from "next";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { routes } from "@/lib/routes";
 import { adminSignOut } from "@/server/actions/admin";
@@ -17,13 +17,26 @@ const NAV: Array<{ href: Route; label: string; icon: typeof StarIcon }> = [
   { href: routes.admin.account, label: "Account", icon: KeyIcon },
 ];
 
+/**
+ * A thin bar across the top while the server is answering. Every admin click is a trip to the server,
+ * so something has to move the moment it starts.
+ */
+export function LoadingBar({ active }: { active: boolean }) {
+  return <div className={classes.loadingBar} data-active={active || undefined} role="progressbar" aria-hidden={!active} aria-label="Loading" />;
+}
+
+/** Inside a menu link: the bar shows while that link's screen is on its way. */
+function LinkPending() {
+  return <LoadingBar active={useLinkStatus().pending} />;
+}
+
 /** The admin's frame: the black menu on the left, the screen on the right. */
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   return (
     <div className={classes.shell}>
       <nav className={classes.nav} aria-label="Admin">
-        <Link href={routes.home} className={classes.brand}>
+        <Link href={routes.home} prefetch={false} className={classes.brand}>
           mybday.lol
           <span className={classes.brandSub}>Admin</span>
         </Link>
@@ -31,6 +44,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <Link key={href} href={href} className={classes.navLink} aria-current={pathname === href ? "page" : undefined}>
             <NavIcon size={20} weight="bold" aria-hidden />
             {label}
+            <LinkPending />
           </Link>
         ))}
         <span className={classes.navSpacer} />

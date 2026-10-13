@@ -172,6 +172,9 @@ describe("admin: listings", () => {
 
       expect(await countAdminViews(tx, NOON)).toEqual({ all: 4, live: 3, removed: 1, comped: 1 });
       expect((await listAdminEntries(tx, { status: "comped" }, NOON)).map((e) => e.name)).toEqual(["Famous Guest"]);
+      // Each listing comes with its comped amount (none for a paid one), so the edit form needs no second read.
+      const byName = Object.fromEntries((await listAdminEntries(tx, {}, NOON)).map((e) => [e.name, e.compedCents]));
+      expect(byName).toMatchObject({ "Famous Guest": 50_00, "Jess Moreno": null });
       expect(await countAdminEntries(tx, { status: "comped" }, NOON)).toBe(1);
     });
   });

@@ -7,12 +7,11 @@ import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import type { Route } from "next";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { fromEditorDoc, titleLine, toEditorDoc, type EditorNode } from "@/lib/rich-text";
 import { routes } from "@/lib/routes";
 import { adminSavePage } from "@/server/actions/admin";
-import { PageHead } from "./AdminShell";
+import { LoadingBar, PageHead } from "./AdminShell";
 import classes from "./admin.module.css";
 
 export type EditablePage = {
@@ -44,11 +43,17 @@ const EDITOR_KIT = StarterKit.configure({
 
 /** Terms, Privacy and the FAQ: edited here, live at once, no deploy (handoff v2 §11). */
 export function PagesScreen({ pages, current }: { pages: EditablePage[]; current: EditablePage["slug"] }) {
-  const router = useRouter();
+  // All three texts came with the screen, so a tab opens at once: only the address is updated.
+  const [tab, setTab] = useState(current);
+  const open = (slug: string | null) => {
+    if (!slug) return;
+    setTab(slug as EditablePage["slug"]);
+    window.history.replaceState(null, "", `${routes.admin.pages}?page=${slug}`);
+  };
   return (
     <>
       <PageHead title="Pages" lead="Edit the text and save: the page changes on the site straight away." />
-      <Tabs value={current} onChange={(slug) => slug && router.push(`${routes.admin.pages}?page=${slug}` as Route)} keepMounted={false}>
+      <Tabs value={tab} onChange={open} keepMounted={false}>
         <Tabs.List mb="lg">
           {pages.map((page) => (
             <Tabs.Tab key={page.slug} value={page.slug} fw={800}>
@@ -68,7 +73,6 @@ export function PagesScreen({ pages, current }: { pages: EditablePage[]; current
 }
 
 function PageEditor({ page }: { page: EditablePage }) {
-  const router = useRouter();
   const [pending, startSave] = useTransition();
   const [error, setError] = useState<string | null>(null);
   // The page's own "# Title" line stays out of the editor and goes back in on save.
@@ -102,12 +106,12 @@ function PageEditor({ page }: { page: EditablePage }) {
       setError(null);
       if (!reset) setSaved(body);
       notifications.show({ message: result.message, color: "green" });
-      router.refresh();
     });
   };
 
   return (
     <Paper p="xl">
+      <LoadingBar active={pending} />
       {error && (
         <Alert color="red" variant="light" mb="md" role="alert">
           {error}

@@ -2,7 +2,6 @@
 
 import { Alert, Button, Group, Paper, PasswordInput, Stack, TextInput } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef } from "react";
 import { PASSWORD_MIN_LENGTH } from "@/lib/admin-auth-rules";
 import { adminChangeEmail, adminChangePassword, type AdminActionState } from "@/server/actions/admin";
@@ -23,7 +22,6 @@ export function AccountScreen({ email }: { email: string | null }) {
 }
 
 function EmailCard({ email }: { email: string | null }) {
-  const router = useRouter();
   const [state, action, pending] = useActionState<AdminActionState, FormData>(adminChangeEmail, {});
   const form = useRef<HTMLFormElement>(null);
 
@@ -31,8 +29,7 @@ function EmailCard({ email }: { email: string | null }) {
     if (!state.ok) return;
     notifications.show({ message: state.message, color: "green" });
     form.current?.reset();
-    router.refresh();
-  }, [state, router]);
+  }, [state]);
 
   return (
     <Paper p="xl">

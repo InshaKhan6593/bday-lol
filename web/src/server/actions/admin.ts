@@ -1,7 +1,7 @@
 "use server";
 
 import type { Route } from "next";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { refresh, revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { isValidMonthDay } from "@/lib/birthday";
@@ -60,6 +60,8 @@ async function boardChanged(change: BoardChange): Promise<void> {
   revalidatePath("/months/[month]", "page");
   for (const route of SAVED_PAGE_ROUTES) revalidatePath(route, "page");
   await announceBoardChange(change.boardKey);
+  // The admin's own screen comes back with this answer: no second trip to reload it.
+  refresh();
 }
 
 async function uploadedPhoto(form: FormData): Promise<{ url: string | null } | { error: string }> {
@@ -120,6 +122,7 @@ export async function adminChangeEmail(_prev: AdminActionState, form: FormData):
   if (!(await isAdmin())) return NOT_SIGNED_IN;
   const result = await changeEmail({ current: text(form, "current"), email: text(form, "email").slice(0, 254) });
   if (!result.ok) return { ok: false, errors: { [result.field]: result.error } };
+  refresh();
   return { ok: true, message: `Sign-in email changed to ${result.email}.` };
 }
 
@@ -204,6 +207,7 @@ export async function adminSetFamousHidden(source: string, sourceId: string, hid
   revalidateTag(CACHE_TAGS.famous, { expire: 0 });
   revalidatePath("/months/[month]", "page");
   revalidatePath("/[slug]/~day/[date]", "page");
+  refresh();
   return { ok: true, message: hidden ? "Hidden. The next name moves up." : "Showing again." };
 }
 
@@ -224,5 +228,6 @@ export async function adminSavePage(_prev: AdminActionState, form: FormData): Pr
     await saveSitePage(db, slug, body, now());
   }
   revalidatePath(EDITABLE_PAGES[slug].path);
+  refresh();
   return { ok: true, message: text(form, "reset") === "1" ? "Back to the original text." : "Saved. The page is live." };
 }

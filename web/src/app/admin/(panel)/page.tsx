@@ -9,7 +9,6 @@ import {
   DEFAULT_ADMIN_SORT,
   countAdminEntries,
   countAdminViews,
-  getCompedAmounts,
   lastAdminPage,
   listAdminEntries,
   type AdminEntryFilter,
@@ -17,7 +16,7 @@ import {
   type AdminView,
 } from "@/server/admin";
 import { requireAdmin } from "@/server/admin-session";
-import { getBirthdaySettings } from "@/server/leaderboard";
+import { cachedReads } from "@/server/cached";
 
 type Props = {
   searchParams: Promise<{ date?: string; q?: string; status?: string; sort?: string; dir?: string; page?: string; added?: string }>;
@@ -35,14 +34,16 @@ export default async function AdminListingsPage({ searchParams }: Props) {
 
   const instant = now();
   const filter: AdminEntryFilter = { key: date || undefined, q, status, sort };
-  const total = await countAdminEntries(db, filter, instant);
+  // Three reads that don't depend on each other go out together; the settings come from the shared cache.
+  const [total, counts, { settings }] = await Promise.all([
+    countAdminEntries(db, filter, instant),
+    countAdminViews(db, instant),
+    cachedReads.settings(),
+  ]);
   // A page number beyond the end (a stale link, or the last listing on a page was just removed) shows the last page.
   const asked = typeof params.page === "string" && /^\d{1,6}$/.test(params.page) ? Number(params.page) : 1;
   const page = Math.min(Math.max(1, asked), lastAdminPage(total));
   const entries = await listAdminEntries(db, { ...filter, page }, instant);
-  const compedCents = await getCompedAmounts(db, entries.filter((e) => e.isComped).map((e) => e.id));
-  const counts = await countAdminViews(db, instant);
-  const { settings } = await getBirthdaySettings(db);
 
   return (
     <ListingsScreen
@@ -51,7 +52,6 @@ export default async function AdminListingsPage({ searchParams }: Props) {
       counts={counts}
       timeZone={settings.timezone}
       paging={{ page, total, pageSize: ADMIN_PAGE_SIZE }}
-      compedCents={compedCents}
       limits={{ nameMaxLength: settings.nameMaxLength, bioMaxLength: settings.bioMaxLength }}
       justAdded={params.added === "1"}
     />
