@@ -74,22 +74,24 @@ export function ListingFields({ initial, errors, limits, onPhoto }: Props) {
           Photo
         </Text>
         <div className={classes.photoRow}>
-          {shownPhoto ? (
-            // eslint-disable-next-line @next/next/no-img-element -- a preview of a local or stored photo
-            <img src={shownPhoto} alt="" className={`${classes.avatar} ${classes.photoPreview}`} />
-          ) : (
-            <span className={`${classes.avatar} ${classes.photoPreview}`} style={{ background: ground }}>
-              {initials(name || "?")}
-            </span>
-          )}
-          <FileInput
-            placeholder={shownPhoto ? "Replace photo" : "Add photo"}
-            accept="image/jpeg,image/png,image/webp"
-            onChange={pick}
-            clearable
-            error={photoError ?? errors?.photo}
-            style={{ flex: 1 }}
-          />
+          <div className={classes.photoPick}>
+            {shownPhoto ? (
+              // eslint-disable-next-line @next/next/no-img-element -- a preview of a local or stored photo
+              <img src={shownPhoto} alt="" className={`${classes.avatar} ${classes.photoPreview}`} />
+            ) : (
+              <span className={`${classes.avatar} ${classes.photoPreview}`} style={{ background: ground }}>
+                {initials(name || "?")}
+              </span>
+            )}
+            <FileInput
+              placeholder={shownPhoto ? "Replace photo" : "Add photo"}
+              accept="image/jpeg,image/png,image/webp"
+              onChange={pick}
+              clearable
+              error={photoError ?? errors?.photo}
+              style={{ flex: 1, minWidth: 0 }}
+            />
+          </div>
           {initial.photoUrl && !preview && (
             <Button variant="default" size="xs" onClick={() => setRemovePhoto((v) => !v)}>
               {removePhoto ? "Keep" : "Remove"}

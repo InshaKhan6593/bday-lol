@@ -149,7 +149,7 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, limi
         }}
       >
         <DateSelect value={filter.date} onChange={(date) => go({ date })} allowAll compact />
-        <TextInput label="Name" placeholder="Search names" value={q} onChange={(e) => setQ(e.currentTarget.value)} w={200} className={classes.filterGrow} />
+        <TextInput label="Name" placeholder="Search names" value={q} onChange={(e) => setQ(e.currentTarget.value)} className={`${classes.filterGrow} ${classes.filterName}`} />
         <Button type="submit" variant="default">
           Search
         </Button>
@@ -388,12 +388,12 @@ function EditForm({
           mt="lg"
           name="amount"
           label="Comped amount"
-          description="Whole dollars. Boosts people paid on top are kept."
+          description="The free amount you gave this listing, in whole dollars. Paid boosts are added to it."
           defaultValue={String(compedCents / 100)}
           leftSection="$"
           inputMode="numeric"
           error={state.errors?.amount}
-          w={220}
+          classNames={{ wrapper: classes.amountBox }}
         />
       )}
       <Group justify="flex-end" mt="xl">

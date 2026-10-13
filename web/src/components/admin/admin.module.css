@@ -332,6 +332,12 @@
   margin-bottom: var(--space-lg);
 }
 
+/* The name search takes the room the tabs leave, up to a width a name still looks at home in. */
+.filters .filterName {
+  flex: 1 1 200px;
+  max-width: 440px;
+}
+
 .tableCard {
   overflow-x: auto;
   padding: 0;
@@ -453,8 +459,8 @@ form > .sectionLabel:first-of-type {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-lg);
-  padding: var(--space-lg) var(--space-xl);
-  border-radius: var(--radius-control);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-cell);
   background: var(--color-ink);
   color: var(--color-paper);
 }
@@ -468,7 +474,7 @@ form > .sectionLabel:first-of-type {
 }
 
 .leaderName {
-  font-size: var(--text-title-sm);
+  font-size: var(--text-label);
   font-weight: var(--weight-bold);
   overflow-wrap: anywhere;
 }
@@ -479,7 +485,7 @@ form > .sectionLabel:first-of-type {
 }
 
 .leaderAmount {
-  font-size: var(--text-stat);
+  font-size: var(--text-body-lg);
   font-weight: var(--weight-bold);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -648,6 +654,20 @@ form > .sectionLabel:first-of-type {
   display: flex;
   align-items: center;
   gap: var(--space-lg);
+}
+
+/* The photo and its button end where the gift links' first column ends (.formGrid, two columns). */
+.photoPick {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  flex: 0 0 calc((100% - var(--space-lg)) / 2);
+  min-width: 0;
+}
+
+/* A short box for an amount; the help under it keeps the form's full width. */
+.amountBox {
+  max-width: 220px;
 }
 
 .photoPreview {
@@ -849,6 +869,14 @@ form > .sectionLabel:first-of-type {
 
   .formGrid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .photoPick {
+    flex: 1 1 0;
+  }
+
+  .filters .filterName {
+    max-width: none;
   }
 
   .phoneOnly {
