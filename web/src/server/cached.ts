@@ -26,11 +26,14 @@ import { getBoardVersion } from "./live";
  * changing a listing, then announce the board, as the Stripe webhook does.
  */
 /**
- * The routes of the saved homepage and date pages (lib/day-cache.ts), for revalidatePath(route, "page").
+ * The routes of the saved homepage, date pages and personal links (lib/day-cache.ts), for revalidatePath(route, "page").
  * Whatever changes what those pages show must throw them away: a payment (Stripe webhook), the monthly
  * famous-people refresh, and the admin's edits.
  */
-export const SAVED_PAGE_ROUTES = ["/home/[date]", "/[slug]/~day/[date]"] as const;
+export const SAVED_PAGE_ROUTES = ["/home/[date]", "/[slug]/~day/[date]", "/[slug]/~day/[date]/[person]"] as const;
+
+/** The saved pages that show a date's board: the date page and its personal links. */
+export const SAVED_DATE_ROUTES = ["/[slug]/~day/[date]", "/[slug]/~day/[date]/[person]"] as const;
 
 export const CACHE_TAGS = { settings: "board-settings", famous: "famous", boards: "boards" } as const;
 

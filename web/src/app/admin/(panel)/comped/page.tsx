@@ -12,7 +12,7 @@ export default async function AdminCompedPage() {
   const leaders = await getCurrentLeaders(db, typeId, now());
   return (
     <CompedForm
-      limits={{ nameMaxLength: settings.nameMaxLength, bioMaxLength: settings.bioMaxLength }}
+      limits={{ nameMaxLength: settings.nameMaxLength, bioMaxLength: settings.bioMaxLength, maxGiftLinks: settings.maxGiftLinks }}
       startTheme={settings.claimTheme}
       rules={{ minOpenBidCents: settings.minOpenBidCents, minStepCents: settings.minStepCents }}
       leaders={Object.fromEntries(Object.entries(leaders).map(([key, l]) => [key, { name: l.name, totalCents: l.totalCents, count: l.count }]))}

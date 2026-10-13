@@ -4,12 +4,13 @@ import type { Route } from "next";
 import { refresh, revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { isValidMonthDay } from "@/lib/birthday";
+import { isValidMonthDay, parseKey } from "@/lib/birthday";
 import { parseAmountCents } from "@/lib/boost";
 import { validateListing, type ListingField } from "@/lib/claim";
 import { now } from "@/lib/clock";
-import { isGiftService, type GiftEntry } from "@/lib/gifts";
+import { listingFromForm } from "@/lib/admin-listings";
 import { routes } from "@/lib/routes";
+import { pagesAfterBoardChange } from "@/lib/warm";
 import {
   addCompedEntry,
   setCompedAmount,
@@ -19,11 +20,12 @@ import {
   type BoardChange,
 } from "../admin";
 import { changeEmail, changePassword, isAdmin, requestPasswordReset, resetPassword, signIn, signOut } from "../admin-session";
-import { CACHE_TAGS, SAVED_PAGE_ROUTES } from "../cached";
+import { CACHE_TAGS, SAVED_DATE_ROUTES, SAVED_PAGE_ROUTES } from "../cached";
 import { getBirthdaySettings } from "../leaderboard";
 import { announceBoardChange } from "../live";
 import { isEditablePage, pageBodyError, resetSitePage, saveSitePage, EDITABLE_PAGES } from "../site-pages";
 import { PhotoError, savePhoto } from "../storage";
+import { warmAfterChange } from "../warm";
 
 /**
  * Everything the admin can do. Each action checks the sign-in itself (an action is a public URL),
@@ -45,21 +47,14 @@ function text(form: FormData, name: string): string {
   return typeof value === "string" ? value : "";
 }
 
-function giftRows(form: FormData): GiftEntry[] {
-  const services = form.getAll("giftService");
-  const values = form.getAll("giftValue");
-  return services.flatMap((service, i) => {
-    const value = values[i];
-    return isGiftService(service) && typeof value === "string" ? [{ service, value }] : [];
-  });
-}
-
 /** A board changed: drop every cached copy that shows it, then tell open pages. */
 async function boardChanged(change: BoardChange): Promise<void> {
   revalidateTag(CACHE_TAGS.boards, { expire: 0 });
   revalidatePath("/months/[month]", "page");
   for (const route of SAVED_PAGE_ROUTES) revalidatePath(route, "page");
   await announceBoardChange(change.boardKey);
+  // The pages this board shows on are built again now, not by their next visitor (lib/warm.ts).
+  warmAfterChange(pagesAfterBoardChange(change.boardKey));
   // The admin's own screen comes back with this answer: no second trip to reload it.
   refresh();
 }
@@ -73,16 +68,6 @@ async function uploadedPhoto(form: FormData): Promise<{ url: string | null } | {
     if (error instanceof PhotoError) return { error: error.message };
     throw error;
   }
-}
-
-function listingFrom(form: FormData) {
-  return {
-    name: text(form, "name"),
-    bio: text(form, "bio"),
-    giftLinks: giftRows(form),
-    theme: text(form, "theme"),
-    isMinor: text(form, "isMinor") === "1",
-  };
 }
 
 // ---------------------------------------------------------------------------
@@ -149,7 +134,7 @@ export async function adminSaveListing(_prev: AdminActionState, form: FormData):
   if (!(await isAdmin())) return NOT_SIGNED_IN;
   const entryId = text(form, "entryId");
   const { settings } = await getBirthdaySettings(db);
-  const checked = validateListing(listingFrom(form), settings);
+  const checked = validateListing(listingFromForm(form), settings);
   if (!checked.ok) return { ok: false, errors: checked.errors };
 
   // A comped listing's amount is checked before anything is saved, so a bad amount changes nothing.
@@ -178,7 +163,7 @@ export async function adminAddComped(_prev: AdminActionState, form: FormData): P
   const md = { month: Number(text(form, "month")), day: Number(text(form, "day")) };
   if (!isValidMonthDay(md)) return { ok: false, errors: { date: "Pick a date." } };
   const type = await getBirthdaySettings(db);
-  const checked = validateListing(listingFrom(form), type.settings);
+  const checked = validateListing(listingFromForm(form), type.settings);
   const amountCents = parseAmountCents(text(form, "amount"));
   if (!checked.ok) return { ok: false, errors: checked.errors };
 
@@ -200,13 +185,16 @@ export async function adminAddComped(_prev: AdminActionState, form: FormData): P
 // Famous people
 // ---------------------------------------------------------------------------
 
-export async function adminSetFamousHidden(source: string, sourceId: string, hidden: boolean): Promise<AdminActionState> {
+/** `dateKey` ("10-07") is the date whose list the admin is looking at: its page is built again at once. */
+export async function adminSetFamousHidden(source: string, sourceId: string, hidden: boolean, dateKey?: string): Promise<AdminActionState> {
   if (!(await isAdmin())) return NOT_SIGNED_IN;
   const result = await setFamousHidden(db, { source, sourceId }, hidden);
   if (!result.ok) return { ok: false, errors: { form: result.error } };
   revalidateTag(CACHE_TAGS.famous, { expire: 0 });
   revalidatePath("/months/[month]", "page");
-  revalidatePath("/[slug]/~day/[date]", "page");
+  for (const route of SAVED_DATE_ROUTES) revalidatePath(route, "page");
+  const md = typeof dateKey === "string" ? parseKey(dateKey) : null;
+  if (md) warmAfterChange([routes.date(md), routes.month(md.month)]);
   refresh();
   return { ok: true, message: hidden ? "Hidden. The next name moves up." : "Showing again." };
 }
@@ -228,6 +216,7 @@ export async function adminSavePage(_prev: AdminActionState, form: FormData): Pr
     await saveSitePage(db, slug, body, now());
   }
   revalidatePath(EDITABLE_PAGES[slug].path);
+  warmAfterChange([EDITABLE_PAGES[slug].path]);
   refresh();
   return { ok: true, message: text(form, "reset") === "1" ? "Back to the original text." : "Saved. The page is live." };
 }

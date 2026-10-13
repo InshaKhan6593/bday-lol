@@ -4,7 +4,9 @@ import { entries, famousPeople, leaderLog, outbidAlerts, payments } from "@/db/s
 import type { ValidListing } from "@/lib/claim";
 import { addBirthdayType, addPeople, inRollback, type Tx } from "@/test/db";
 import { paidBoost, paidClaim } from "@/test/money";
+import { countViews, viewListings, type ListingsFilter } from "@/lib/admin-listings";
 import {
+  ADMIN_BROWSER_LIMIT,
   ADMIN_PAGE_SIZE,
   countAdminEntries,
   countAdminViews,
@@ -458,6 +460,105 @@ describe("admin: revenue", () => {
       expect(revenue.months).toEqual([]);
       expect(paidCents(revenue.allTime)).toBe(0);
       expect(revenue.cards.allTime).toEqual({ cents: 0, payments: 0, people: 0 });
+    });
+  });
+});
+
+describe("admin: the browser's list and the server's list agree", () => {
+  it("sends every listing on the open boards in one go when asked for the whole list", async () => {
+    await inRollback(async (tx) => {
+      const type = await addBirthdayType(tx);
+      await addPeople(
+        tx,
+        type,
+        oct7,
+        2026,
+        Array.from({ length: 130 }, (_, i) => ({ name: `Person ${String(i + 1).padStart(3, "0")}`, usd: 5 + (i % 7), reachedAt: "2026-10-07T08:00:00-04:00" })),
+      );
+      expect(await listAdminEntries(tx, {}, NOON)).toHaveLength(ADMIN_PAGE_SIZE);
+      const whole = await listAdminEntries(tx, {}, NOON, ADMIN_BROWSER_LIMIT);
+      expect(whole).toHaveLength(130);
+      expect(new Set(whole.map((e) => e.id)).size).toBe(130);
+    });
+  });
+
+  it("shows the same rows in the same order whichever of the two does the work", async () => {
+    await inRollback(async (tx) => {
+      const { type, tyler } = await board3(tx);
+      await addPeople(tx, type, { month: 12, day: 25 }, 2026, [
+        { name: "Tyra Banks-Lee", usd: 30, reachedAt: "2026-10-01T09:00:00-04:00" },
+        { name: "amy zed", usd: 240, reachedAt: "2026-10-02T09:00:00-04:00" },
+        { name: "Zed Amy", usd: 30, reachedAt: "2026-10-03T09:00:00-04:00" },
+      ]);
+      await addPeople(
+        tx,
+        type,
+        { month: 3, day: 1 },
+        2027,
+        Array.from({ length: 70 }, (_, i) => ({ name: `March ${String(i + 1).padStart(2, "0")}`, usd: 5 + (i % 5), reachedAt: "2026-10-05T09:00:00-04:00" })),
+      );
+      await addCompedEntry(tx, type, { md: oct7, listing: listing("Featured Friend"), amountCents: 20_000, photoUrl: null }, NOON);
+      await setEntryStatus(tx, tyler.id, "removed", LATER);
+      // Live dates differ row by row, as on a real site.
+      const stamped = await tx.select({ id: entries.id }).from(entries);
+      for (const [i, row] of stamped.entries()) {
+        await tx.update(entries).set({ liveAt: i % 9 === 0 ? null : new Date(NOON.getTime() - i * 60_000) }).where(eq(entries.id, row.id));
+      }
+
+      const whole = await listAdminEntries(tx, {}, LATER, ADMIN_BROWSER_LIMIT);
+      expect(countViews(whole)).toEqual(await countAdminViews(tx, LATER));
+
+      const filters: Array<Pick<ListingsFilter, "date" | "q" | "status">> = [
+        { date: "", q: "", status: "all" },
+        { date: "", q: "", status: "live" },
+        { date: "", q: "", status: "removed" },
+        { date: "", q: "", status: "comped" },
+        { date: "10-07", q: "", status: "all" },
+        { date: "03-01", q: "march 1", status: "live" },
+        { date: "", q: "TY", status: "all" },
+        { date: "", q: "zed", status: "all" },
+        { date: "", q: "%", status: "all" },
+        { date: "12-25", q: "nobody", status: "all" },
+      ];
+      // Names are left out of the sorts: two lists can order accents and punctuation differently
+      // (the database's collation, the browser's letters); every other column must match exactly.
+      const sorts = (["added", "rank", "date", "total", "status"] as const).flatMap((by) => (["asc", "desc"] as const).map((dir) => ({ by, dir })));
+      for (const filter of filters) {
+        for (const sort of sorts) {
+          const serverFilter = { key: filter.date || undefined, q: filter.q, status: filter.status, sort };
+          const total = await countAdminEntries(tx, serverFilter, LATER);
+          for (const page of [1, 2]) {
+            const fromServer = await listAdminEntries(tx, { ...serverFilter, page }, LATER);
+            const inBrowser = viewListings(whole, { ...filter, sort }, page);
+            const label = JSON.stringify({ filter, sort, page });
+            expect(inBrowser.total, label).toBe(total);
+            // Past the last page the browser shows the last page; the server's page is simply empty.
+            if (page <= inBrowser.pages) expect(inBrowser.rows.map((e) => e.id), label).toEqual(fromServer.map((e) => e.id));
+          }
+        }
+      }
+
+      // Plain names, as most are, come out in the same order too.
+      const byName = { by: "name", dir: "asc" } as const;
+      expect(viewListings(whole, { date: "03-01", q: "", status: "all", sort: byName }, 1).rows.map((e) => e.id)).toEqual(
+        (await listAdminEntries(tx, { key: "03-01", sort: byName }, LATER)).map((e) => e.id),
+      );
+    });
+  });
+
+  it("draws a take-down the way the server then confirms it", async () => {
+    await inRollback(async (tx) => {
+      const { tyler } = await board3(tx);
+      const before = await listAdminEntries(tx, {}, NOON, ADMIN_BROWSER_LIMIT);
+      const drawn = viewListings(before, { date: "", q: "", status: "all", sort: { by: "rank", dir: "asc" } }, 1);
+      expect(drawn.rows.map((e) => e.rank)).toEqual([1, 2, 3]);
+
+      const { withStatus } = await import("@/lib/admin-listings");
+      const guessed = withStatus(before, tyler.id, "removed");
+      await setEntryStatus(tx, tyler.id, "removed", LATER);
+      const confirmed = await listAdminEntries(tx, {}, LATER, ADMIN_BROWSER_LIMIT);
+      const facts = (rows: typeof confirmed) => rows.map((e) => [e.id, e.status, e.rank]).sort();
+      expect(facts(guessed)).toEqual(facts(confirmed));
     });
   });
 });

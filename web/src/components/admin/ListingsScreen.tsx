@@ -6,14 +6,28 @@ import { ArrowCounterClockwiseIcon, CaretDownIcon, CaretUpIcon, DotsThreeIcon, P
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { startTransition, useActionState, useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useOptimistic, useRef, useState, useTransition } from "react";
 import { THEMES } from "@/config/themes";
 import { formatLong, formatShort, parseKey } from "@/lib/birthday";
+import {
+  applyChange,
+  compedAmountError,
+  countViews,
+  listingFromForm,
+  viewListings,
+  type AdminCounts,
+  type AdminEntry,
+  type AdminSort,
+  type AdminView,
+  type ListingPatch,
+  type ListingsChange,
+} from "@/lib/admin-listings";
+import { parseAmountCents } from "@/lib/boost";
+import { validateListing } from "@/lib/claim";
 import { formatUsd } from "@/lib/money";
 import { initials } from "@/lib/people";
 import { routes } from "@/lib/routes";
 import { adminSaveListing, adminSetStatus, type AdminActionState } from "@/server/actions/admin";
-import type { AdminCounts, AdminEntry, AdminSort, AdminView } from "@/server/admin";
 import { LoadingBar, PageHead } from "./AdminShell";
 import { DateSelect } from "./DateSelect";
 import { ListingFields } from "./ListingFields";
@@ -52,7 +66,14 @@ const COLUMNS: Array<{ by: AdminSort["by"]; label: string; first: AdminSort["dir
   { by: "added", label: "Added", first: "desc" },
 ];
 
+type Limits = { nameMaxLength: number; bioMaxLength: number; maxGiftLinks: number };
+
 type Props = {
+  /**
+   * "browser": `entries` is every listing, and searching, sorting, tabs and pages happen here with no
+   * trip to the server (lib/admin-listings.ts). "server": `entries` is one page the server picked.
+   */
+  mode: "browser" | "server";
   entries: AdminEntry[];
   filter: Filter;
   /** How many listings each tab holds, on every open board. */
@@ -61,7 +82,7 @@ type Props = {
   timeZone: string;
   /** Which page this is, and how many listings match in all. */
   paging: { page: number; total: number; pageSize: number };
-  limits: { nameMaxLength: number; bioMaxLength: number };
+  limits: Limits;
   /** Just added a comped listing: say so once. */
   justAdded: boolean;
 };
@@ -81,32 +102,104 @@ function listingsUrl(filter: Filter, page = 1): Route {
 }
 
 /** Everyone on the open boards: find a listing, edit it, take it down or put it back. */
-export function ListingsScreen({ entries, filter, counts, timeZone, paging, limits, justAdded }: Props) {
+export function ListingsScreen({ mode, entries, filter: asked, counts: serverCounts, timeZone, paging, limits, justAdded }: Props) {
   const router = useRouter();
-  const [q, setQ] = useState(filter.q);
+  const browser = mode === "browser";
+  // In the browser's hands the filter lives here. It starts from the address and starts again when
+  // the address changes (the menu's "Listings", a new comped listing's date).
+  const askedKey = JSON.stringify([asked, paging.page]);
+  const [seenKey, setSeenKey] = useState(askedKey);
+  const [local, setLocal] = useState({ ...asked, page: paging.page });
+  const [q, setQ] = useState(asked.q);
+  if (askedKey !== seenKey) {
+    setSeenKey(askedKey);
+    setLocal({ ...asked, page: paging.page });
+    setQ(asked.q);
+  }
+  const filter: Filter = browser ? local : asked;
+
+  // A change is drawn at once and the server's list replaces it when the answer arrives.
+  const [shown, change] = useOptimistic(entries, (current: AdminEntry[], next: ListingsChange) => applyChange(current, next));
   const [editing, setEditing] = useState<AdminEntry | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editErrors, setEditErrors] = useState<AdminActionState["errors"]>(undefined);
+  const editingId = useRef<string | null>(null);
   const [confirming, setConfirming] = useState<AdminEntry | null>(null);
   const [working, startWork] = useTransition();
-  // Sorting, filtering and paging ask the server: the list dims and the bar runs until it answers.
+  // The server's way only: sorting, filtering and paging ask it, and the list dims until it answers.
   const [loading, startLoading] = useTransition();
+
+  const view = useMemo(
+    () =>
+      browser
+        ? viewListings(shown, { ...local, q }, local.page)
+        : { rows: shown, total: paging.total, page: paging.page, pages: Math.max(1, Math.ceil(paging.total / paging.pageSize)) },
+    [browser, shown, local, q, paging],
+  );
+  const counts = browser ? countViews(shown) : serverCounts;
+  const firstShown = (view.page - 1) * paging.pageSize + 1;
+
   // A new search starts again from the first page.
-  const go = (next: Partial<Filter>) => startLoading(() => router.push(listingsUrl({ ...filter, q, ...next })));
-  const pages = Math.max(1, Math.ceil(paging.total / paging.pageSize));
-  const firstShown = (paging.page - 1) * paging.pageSize + 1;
+  const go = (next: Partial<Filter>) => {
+    if (browser) setLocal((current) => ({ ...current, ...next, page: 1 }));
+    else startLoading(() => router.push(listingsUrl({ ...filter, q, ...next })));
+  };
+  const goToPage = (page: number) => {
+    if (browser) setLocal((current) => ({ ...current, page }));
+    else startLoading(() => router.push(listingsUrl({ ...filter, q: filter.q }, page)));
+  };
 
   useEffect(() => {
     // The id keeps it to one notice if the effect runs twice.
     if (justAdded) notifications.show({ id: "comped-added", message: "Comped listing added. It’s live on the board.", color: "green" });
   }, [justAdded]);
 
+  const failed = (result: AdminActionState) =>
+    notifications.show({ message: result.errors?.form ?? "That didn’t work. Nothing was changed.", color: "red" });
+
   function setStatus(entry: AdminEntry, status: "live" | "removed") {
+    setConfirming(null);
     startWork(async () => {
-      const result = await adminSetStatus(entry.id, status);
-      notifications.show(
-        result.ok ? { message: result.message, color: "green" } : { message: result.errors?.form ?? "That didn’t work.", color: "red" },
-      );
-      // The fresh list arrives with the action's own answer.
-      setConfirming(null);
+      change({ kind: "status", id: entry.id, status });
+      const result = await adminSetStatus(entry.id, status).catch((): AdminActionState => ({ ok: false }));
+      // The fresh list arrives with the action's own answer; a refusal puts the row back as it was.
+      if (result.ok) notifications.show({ message: result.message, color: "green" });
+      else failed(result);
+    });
+  }
+
+  function openEdit(entry: AdminEntry) {
+    editingId.current = entry.id;
+    setEditErrors(undefined);
+    setEditing(entry);
+    setEditOpen(true);
+  }
+
+  function closeEdit() {
+    editingId.current = null;
+    setEditOpen(false);
+    setEditing(null);
+  }
+
+  /** The form has checked itself: the dialog closes and the row changes now, the server follows. */
+  function saveEdit(entry: AdminEntry, form: FormData, patch: ListingPatch, preview: string | null) {
+    setEditOpen(false);
+    startWork(async () => {
+      change({ kind: "edit", id: entry.id, patch });
+      const result = await adminSaveListing({}, form).catch((): AdminActionState => ({ ok: false }));
+      if (preview) URL.revokeObjectURL(preview);
+      if (result.ok) {
+        notifications.show({ message: result.message, color: "green" });
+        if (editingId.current === entry.id) closeEdit();
+        return;
+      }
+      // The form is still there with everything that was typed: open it again with what went wrong.
+      if (editingId.current === entry.id) {
+        setEditErrors(result.errors ?? { form: "That didn’t save. Try again." });
+        setEditOpen(true);
+      } else {
+        failed(result);
+      }
     });
   }
 
@@ -116,6 +209,7 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, limi
   const added = new Intl.DateTimeFormat("en-US", { timeZone, month: "short", day: "numeric", year: "numeric" });
 
   const md = parseKey(filter.date);
+  const pages = view.pages;
   return (
     <>
       <PageHead
@@ -149,10 +243,19 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, limi
         }}
       >
         <DateSelect value={filter.date} onChange={(date) => go({ date })} allowAll compact />
-        <TextInput label="Name" placeholder="Search names" value={q} onChange={(e) => setQ(e.currentTarget.value)} className={`${classes.filterGrow} ${classes.filterName}`} />
-        <Button type="submit" variant="default">
-          Search
-        </Button>
+        <TextInput label="Name" placeholder="Search names" value={q} onChange={(e) => {
+            setQ(e.currentTarget.value);
+            // The matches change as the name is typed: back to their first page.
+            if (browser) setLocal((current) => ({ ...current, page: 1 }));
+          }}
+          className={`${classes.filterGrow} ${classes.filterName}`}
+        />
+        {/* In the browser's hands the list follows the name as it is typed: nothing to press. */}
+        {!browser && (
+          <Button type="submit" variant="default">
+            Search
+          </Button>
+        )}
         <SegmentedControl
           className={classes.filterTabs}
           aria-label="Which listings"
@@ -182,7 +285,7 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, limi
 
       <LoadingBar active={loading || working} />
       <Paper className={classes.tableCard} data-busy={loading || undefined} aria-busy={loading}>
-        {entries.length === 0 ? (
+        {view.rows.length === 0 ? (
           <p className={classes.empty}>No listings match. Try another date or name.</p>
         ) : (
           <Table className={classes.listTable}>
@@ -205,7 +308,7 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, limi
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {entries.map((entry) => {
+              {view.rows.map((entry) => {
                 const date = parseKey(entry.boardKey)!;
                 const removed = entry.status === "removed";
                 return (
@@ -264,12 +367,12 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, limi
                     <Table.Td className={classes.actionCell}>
                       <Menu position="bottom-end" withinPortal classNames={{ dropdown: classes.listPanel, item: classes.menuItem }}>
                         <Menu.Target>
-                          <ActionIcon variant="default" className={classes.rowAction} aria-label={`Actions for ${entry.name}`} loading={working && removed}>
+                          <ActionIcon variant="default" className={classes.rowAction} aria-label={`Actions for ${entry.name}`}>
                             <DotsThreeIcon size={22} weight="bold" aria-hidden />
                           </ActionIcon>
                         </Menu.Target>
                         <Menu.Dropdown>
-                          <Menu.Item leftSection={<PencilSimpleIcon size={16} weight="bold" aria-hidden />} onClick={() => setEditing(entry)}>
+                          <Menu.Item leftSection={<PencilSimpleIcon size={16} weight="bold" aria-hidden />} onClick={() => openEdit(entry)}>
                             Edit
                           </Menu.Item>
                           {removed ? (
@@ -296,16 +399,16 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, limi
         )}
       </Paper>
 
-      {paging.total > 0 && (
+      {view.total > 0 && (
         <Group justify="space-between" mt="lg">
           <Text size="sm" fw={600} c="dimmed">
-            Showing {firstShown}–{firstShown + entries.length - 1} of {paging.total}
+            Showing {firstShown}–{firstShown + view.rows.length - 1} of {view.total}
           </Text>
           {pages > 1 && (
             <Pagination
               total={pages}
-              value={paging.page}
-              onChange={(page) => startLoading(() => router.push(listingsUrl({ ...filter, q: filter.q }, page)))}
+              value={view.page}
+              onChange={goToPage}
               radius="xl"
               getControlProps={(control) => ({ "aria-label": `${control} page` })}
             />
@@ -313,14 +416,15 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, limi
         </Group>
       )}
 
-      <Modal opened={Boolean(editing)} onClose={() => setEditing(null)} title={editing ? `Edit ${editing.name}` : ""} size="lg">
+      {/* Kept in place while a save is on its way, so a refused save can open it again as it was left. */}
+      <Modal opened={editOpen} onClose={closeEdit} title={editing ? `Edit ${editing.name}` : ""} size="lg" keepMounted>
         {editing && (
           <EditForm
             key={editing.id}
             entry={editing}
-            compedCents={editing.compedCents}
             limits={limits}
-            onDone={() => setEditing(null)}
+            serverErrors={editErrors}
+            onSave={(form, patch, preview) => saveEdit(editing, form, patch, preview)}
           />
         )}
       </Modal>
@@ -336,7 +440,7 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, limi
               <Button variant="default" onClick={() => setConfirming(null)}>
                 Keep it
               </Button>
-              <Button color="red.8" loading={working} onClick={() => setStatus(confirming, "removed")}>
+              <Button color="red.8" onClick={() => setStatus(confirming, "removed")}>
                 Take it down
               </Button>
             </Group>
@@ -347,59 +451,80 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, limi
   );
 }
 
+/**
+ * The edit form. It checks itself with the rules the server uses (lib/claim.ts), so a mistake shows
+ * at once; a form that passes is handed up, and the dialog closes without waiting for the server.
+ */
 function EditForm({
   entry,
-  compedCents,
   limits,
-  onDone,
+  serverErrors,
+  onSave,
 }: {
   entry: AdminEntry;
-  compedCents: number | null;
-  limits: Props["limits"];
-  onDone: () => void;
+  limits: Limits;
+  /** What the server refused, after the form itself had passed. */
+  serverErrors: AdminActionState["errors"];
+  onSave: (form: FormData, patch: ListingPatch, preview: string | null) => void;
 }) {
-  const [state, action, pending] = useActionState<AdminActionState, FormData>(adminSaveListing, {});
+  const [errors, setErrors] = useState<AdminActionState["errors"]>(undefined);
+  // The newest word wins: the server's refusal shows until the form is checked again.
+  const [seenServer, setSeenServer] = useState(serverErrors);
+  if (serverErrors !== seenServer) {
+    setSeenServer(serverErrors);
+    setErrors(serverErrors);
+  }
   const photo = useRef<Blob | null>(null);
-
-  useEffect(() => {
-    if (!state.ok) return;
-    notifications.show({ message: state.message, color: "green" });
-    onDone();
-  }, [state, onDone]);
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
         const form = new FormData(e.currentTarget);
-        if (photo.current) form.set("photo", photo.current, "photo.jpg");
-        startTransition(() => action(form));
+        const checked = validateListing(listingFromForm(form), limits);
+        if (!checked.ok) return setErrors(checked.errors);
+        const patch: ListingPatch = { ...checked.listing };
+        if (entry.compedCents !== null) {
+          const amountCents = parseAmountCents(String(form.get("amount") ?? ""));
+          const amountError = compedAmountError(amountCents);
+          if (amountError) return setErrors({ amount: amountError });
+          patch.totalCents = entry.totalCents - entry.compedCents + amountCents;
+          patch.compedCents = amountCents;
+        }
+        let preview: string | null = null;
+        if (photo.current) {
+          form.set("photo", photo.current, "photo.jpg");
+          preview = URL.createObjectURL(photo.current);
+          patch.photoUrl = preview;
+        } else if (form.get("removePhoto") === "1") {
+          patch.photoUrl = null;
+        }
+        setErrors(undefined);
+        onSave(form, patch, preview);
       }}
     >
       <input type="hidden" name="entryId" value={entry.id} />
-      {state.errors?.form && (
+      {errors?.form && (
         <Alert color="red" variant="light" mb="md" role="alert">
-          {state.errors.form}
+          {errors.form}
         </Alert>
       )}
-      <ListingFields initial={entry} errors={state.errors} limits={limits} onPhoto={(blob) => (photo.current = blob)} />
-      {compedCents !== null && (
+      <ListingFields initial={entry} errors={errors} limits={limits} onPhoto={(blob) => (photo.current = blob)} />
+      {entry.compedCents !== null && (
         <TextInput
           mt="lg"
           name="amount"
           label="Comped amount"
           description="The free amount you gave this listing, in whole dollars. Paid boosts are added to it."
-          defaultValue={String(compedCents / 100)}
+          defaultValue={String(entry.compedCents / 100)}
           leftSection="$"
           inputMode="numeric"
-          error={state.errors?.amount}
+          error={errors?.amount}
           classNames={{ wrapper: classes.amountBox }}
         />
       )}
       <Group justify="flex-end" mt="xl">
-        <Button type="submit" loading={pending}>
-          Save listing
-        </Button>
+        <Button type="submit">Save listing</Button>
       </Group>
     </form>
   );

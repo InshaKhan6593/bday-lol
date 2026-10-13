@@ -1,6 +1,9 @@
 {
   "crons": [
     { "path": "/api/cron/emails", "schedule": "5 13 * * *" },
-    { "path": "/api/cron/famous", "schedule": "17 6 1-12 * *" }
+    { "path": "/api/cron/famous", "schedule": "17 6 1-12 * *" },
+    { "path": "/api/cron/warm", "schedule": "5 4 * * *" },
+    { "path": "/api/cron/warm", "schedule": "5 5 * * *" },
+    { "path": "/api/cron/warm", "schedule": "30 7 1-12 * *" }
   ]
 }

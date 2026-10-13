@@ -4,10 +4,10 @@ import { Badge, Button, Paper, Table, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useOptimistic, useTransition } from "react";
 import { formatLong, parseKey } from "@/lib/birthday";
 import { routes } from "@/lib/routes";
-import { adminSetFamousHidden } from "@/server/actions/admin";
+import { adminSetFamousHidden, type AdminActionState } from "@/server/actions/admin";
 import type { AdminFamous } from "@/server/admin";
 import { LoadingBar, PageHead } from "./AdminShell";
 import { DateSelect } from "./DateSelect";
@@ -22,9 +22,13 @@ type Props = {
 };
 
 /** "Famous people born on…" for one date: hide someone and the next name moves up (spec §10). */
-export function FamousScreen({ date, people, listed }: Props) {
+export function FamousScreen({ date, people: stored, listed }: Props) {
   const router = useRouter();
   const [working, startWork] = useTransition();
+  // Hidden or shown at once; the server's list replaces this when its answer arrives.
+  const [people, flip] = useOptimistic(stored, (current: AdminFamous[], id: string) =>
+    current.map((person) => (`${person.source}:${person.sourceId}` === id ? { ...person, hidden: !person.hidden } : person)),
+  );
   // Picking another date asks the server: the list dims and the bar runs until it answers.
   const [loading, startLoading] = useTransition();
   const md = parseKey(date)!;
@@ -32,9 +36,15 @@ export function FamousScreen({ date, people, listed }: Props) {
 
   function toggle(person: AdminFamous) {
     startWork(async () => {
-      const result = await adminSetFamousHidden(person.source, person.sourceId, !person.hidden);
+      flip(`${person.source}:${person.sourceId}`);
+      const result = await adminSetFamousHidden(person.source, person.sourceId, !person.hidden, date).catch(
+        (): AdminActionState => ({ ok: false }),
+      );
+      // A refusal puts the row back as it was.
       notifications.show(
-        result.ok ? { message: result.message, color: "green" } : { message: result.errors?.form ?? "That didn’t work.", color: "red" },
+        result.ok
+          ? { message: result.message, color: "green" }
+          : { message: result.errors?.form ?? "That didn’t work. Nothing was changed.", color: "red" },
       );
     });
   }
@@ -93,7 +103,7 @@ export function FamousScreen({ date, people, listed }: Props) {
                       )}
                     </Table.Td>
                     <Table.Td className={classes.stackAction}>
-                      <Button variant="default" size="xs" loading={working} onClick={() => toggle(person)}>
+                      <Button variant="default" size="xs" onClick={() => toggle(person)}>
                         {person.hidden ? "Show again" : "Hide this person"}
                       </Button>
                     </Table.Td>

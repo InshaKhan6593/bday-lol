@@ -138,11 +138,28 @@ by a comped or restored listing gets the usual outbid email; a taken-down listin
 `src/server/actions/admin.ts` then drop the caches, throw away the saved pages and tell open pages to look again.
 A listing keeps its personal link when its name is edited, so shared links keep working.
 
-**Why every click shows a bar.** The admin always shows live data, so each click is a trip to the server (about 0.4 s
-from South Asia to the US east coast, measured 2026-10-13, against about 50 ms of work). A thin bar runs and the list
-dims the moment a click starts (`LoadingBar`, `data-busy`), a menu click shows the screen's outline at once
-(`(panel)/loading.tsx`), a change comes back with its own fresh screen (`refresh()` in the actions, no second trip),
-and the listings' links to public pages are not loaded ahead (`prefetch={false}`: 50 rows were 50 background requests).
+### Why the admin doesn't wait
+
+A trip to the server is about 0.4 s from South Asia to the US east coast (measured 2026-10-13) against about 50 ms
+of work, so the admin is built to need as few trips as it can, and never to make the admin wait for one:
+
+- **The listings live in the browser.** While the open boards hold up to 1,000 listings (`ADMIN_BROWSER_LIMIT`) the
+  whole list is sent once, and the name search, the tabs, the date, sorting and paging happen in the browser with no
+  request at all (`src/lib/admin-listings.ts`, the same rules as the database's, checked against it in
+  `admin.db.test.ts`). Beyond 1,000 the server pages them, one trip per click, as it used to.
+- **A change is drawn at once.** Taking a listing down, putting it back, saving an edit and hiding a famous person show
+  on screen immediately (`useOptimistic`); the server confirms behind a thin bar (`LoadingBar`). If it refuses, the row
+  goes back and a message says so. The edit form checks itself with the server's own rules (`validateListing`), closes
+  on Save, and opens again with everything typed if the server still says no.
+- **The menu's screens are fetched ahead** (`prefetch` on the menu links), so a menu click shows the screen at once. A
+  screen reached after more than 20 seconds quietly asks again, so what it shows is never left old.
+- **Listings and Revenue look again by themselves** when the tab is looked at again and every two minutes while it is,
+  since a claim or a boost changes them without the admin doing anything.
+- A change still comes back with its own fresh screen (`refresh()` in the actions, no second trip), and the listings'
+  links to public pages are not loaded ahead (`prefetch={false}`: 50 rows were 50 background requests).
+
+Checked with every server answer held back 1.5 s (a scripted Chromium, 2026-10-13): a menu click showed its screen in
+46–224 ms, a search in 25 ms with no request, and a take-down, a restore and an edit were on screen in 49–329 ms.
 
 **The look.** [Mantine](https://mantine.dev) draws the components and loads only under `/admin`; the page editor is
 Mantine's [Tiptap](https://tiptap.dev) editor. The theme
@@ -165,13 +182,30 @@ being built in the US on every visit (rules in `src/lib/day-cache.ts`):
 - **Nothing in a copy depends on the visitor or the clock.** The countdown starts as `--:--:--` and is
   filled in by the browser from the server's time (`src/lib/server-clock.ts`); the "Your boost is in" note
   and an outbid email's boost link are read from the address in the browser.
-- `src/app/page.tsx` and `src/app/[slug]/page.tsx` still draw the same pages per request. They answer
-  `/oct-7`, `/february-30`, and everything if the proxy is ever missing. Personal links
-  (`/october-7/sam-rivera`) are still drawn per request.
+- **Personal links are saved too.** `/october-7/sam-rivera` goes to `/october-7/~day/2026-10-11/sam-rivera`: these
+  are the links people share, so most visitors arrive on one. A name that isn't on the board is a saved redirect to
+  the date page, thrown away with the rest when the board changes.
+- `src/app/page.tsx`, `src/app/[slug]/page.tsx` and `src/app/[slug]/[person]/page.tsx` still draw the same pages per
+  request. They answer `/oct-7`, `/february-30`, and everything if the proxy is ever missing.
 - A month of date links (the date picker, the month pages) is fetched on click, not prefetched.
 
 Whatever changes what these pages show must throw them away: the admin's actions do it the same way
 (`boardChanged` in `src/server/actions/admin.ts`).
+
+### Built ahead
+
+A copy that was thrown away is built again by its next visit, and that one visitor waits for it (about 0.7–1 s from
+far away). So the site asks for its own pages first (`src/lib/warm.ts` says which, `src/server/warm.ts` fetches them):
+
+- **After a change.** A payment (Stripe webhook) or an admin change builds the homepage, the date page, its month and
+  the payer's own link again, once the answer to that request has gone out (`after()`), so nobody waits for it.
+- **Every night.** `/api/cron/warm` builds all 382 saved pages plus today's personal links, six at a time (about 10 s
+  locally). Vercel Cron calls it at 04:05 and 05:05 UTC, just after midnight Eastern in summer and in winter, when
+  every copy's address changes; and at 07:30 UTC on days 1–12, after the famous-people refresh.
+- **After a deploy**, which starts with no copies, call it by hand:
+  `curl -H "Authorization: Bearer $CRON_SECRET" https://<site>/api/cron/warm`.
+
+Warming is a favour, never a duty: a page that fails to warm is built by its next visitor, as before.
 
 ## Live boards
 
@@ -199,8 +233,8 @@ off, as of 2026-10); pages beyond the limit fall back to the timer.
 
 ```
 src/
-  proxy.ts             runs before the cache: sends "/" and "/october-7" to today's saved copy (lib/day-cache.ts)
-  app/                 routes (pages, API: api/stripe/webhook, api/cron/*, api/unsubscribe, api/board-version, api/boost-result)
+  proxy.ts             runs before the cache: sends "/", "/october-7" and "/october-7/sam-rivera" to today's saved copy (lib/day-cache.ts)
+  app/                 routes (pages, API: api/stripe/webhook, api/cron/* (emails, famous, warm), api/unsubscribe, api/board-version, api/boost-result)
   app/admin/           the admin's screens; app/home/[date] and app/[slug]/~day/[date] are the saved copies
   components/admin/    the admin: Mantine theme (theme.ts, admin.module.css) and its screens
   components/ui/       design-language primitives: Button, Chip, Surface, Avatar, Badge, Kicker, Field, Select, Menu, Icon…
@@ -216,7 +250,8 @@ src/
   config/              themes (12), board type settings (min bid, min boost, time zone…)
   db/                  schema.ts (board → entries → payments model), client
   lib/                 pure rules: birthday.ts (ET, leap years, board years), date-page, claim, checkout, success, facts, money, boost math, gifts, routes, clock, ids,
-                       live (open pages follow a board), day-cache (saved pages), server-clock (countdowns), admin-auth (password, session)
+                       live (open pages follow a board), day-cache (saved pages), warm (which pages to build ahead), server-clock (countdowns),
+                       admin-auth (password, session), admin-listings (the admin's list worked out in the browser)
   test/                database test helpers (rolled-back transactions)
   server/              server logic: leaderboard queries, page data, payments (claims + boosts, pending → paid), outbid alert queue, Stripe client + events, photo storage, reminders,
                        cached.ts (shared reads, which saved pages to throw away), live.ts (board version, push), admin.ts + admin-session.ts; actions/ = form actions
@@ -275,6 +310,7 @@ A test copy runs on the developer's own accounts; the client's accounts replace 
    address the admin signs in with (left out, the alerts address is used). `APP_SECRET` must be a
    long random string (32+ characters): it signs admin sessions and unsubscribe links.
 9. **After every deploy with a new file in `drizzle/`:** run `pnpm db:migrate` against the session pooler URL first.
+   After any deploy, build the saved pages ahead (see [Built ahead](#built-ahead)): one `curl` to `/api/cron/warm`.
 10. **Keep the tables closed to the public key:** the publishable key is in every visitor's browser, so nothing but
     Realtime may accept it. Migration `0007_enable_row_security` switches row-level security on for every table with
     no policies (the app connects as the tables' owner, which is not affected), and every new table in

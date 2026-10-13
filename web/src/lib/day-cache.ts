@@ -9,8 +9,9 @@ import { toSlug, zonedDate, type CalendarDate, type MonthDay } from "./birthday"
  * the boards, and which day it is in Eastern Time (who owns today, "In 3 days", which year's board
  * is open). So the day is part of the saved page's address:
  *
- *   /            → /home/2026-10-11
- *   /october-7   → /october-7/~day/2026-10-11
+ *   /                      → /home/2026-10-11
+ *   /october-7             → /october-7/~day/2026-10-11
+ *   /october-7/sam-rivera  → /october-7/~day/2026-10-11/sam-rivera
  *
  * src/proxy.ts adds the day on every request, before the cache is looked at. At midnight ET the
  * address changes, so yesterday's page is never served. A payment throws the saved pages away
@@ -43,8 +44,18 @@ export function instantOn(day: CalendarDate, now: Date, timeZone: string): Date 
   return new Date(Math.min(Math.max(now.getTime(), start), end - 1));
 }
 
+/**
+ * The name part of a personal link, as lib/people.ts makes it: lowercase letters and digits joined by
+ * single hyphens. "opengraph-image" is the date page's share image, never a person.
+ */
+export function isPersonPart(part: string): boolean {
+  return part.length <= 64 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(part) && part !== "opengraph-image";
+}
+
 /** Where the saved pages live. Never linked to: visitors and crawlers only see / and /october-7. */
 export const savedRoutes = {
   home: (day: string) => `/home/${day}`,
   date: (md: MonthDay, day: string) => `/${toSlug(md)}/~day/${day}`,
+  /** A personal link's copy (/october-7/sam-rivera). */
+  person: (md: MonthDay, day: string, person: string) => `/${toSlug(md)}/~day/${day}/${person}`,
 };

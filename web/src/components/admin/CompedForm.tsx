@@ -3,7 +3,10 @@
 import { Alert, Button, Group, Paper, TextInput } from "@mantine/core";
 import { startTransition, useActionState, useRef, useState } from "react";
 import type { ThemeKey } from "@/config/themes";
+import { compedAmountError, listingFromForm } from "@/lib/admin-listings";
 import { formatLong, parseKey } from "@/lib/birthday";
+import { parseAmountCents } from "@/lib/boost";
+import { validateListing } from "@/lib/claim";
 import { formatUsd } from "@/lib/money";
 import { adminAddComped, type AdminActionState } from "@/server/actions/admin";
 import { PageHead } from "./AdminShell";
@@ -12,7 +15,7 @@ import { ListingFields } from "./ListingFields";
 import classes from "./admin.module.css";
 
 type Props = {
-  limits: { nameMaxLength: number; bioMaxLength: number };
+  limits: { nameMaxLength: number; bioMaxLength: number; maxGiftLinks: number };
   startTheme: ThemeKey;
   rules: { minOpenBidCents: number; minStepCents: number };
   /** Who leads each date's open board right now, keyed "10-07". A date nobody has claimed is missing. */
@@ -28,6 +31,14 @@ export function CompedForm({ limits, startTheme, rules, leaders }: Props) {
   const [date, setDate] = useState("");
   // The amount follows the date's minimum until the admin types their own.
   const [typed, setTyped] = useState<string | null>(null);
+  // What the form finds wrong itself, before any trip to the server (the same rules, lib/claim.ts).
+  const [found, setFound] = useState<AdminActionState["errors"]>(undefined);
+  const [seenState, setSeenState] = useState(state);
+  if (state !== seenState) {
+    setSeenState(state);
+    setFound(undefined);
+  }
+  const errors = found ?? state.errors;
   const photo = useRef<Blob | null>(null);
   const md = parseKey(date);
   const leader = md ? leaders[date] : undefined;
@@ -45,19 +56,25 @@ export function CompedForm({ limits, startTheme, rules, leaders }: Props) {
           onSubmit={(e) => {
             e.preventDefault();
             const form = new FormData(e.currentTarget);
+            if (!md) return setFound({ date: "Pick a date." });
+            const checked = validateListing(listingFromForm(form), limits);
+            if (!checked.ok) return setFound(checked.errors);
+            const amountError = compedAmountError(parseAmountCents(amount));
+            if (amountError) return setFound({ amount: amountError });
+            setFound(undefined);
             if (photo.current) form.set("photo", photo.current, "photo.jpg");
             startTransition(() => action(form));
           }}
         >
-          {state.errors?.form && (
+          {errors?.form && (
             <Alert color="red" variant="light" mb="md" role="alert">
-              {state.errors.form}
+              {errors.form}
             </Alert>
           )}
           <p className={classes.sectionLabel}>Date and amount</p>
           <div className={classes.formStack}>
             <Group align="flex-start" grow>
-              <DateSelect value={date} onChange={setDate} error={state.errors?.date} />
+              <DateSelect value={date} onChange={setDate} error={errors?.date} />
             </Group>
             <div className={classes.leaderBox} aria-live="polite">
               <div>
@@ -85,7 +102,7 @@ export function CompedForm({ limits, startTheme, rules, leaders }: Props) {
               onChange={(e) => setTyped(e.currentTarget.value.replace(/[^\d]/g, ""))}
               leftSection="$"
               inputMode="numeric"
-              error={state.errors?.amount}
+              error={errors?.amount}
               required
             />
           </div>
@@ -93,7 +110,7 @@ export function CompedForm({ limits, startTheme, rules, leaders }: Props) {
           <input type="hidden" name="day" value={md?.day ?? ""} />
           <ListingFields
             initial={{ name: "", bio: "", theme: startTheme, giftLinks: [], isMinor: false, photoUrl: null }}
-            errors={state.errors}
+            errors={errors}
             limits={limits}
             onPhoto={(blob) => (photo.current = blob)}
           />

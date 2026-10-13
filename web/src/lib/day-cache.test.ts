@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { dayParam, instantOn, parseDayParam, savedRoutes } from "./day-cache";
+import { personSlug, uniqueSlug } from "./people";
+import { dayParam, instantOn, isPersonPart, parseDayParam, savedRoutes } from "./day-cache";
 
 const ET = "America/New_York";
 
@@ -66,5 +67,31 @@ describe("where saved pages live", () => {
   it("puts the day in the address", () => {
     expect(savedRoutes.home("2026-10-11")).toBe("/home/2026-10-11");
     expect(savedRoutes.date({ month: 10, day: 7 }, "2026-10-11")).toBe("/october-7/~day/2026-10-11");
+  });
+});
+
+describe("a personal link's saved copy", () => {
+  it("sits under the date's copy for the same day", () => {
+    expect(savedRoutes.person({ month: 10, day: 7 }, "2026-10-11", "sam-rivera")).toBe("/october-7/~day/2026-10-11/sam-rivera");
+  });
+
+  it("takes only a name the site could have made", () => {
+    for (const ok of ["sam", "sam-rivera", "sam-rivera-2", "birthday", "x9", "a".repeat(64)]) expect(isPersonPart(ok), ok).toBe(true);
+    for (const bad of ["", "Sam", "sam_rivera", "-sam", "sam-", "sam--rivera", "sam rivera", "sam/rivera", "~day", "..", "sám", "a".repeat(65)]) {
+      expect(isPersonPart(bad), bad).toBe(false);
+    }
+  });
+
+  it("takes every link name the site makes, however odd the person's name", () => {
+    const odd = ["Lucía Gómez", "Mary-Catherine O'Neil", "Zoë 🎂", "  Isla   Brown ", "!!!", "X Æ A-12", "a".repeat(80), "D'Angelo -- Jr.", "李小龍", "9lives"];
+    for (const name of odd) {
+      const slug = personSlug(name);
+      expect(isPersonPart(slug), `${name} → ${slug}`).toBe(true);
+      expect(isPersonPart(uniqueSlug(slug, [slug, `${slug}-2`])), name).toBe(true);
+    }
+  });
+
+  it("is never the date page's share image", () => {
+    expect(isPersonPart("opengraph-image")).toBe(false);
   });
 });

@@ -22,7 +22,7 @@ export type ListingValues = {
 type Props = {
   initial: ListingValues;
   errors: AdminActionState["errors"];
-  limits: { nameMaxLength: number; bioMaxLength: number };
+  limits: { nameMaxLength: number; bioMaxLength: number; maxGiftLinks: number };
   /** The cropped photo to send, kept by the form that owns the submit. */
   onPhoto: (photo: Blob | null) => void;
 };

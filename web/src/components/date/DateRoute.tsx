@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { cache } from "react";
 import { DatePageView } from "@/components/date/DatePageView";
 import { db } from "@/db";
-import type { MonthDay } from "@/lib/birthday";
+import { formatLong, type MonthDay } from "@/lib/birthday";
 import { jsonLdScript } from "@/lib/how-it-works";
+import { firstName } from "@/lib/people";
 import { routes } from "@/lib/routes";
 import { dateDescription, dateJsonLd, dateTitle, pageMetadata } from "@/lib/seo";
 import { cachedReads } from "@/server/cached";
@@ -49,4 +51,36 @@ export async function DateRoute({ md, day }: Props) {
       <DatePageView md={md} page={page} />
     </>
   );
+}
+
+/**
+ * A personal link (/october-7/sam-rivera): the date's board, scrolled to this person with their card
+ * highlighted. `on` is the Eastern day of a saved copy, like `day` above.
+ */
+type PersonProps = { md: MonthDay; person: string; day: string | null };
+
+export async function personMetadata({ md, person, day }: PersonProps): Promise<Metadata> {
+  const page = await dateData(md.month, md.day, day);
+  const at = page.entries.findIndex((entry) => entry.slug === person);
+  const found = page.entries[at];
+  if (!found) return { title: { absolute: dateTitle(md) }, alternates: { canonical: routes.date(md) } };
+  const label = formatLong(md);
+  const first = firstName(found.name);
+  const title = `It’s ${first}’s birthday on ${label}`;
+  const description = `${found.name} is #${at + 1} on ${label}. Send a birthday gift or boost ${first} to the top.`;
+  const path = routes.person(md, person);
+  return {
+    // The share image lives on the public URL's route, not on the saved copy's.
+    ...pageMetadata({ title, description, path, image: `${path}/opengraph-image` }),
+    // The board itself is the page search engines should index; the personal link is for sharing.
+    alternates: { canonical: routes.date(md) },
+  };
+}
+
+/** Someone no longer on this year's board (removed, or last year's link) lands on the date's board instead. */
+export async function PersonRoute({ md, person, day }: PersonProps) {
+  const page = await dateData(md.month, md.day, day);
+  const focus = page.entries.find((entry) => entry.slug === person);
+  if (!focus) redirect(routes.date(md));
+  return <DatePageView md={md} page={page} focusPublicId={focus.publicId} />;
 }

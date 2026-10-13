@@ -94,7 +94,7 @@ Mailpit on :8030). Production plan: Vercel Pro + Supabase (Postgres + Storage fo
 | 10. Admin (`/admin`, one password): listings on every open board (search, edit, take down, put back), comped listings without Stripe, "Hide this person" for famous people, Terms / Privacy / FAQ edited live, revenue by day and month with comped apart. Every change re-ranks the board, keeps the #1 history, throws away the saved pages and updates open ones. Built with [Mantine](https://mantine.dev), themed from the site's tokens | ✅ Done (`web/src/app/admin/`, `web/src/components/admin/`, `web/src/server/admin.ts`, `web/src/server/actions/admin.ts`, migration `web/drizzle/0006_admin_logins.sql`; details in [web/README.md](web/README.md#admin)). On the test copy since 2026-10-12 |
 | 11. Deploy to Vercel + Supabase, test live | 🔧 Started 2026-10-11 on the developer's own test accounts, before admin: Supabase Storage for photos (`STORAGE_DRIVER=supabase`), `pnpm db:init` for a new database, email cron once a day until the project is on Vercel Pro |
 
-**Tests:** every feature ships with tests (`pnpm test`, 441 so far): pure rules in `web/src/lib/*.test.ts` and
+**Tests:** every feature ships with tests (`pnpm test`, 502 so far): pure rules in `web/src/lib/*.test.ts` and
 database tests in `*.db.test.ts`, which run against the local Docker Postgres inside a rolled-back transaction.
 
 ## Since the first deploy (2026-10-11 to 13)
@@ -106,6 +106,8 @@ database tests in `*.db.test.ts`, which run against the local Docker Postgres in
 | Admin | `/admin`: listings, comped listings, famous people, Terms / Privacy / FAQ, revenue | [web/README.md](web/README.md#admin) |
 | Phones (2026-10-13) | A tapped button or card sinks, so a tap shows (nothing hovers on a phone). A tap anywhere on a person's card picks it. The date picker opens right under its button | [04-design-system.md](04-design-system.md#implementation-decisions), [07 D23](07-open-questions.md#d-handoff-v2-points-to-confirm-with-the-client) |
 | Homepage (2026-10-13) | "Coming up" is the client's four cards on wide screens and a seven-day strip on phones. The closing card is "Find your birthday" (Month, Day, "Claim my birthday"), which replaced the reminder signup. The share panel no longer prints the page's address | [07 D21, D22, D24](07-open-questions.md#d-handoff-v2-points-to-confirm-with-the-client) |
+
+| No waiting (2026-10-13) | The admin draws a change the moment it is made and confirms it with the server behind; its listings are searched, sorted and paged in the browser; its menu opens screens fetched ahead. Saved pages are built again right after a change and once a night, before a visitor asks, and personal links are saved pages too | [web/README.md](web/README.md#why-the-admin-doesnt-wait), [web/README.md](web/README.md#built-ahead) |
 
 **Left before launch:** put the admin on the deployed copy (its password and one migration), move to the client's
 accounts (Vercel Pro, Stripe live keys, Resend with the mybday.lol domain, his Supabase), and the client's open

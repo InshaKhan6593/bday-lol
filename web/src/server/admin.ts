@@ -2,11 +2,23 @@ import { and, asc, eq, gt, ilike, inArray, isNull, lte, ne, sql } from "drizzle-
 import { alias } from "drizzle-orm/pg-core";
 import type { BoardTypeSettings } from "@/config/board-types";
 import type { Executor } from "@/db";
-import { boards, entries, famousHidden, famousPeople, leaderLog, payments, type GiftLink } from "@/db/schema";
+import { boards, entries, famousHidden, famousPeople, leaderLog, payments } from "@/db/schema";
 import { toKey, type MonthDay } from "@/lib/birthday";
 import type { ValidListing } from "@/lib/claim";
 import { publicId } from "@/lib/ids";
-import type { ThemeKey } from "@/config/themes";
+import {
+  ADMIN_BROWSER_LIMIT,
+  ADMIN_PAGE_SIZE,
+  ADMIN_SORTS,
+  ADMIN_VIEWS,
+  DEFAULT_ADMIN_SORT,
+  compedAmountError,
+  lastAdminPage,
+  type AdminCounts,
+  type AdminEntry,
+  type AdminSort,
+  type AdminView,
+} from "@/lib/admin-listings";
 import { ensureCurrentBoard } from "./boards";
 import { cancelOutbidAlerts, queueOutbidAlerts } from "./outbid";
 import { currentTopEntryId, freeSlug, moveLeader } from "./payments";
@@ -24,40 +36,19 @@ import { currentTopEntryId, freeSlug, moveLeader } from "./payments";
 // Listings
 // ---------------------------------------------------------------------------
 
-export type AdminEntry = {
-  id: string;
-  publicId: string;
-  slug: string | null;
-  /** The board's date ("10-07") and year. */
-  boardKey: string;
-  year: number;
-  /** Rank among the live people on its board. Null for a removed listing. */
-  rank: number | null;
-  name: string;
-  bio: string;
-  photoUrl: string | null;
-  theme: ThemeKey;
-  giftLinks: GiftLink[];
-  isMinor: boolean;
-  isComped: boolean;
-  status: "live" | "removed";
-  totalCents: number;
-  ownerEmail: string | null;
-  liveAt: string | null;
-  /** The comped part of a comped listing's total (boosts people paid on top are not in it). Null when it isn't comped. */
-  compedCents: number | null;
+export {
+  ADMIN_BROWSER_LIMIT,
+  ADMIN_PAGE_SIZE,
+  ADMIN_SORTS,
+  ADMIN_VIEWS,
+  DEFAULT_ADMIN_SORT,
+  compedAmountError,
+  lastAdminPage,
+  type AdminCounts,
+  type AdminEntry,
+  type AdminSort,
+  type AdminView,
 };
-
-/** The listings tabs: everything, what's on the boards, what was taken down, and the free spots. */
-export const ADMIN_VIEWS = ["all", "live", "removed", "comped"] as const;
-export type AdminView = (typeof ADMIN_VIEWS)[number];
-
-/** The columns the listings can be ordered by. "added" is when the listing went live. */
-export const ADMIN_SORTS = ["added", "rank", "name", "date", "total", "status"] as const;
-export type AdminSort = { by: (typeof ADMIN_SORTS)[number]; dir: "asc" | "desc" };
-
-/** Newest first, unless a column is picked. */
-export const DEFAULT_ADMIN_SORT: AdminSort = { by: "added", dir: "desc" };
 
 export type AdminEntryFilter = {
   /** One date ("10-07"). Every date when left out. */
@@ -66,12 +57,9 @@ export type AdminEntryFilter = {
   q?: string;
   status?: AdminView;
   sort?: AdminSort;
-  /** Which page of ADMIN_PAGE_SIZE listings, from 1. */
+  /** Which page of listings, from 1. */
   page?: number;
 };
-
-/** Listings per page in the admin. */
-export const ADMIN_PAGE_SIZE = 50;
 
 /** The rows a filter matches: boards open now, never unpaid claims. */
 function entriesWhere(filter: AdminEntryFilter, instant: Date) {
@@ -96,8 +84,6 @@ export async function countAdminEntries(db: Executor, filter: AdminEntryFilter, 
   return row?.n ?? 0;
 }
 
-export type AdminCounts = Record<AdminView, number>;
-
 /** How many listings each tab holds, on the boards open now. */
 export async function countAdminViews(db: Executor, instant: Date): Promise<AdminCounts> {
   const [row] = await db
@@ -113,16 +99,17 @@ export async function countAdminViews(db: Executor, instant: Date): Promise<Admi
   return row ?? { all: 0, live: 0, removed: 0, comped: 0 };
 }
 
-/** The last page a filter has (at least 1), so a page number from the address can be kept in range. */
-export function lastAdminPage(total: number): number {
-  return Math.max(1, Math.ceil(total / ADMIN_PAGE_SIZE));
-}
-
 /**
  * One page of the listings on the boards that are open now: newest first, or ordered by the column
- * the admin picked. Unpaid claims never appear (they aren't on a board).
+ * the admin picked. Unpaid claims never appear (they aren't on a board). `pageSize` is
+ * ADMIN_BROWSER_LIMIT when the whole list is sent to the browser (lib/admin-listings.ts).
  */
-export async function listAdminEntries(db: Executor, filter: AdminEntryFilter, instant: Date): Promise<AdminEntry[]> {
+export async function listAdminEntries(
+  db: Executor,
+  filter: AdminEntryFilter,
+  instant: Date,
+  pageSize: number = ADMIN_PAGE_SIZE,
+): Promise<AdminEntry[]> {
   const ranked = db
     .select({
       id: entries.id,
@@ -175,8 +162,8 @@ export async function listAdminEntries(db: Executor, filter: AdminEntryFilter, i
     .where(entriesWhere(filter, instant))
     // The id settles ties, so a listing is never on two pages or on none.
     .orderBy(order, asc(entries.id))
-    .limit(ADMIN_PAGE_SIZE)
-    .offset((page - 1) * ADMIN_PAGE_SIZE);
+    .limit(pageSize)
+    .offset((page - 1) * pageSize);
   return rows.map(({ period, liveAt, status, ...row }) => ({
     ...row,
     status: status as "live" | "removed",
@@ -286,13 +273,6 @@ export type CompedInput = {
   amountCents: number;
   photoUrl: string | null;
 };
-
-/** A comped amount: whole dollars, at least $1, and not beyond what the total column can hold. */
-export function compedAmountError(amountCents: number): string | null {
-  if (!Number.isInteger(amountCents) || amountCents < 100 || amountCents % 100 !== 0) return "Enter a whole dollar amount.";
-  if (amountCents > 100_000_000) return "That amount is too large.";
-  return null;
-}
 
 /** Adds a comped listing to the date's open board. It goes live at once and looks like any other. */
 export async function addCompedEntry(

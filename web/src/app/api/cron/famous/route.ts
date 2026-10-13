@@ -1,7 +1,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/db";
 import { now } from "@/lib/clock";
-import { CACHE_TAGS } from "@/server/cached";
+import { CACHE_TAGS, SAVED_DATE_ROUTES } from "@/server/cached";
 import { refreshFamousMonth } from "@/server/famous";
 import { wikidataProvider } from "@/server/famous-source";
 
@@ -29,7 +29,8 @@ export async function GET(request: Request) {
   const run = await refreshFamousMonth(db, wikidataProvider, month, instant);
   // Date pages cache each date's list for an hour (server/cached.ts): show the new lists now.
   revalidateTag(CACHE_TAGS.famous, { expire: 0 });
-  // The saved date pages list these people.
-  revalidatePath("/[slug]/~day/[date]", "page");
+  // The saved date pages list these people. They are built again by the warm run that follows this
+  // one (vercel.json, /api/cron/warm), or by their next visitor.
+  for (const route of SAVED_DATE_ROUTES) revalidatePath(route, "page");
   return Response.json({ month, ...run });
 }

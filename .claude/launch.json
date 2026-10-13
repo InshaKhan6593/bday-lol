@@ -38,7 +38,8 @@
         "3210"
       ],
       "env": {
-        "NEXT_PUBLIC_SITE_URL": "http://localhost:3210"
+        "NEXT_PUBLIC_SITE_URL": "http://localhost:3210",
+        "CRON_SECRET": "local-only-not-a-secret"
       },
       "port": 3210
     }

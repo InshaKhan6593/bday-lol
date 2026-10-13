@@ -37,10 +37,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: `/months/${MONTH}`, destination: `/${MONTH}`, permanent: true },
-      // The saved copies of the homepage and date pages (src/lib/day-cache.ts).
+      // The saved copies of the homepage, date pages and personal links (src/lib/day-cache.ts).
       // Only the shapes the proxy writes are sent back: nothing else is ever copied into a redirect.
       { source: `/home/${DAY}`, destination: "/", permanent: true },
       { source: `/:slug((?:${MONTH_NAMES})-[1-9]\\d?)/~day/${DAY}`, destination: "/:slug", permanent: true },
+      { source: `/:slug((?:${MONTH_NAMES})-[1-9]\\d?)/~day/${DAY}/:person([a-z0-9][a-z0-9-]*)`, destination: "/:slug/:person", permanent: true },
     ];
   },
   async headers() {
