@@ -4,12 +4,18 @@ import type { Executor } from "@/db";
 import { boardClosesAt, nextDates, toKey, zonedDate, type MonthDay } from "@/lib/birthday";
 import { getBirthdaySettings, getCurrentBoard, getCurrentLeaders, versionOf, type RankedEntry } from "./leaderboard";
 
-/** How many dates the "Coming up" row shows (decided, 07 B10). */
-const COMING_UP_DAYS = 4;
+/** How many dates the "Coming up" strip holds: two weeks on a wide screen, the first week on a phone (lib/homepage-copy.ts). */
+const COMING_UP_DAYS = 14;
 /** Avatars in the "X others are celebrating" bar. */
 const OTHERS_AVATARS = 4;
 
-export type ComingUpDay = { md: MonthDay; leaderName: string | null; topTotalCents: number | null };
+export type ComingUpDay = {
+  md: MonthDay;
+  leaderName: string | null;
+  topTotalCents: number | null;
+  /** The #1's color, which fills the date in the strip. */
+  theme: ThemeKey | null;
+};
 
 export type HomepageData = {
   settings: BoardTypeSettings;
@@ -38,7 +44,7 @@ export async function getHomepageData(
 
   // Sequential on purpose: a transaction's single connection can't run queries in parallel.
   const board = await getCurrentBoard(db, typeId, settings, today, instant);
-  // "Coming up" only needs each date's #1: one query for all four dates.
+  // "Coming up" only needs each date's #1: one query for all the dates.
   const upcoming = nextDates(todayDate, COMING_UP_DAYS).map(({ month, day }) => ({ month, day }));
   const leaders = await getCurrentLeaders(db, typeId, instant, upcoming.map(toKey));
 
@@ -55,6 +61,7 @@ export async function getHomepageData(
       md,
       leaderName: leaders[toKey(md)]?.name ?? null,
       topTotalCents: leaders[toKey(md)]?.totalCents ?? null,
+      theme: leaders[toKey(md)]?.theme ?? null,
     })),
     version: versionOf(board),
   };

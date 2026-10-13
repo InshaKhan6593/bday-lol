@@ -81,6 +81,8 @@ item below **keeps what was already built**.
 
 | D20 | Admin, client feedback (2026-10-13) | Counts and a Comped tab on Listings, sortable columns (newest first by default), Month/Day lists that open downwards, a comped form like the Claim form with the date's leader, a document-style editor for Terms / Privacy / FAQ, revenue cards (Today, All time, Birthday claims, Boosts, with payers), a way to change the password | — | **Built**, all of it except dragging famous people into a new order (he marked it optional). Added on the way: the sign-in is now an email and a password, with "Forgot password?" by a 6-digit emailed code; row actions sit in a ⋯ menu; long names and bios are cut short in the table and shown in full in Edit; an "Added" column. "People" on the revenue cards are different payer emails, since there are no accounts. The Comped total left the cards and stays in the tables |
 
+| D21 | Homepage "Coming up" (2026-10-13) | — | Four white cards (date, name or "Unclaimed", "Claimed for $85" / "Claim for $5") | **Changed by the developer, not yet shown to the client:** one bar cut into dates, like the date picker's cells: the day, and under it the top bid or "open"; a claimed date is filled with its #1's color. Two weeks on a wide screen, the first week on a phone (it was four tall cards there). The name moved into a pop-up over the date ("Priya S. · $410"), which phones don't show. Supersedes B10. Show him before and after |
+
 Settled by the handoff: C2 (Terms, Privacy, support email mybdaylol@gmail.com, footer design), C3 (social boards out
 of scope), most of C1 (domain mybday.lol on Cloudflare, Resend from hello@mybday.lol, Vercel, sole-proprietor Stripe).
 

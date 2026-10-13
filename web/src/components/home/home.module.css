@@ -274,38 +274,274 @@
   font-weight: var(--weight-medium);
 }
 
-.upcomingGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--space-lg);
-}
-
-.dayCard {
+/*
+ * The days ahead as one bar cut into dates (not cards): the day, and under it
+ * the top bid or "open". A claimed date is filled with its #1's color.
+ */
+.strip {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
-  padding: var(--space-xl);
+  gap: var(--space-sm);
 }
 
-.dayDate {
-  font-size: var(--text-title-lg);
+.stripMonths {
+  font-size: var(--text-tiny);
   font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+/* The phone's strip is shorter, so its months can differ ("October" vs "October – November"). */
+.stripNarrow {
+  display: none;
+}
+
+.stripBar {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  background: var(--color-paper);
+  border: var(--border);
+  border-radius: var(--radius-button);
+  /* The bar's corner as seen from inside its outline. */
+  --strip-inner-radius: calc(var(--radius-button) - var(--stroke));
+}
+
+.stripDay {
+  position: relative;
+  /* Lets the pop-up's arrow find the middle of its date (50cqw) when the pop-up itself is pushed to one side. */
+  container-type: inline-size;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3xs);
+  padding: var(--space-md) var(--space-2xs);
+  background: var(--day-ground, transparent);
+  color: var(--color-ink);
+  text-decoration: none;
+  transition:
+    background-color var(--duration-quick) var(--ease),
+    color var(--duration-quick) var(--ease);
+}
+
+.stripDay + .stripDay {
+  border-left: var(--border-thin);
+}
+
+/* The end dates follow the bar's corners: so does their fill, in a color or in ink on hover. */
+.stripDay:first-child {
+  border-start-start-radius: var(--strip-inner-radius);
+  border-end-start-radius: var(--strip-inner-radius);
+}
+
+.stripDay:last-child {
+  border-start-end-radius: var(--strip-inner-radius);
+  border-end-end-radius: var(--strip-inner-radius);
+}
+
+.stripNum {
+  font-size: var(--text-title);
+  font-weight: var(--weight-bold);
+  line-height: 1;
   letter-spacing: var(--tracking-title);
 }
 
-.dayOwner {
-  font-size: var(--text-body);
+.stripSub {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: var(--text-fine);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  transition: color var(--duration-quick) var(--ease);
+}
+
+.stripDay[data-claimed] .stripSub {
+  font-weight: var(--weight-bold);
+  color: var(--color-ink);
+}
+
+/*
+ * The dates share one outline, so one can't lift out of it (design rule 7).
+ * Under the pointer, or under a finger, a date turns ink with white text,
+ * like the ▲ Boost button.
+ */
+@media (hover: hover) {
+  .stripDay:hover {
+    background: var(--color-ink);
+  }
+
+  .stripDay:hover,
+  .stripDay:hover .stripSub {
+    color: var(--color-paper);
+  }
+}
+
+@media (hover: none) {
+  .stripDay:active {
+    background: var(--color-ink);
+  }
+
+  .stripDay:active,
+  .stripDay:active .stripSub {
+    color: var(--color-paper);
+    transition-duration: 0s;
+  }
+}
+
+/*
+ * The pop-up over a date: who leads it and for how much, since the strip has no
+ * room for the name. Same look as the date page's "Outrank Jess for $241" tip.
+ * It pops: fades in, rises and grows a little from its arrow.
+ */
+.stripTip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + var(--space-md));
+  z-index: 5;
+  padding: var(--space-xs) var(--space-md);
+  background: var(--accent);
+  border: var(--border);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-lift);
+  color: var(--color-ink);
+  font-size: var(--text-note);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-normal);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, var(--space-sm)) scale(0.9);
+  transform-origin: 50% 100%;
+  transition:
+    opacity var(--duration-quick) var(--ease),
+    transform var(--duration-quick) var(--ease-pop);
+}
+
+/* Arrow: an ink triangle with a smaller accent one inside. */
+.stripTip::before,
+.stripTip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  border-style: solid;
+  border-color: transparent;
+}
+
+.stripTip::before {
+  margin-left: -9px;
+  border-width: 9px;
+  border-top-color: var(--color-ink);
+}
+
+.stripTip::after {
+  margin-left: -5px;
+  border-width: 5px;
+  border-top-color: var(--accent);
+}
+
+/*
+ * Near either end of the bar a centred pop-up would run off the page, so it
+ * lines up with its date's edge instead and only the arrow stays centred.
+ */
+.stripDay[data-tip="start"] > .stripTip {
+  left: 0;
+  transform: translate(0, var(--space-sm)) scale(0.9);
+  transform-origin: 50cqw 100%;
+}
+
+.stripDay[data-tip="start"] > .stripTip::before,
+.stripDay[data-tip="start"] > .stripTip::after {
+  left: calc(50cqw - var(--stroke));
+}
+
+.stripDay[data-tip="end"] > .stripTip {
+  left: auto;
+  right: 0;
+  transform: translate(0, var(--space-sm)) scale(0.9);
+  transform-origin: calc(100% - 50cqw) 100%;
+}
+
+.stripDay[data-tip="end"] > .stripTip::before,
+.stripDay[data-tip="end"] > .stripTip::after {
+  left: calc(100% - 50cqw + var(--stroke));
+}
+
+.stripDay:focus-visible {
+  z-index: 1;
+}
+
+.stripDay:focus-visible > .stripTip {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.stripDay[data-tip]:focus-visible > .stripTip {
+  transform: translate(0, 0) scale(1);
+}
+
+@media (hover: hover) {
+  .stripDay:hover > .stripTip {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+
+  .stripDay[data-tip]:hover > .stripTip {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+/* Nothing hovers on a phone, and a hidden pop-up must not widen the page. */
+@media (hover: none) {
+  .stripTip {
+    display: none;
+  }
+}
+
+.stripNote {
+  font-size: var(--text-fine);
   color: var(--color-text-tertiary);
 }
 
-/* "Unclaimed" is a status, not a name: a dashed tag in the owner's slot. */
-.dayTag {
-  align-self: flex-start;
-}
+/* Two weeks need room: under 900px the strip holds the first week only. */
+@media (max-width: 900px) {
+  .stripDay[data-later] {
+    display: none;
+  }
 
-.dayPrice {
-  font-size: var(--text-body);
-  font-weight: var(--weight-bold);
+  /* The first week's last dates are the bar's end now: their pop-ups lean inwards (see data-tip="end"). */
+  .stripDay[data-tip-week="end"] > .stripTip {
+    left: auto;
+    right: 0;
+    transform: translate(0, var(--space-sm)) scale(0.9);
+    transform-origin: calc(100% - 50cqw) 100%;
+  }
+
+  .stripDay[data-tip-week="end"] > .stripTip::before,
+  .stripDay[data-tip-week="end"] > .stripTip::after {
+    left: calc(100% - 50cqw + var(--stroke));
+  }
+
+  .stripDay[data-tip-week="end"]:hover > .stripTip,
+  .stripDay[data-tip-week="end"]:focus-visible > .stripTip {
+    transform: translate(0, 0) scale(1);
+  }
+
+  /* The last date of the first week is now the bar's end. */
+  .stripDay:not([data-later]):has(+ [data-later]) {
+    border-start-end-radius: var(--strip-inner-radius);
+    border-end-end-radius: var(--strip-inner-radius);
+  }
+
+  .stripWide {
+    display: none;
+  }
+
+  .stripNarrow {
+    display: inline;
+  }
 }
 
 /* ---------- Steps ---------- */
@@ -418,6 +654,18 @@
 @media (max-width: 640px) {
   .kicker {
     font-size: var(--text-caption);
+  }
+
+  .stripDay {
+    padding: var(--space-sm) 0;
+  }
+
+  .stripNum {
+    font-size: var(--text-body-lg);
+  }
+
+  .stripSub {
+    font-size: var(--text-micro);
   }
 
   /* Boost sits above the name, pushed right; the name takes the full row. */

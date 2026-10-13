@@ -45,7 +45,7 @@ export function firstName(name: string): string {
   return first;
 }
 
-/** "Marcus Thompson" → "Marcus T." (Coming up cards). Single names stay as they are. */
+/** "Marcus Thompson" → "Marcus T." (the Coming up pop-up). Single names stay as they are. */
 export function shortName(name: string): string {
   const parts = words(name);
   if (parts.length < 2) return parts[0] ?? name;

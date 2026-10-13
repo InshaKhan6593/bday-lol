@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { boostBoxTop, boostResultLine, parseAmountCents, rankWithTotal, takeTopBoost } from "./boost";
 import { formatCountdown } from "./countdown";
 import { giftButtons } from "./gifts";
-import { comingUpCopy, othersText } from "./homepage-copy";
+import { COMING_UP_NARROW_DAYS, comingUpCell, comingUpMonths, comingUpTipSide, othersText } from "./homepage-copy";
 import { formatUsd, minToTakeTop } from "./money";
 import { cleanName, fallbackBio, firstName, personSlug, shortName, uniqueSlug } from "./people";
 import { parseReminderInput } from "./reminders";
@@ -174,16 +174,41 @@ describe("homepage copy", () => {
     expect(othersText(1, "October 7")).toBe("1 other person is celebrating October 7");
   });
 
-  it("labels coming-up dates as claimed or open", () => {
-    expect(comingUpCopy({ leaderName: "Marcus Thompson", topTotalCents: 8_500 }, 500)).toEqual({
-      owner: "Marcus T.",
-      price: "Claimed for $85",
+  it("puts the top bid or \"open\" under a coming-up date, and says the rest aloud", () => {
+    const oct8 = { month: 10, day: 8 };
+    expect(comingUpCell({ md: oct8, leaderName: "Marcus Thompson", topTotalCents: 8_500 }, 500)).toEqual({
+      sub: "$85",
       claimed: true,
+      tip: "Marcus T. · $85",
+      label: "October 8: Marcus T. leads with $85",
     });
-    expect(comingUpCopy({ leaderName: null, topTotalCents: null }, 500)).toEqual({
-      owner: "Unclaimed",
-      price: "Claim for $5",
+    expect(comingUpCell({ md: oct8, leaderName: null, topTotalCents: null }, 500)).toEqual({
+      sub: "open",
       claimed: false,
+      tip: "Open · claim from $5",
+      label: "October 8: open, bids start at $5",
     });
+    // Thousands keep their comma: the strip's cells are sized for it.
+    expect(comingUpCell({ md: oct8, leaderName: "Jess Moreno", topTotalCents: 1_250_000 }, 500).sub).toBe("$12,500");
+  });
+
+  it("leans the pop-ups at either end of the strip inwards", () => {
+    const sides = (count: number) => Array.from({ length: count }, (_, i) => comingUpTipSide(i, count) ?? "-").join(" ");
+    expect(sides(14)).toBe("start start - - - - - - - - - - end end");
+    // The first week on its own, as a narrow window shows it.
+    expect(sides(COMING_UP_NARROW_DAYS)).toBe("start start - - - end end");
+  });
+
+  it("names the months a coming-up strip covers", () => {
+    const run = (month: number, from: number, count: number) =>
+      Array.from({ length: count }, (_, i) => ({ md: { month, day: from + i } }));
+    expect(comingUpMonths(run(10, 8, 14))).toBe("October");
+    expect(comingUpMonths([...run(10, 28, 4), ...run(11, 1, 10)])).toBe("October – November");
+    expect(comingUpMonths([...run(12, 29, 3), ...run(1, 1, 11)])).toBe("December – January");
+    expect(comingUpMonths([])).toBe("");
+    // A phone shows the first week only, so its months are read from those days.
+    expect(COMING_UP_NARROW_DAYS).toBe(7);
+    expect(comingUpMonths([...run(10, 28, 4), ...run(11, 1, 10)].slice(0, COMING_UP_NARROW_DAYS))).toBe("October – November");
+    expect(comingUpMonths(run(10, 20, 14).slice(0, COMING_UP_NARROW_DAYS))).toBe("October");
   });
 });

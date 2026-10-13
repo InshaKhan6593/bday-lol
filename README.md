@@ -94,7 +94,7 @@ Mailpit on :8030). Production plan: Vercel Pro + Supabase (Postgres + Storage fo
 | 10. Admin (`/admin`, one password): listings on every open board (search, edit, take down, put back), comped listings without Stripe, "Hide this person" for famous people, Terms / Privacy / FAQ edited live, revenue by day and month with comped apart. Every change re-ranks the board, keeps the #1 history, throws away the saved pages and updates open ones. Built with [Mantine](https://mantine.dev), themed from the site's tokens | ✅ Done (`web/src/app/admin/`, `web/src/components/admin/`, `web/src/server/admin.ts`, `web/src/server/actions/admin.ts`, migration `web/drizzle/0006_admin_logins.sql`; details in [web/README.md](web/README.md#admin)). On the test copy since 2026-10-12 |
 | 11. Deploy to Vercel + Supabase, test live | 🔧 Started 2026-10-11 on the developer's own test accounts, before admin: Supabase Storage for photos (`STORAGE_DRIVER=supabase`), `pnpm db:init` for a new database, email cron once a day until the project is on Vercel Pro |
 
-**Tests:** every feature ships with tests (`pnpm test`, 435 so far): pure rules in `web/src/lib/*.test.ts` and
+**Tests:** every feature ships with tests (`pnpm test`, 438 so far): pure rules in `web/src/lib/*.test.ts` and
 database tests in `*.db.test.ts`, which run against the local Docker Postgres inside a rolled-back transaction.
 
 ## Since the first deploy (2026-10-11 and 12)
