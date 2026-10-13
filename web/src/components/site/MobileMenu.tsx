@@ -49,7 +49,7 @@ export function MobileMenuButton() {
   return (
     <button
       type="button"
-      className={cx(styles.menuButton, open && styles.menuButtonOpen)}
+      className={cx(styles.menuButton, open && styles.menuButtonOpen, "press")}
       aria-label={open ? "Close menu" : "Open menu"}
       aria-expanded={open}
       aria-controls={panelId}
@@ -72,14 +72,14 @@ export function MobileMenuPanel({ items, current, claimHref }: { items: MenuItem
           key={item.key}
           href={item.href}
           aria-current={item.key === current ? "page" : undefined}
-          className={styles.menuItem}
+          className={cx(styles.menuItem, "press")}
           onClick={() => setOpen(false)}
         >
           {item.label}
           <Icon name="chevronRight" size={16} />
         </Link>
       ))}
-      <Link href={claimHref} className={styles.menuClaim} onClick={() => setOpen(false)}>
+      <Link href={claimHref} className={cx(styles.menuClaim, "press")} onClick={() => setOpen(false)}>
         Claim your birthday
       </Link>
     </nav>

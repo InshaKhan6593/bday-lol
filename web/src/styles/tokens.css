@@ -8,7 +8,8 @@
  *  4. Color comes only from the active theme: --ground (page) + --accent (actions).
  *  5. One typeface (Bricolage Grotesque) in three weights: 400, 600, 800.
  *  6. Generous rounding: pills for nav and toggles, soft squares for controls.
- *  7. Clickables lift up-left on hover (mouse only) and press flat on click.
+ *  7. Clickables lift up-left on hover (mouse only) and press flat on click;
+ *     on phones, where nothing hovers, a tap sinks them down-right instead.
  *  8. Dashed outlines mean "empty / placeholder / not yet".
  *
  * Components must use these tokens, never raw values.
@@ -151,4 +152,5 @@
   --duration-fill: 0.25s;
   --duration-theme: 0.3s;
   --lift: translate(-2px, -2px);
+  --press: translate(2px, 2px); /* phones: a tapped clickable sinks the way a hovered one lifts */
 }

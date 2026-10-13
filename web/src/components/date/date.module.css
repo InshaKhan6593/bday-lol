@@ -313,6 +313,22 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/*
+ * Phones: the card sinks while it is being tapped, like every other clickable
+ * (globals.css). The tap lands on the .claim button underneath, so the card
+ * reads it from there; the Boost pill and the gift/share controls sink alone.
+ */
+@media (hover: none) {
+  .row {
+    transition: transform var(--duration-press) var(--ease);
+  }
+
+  .row:has(> .claim:active) {
+    transform: var(--press);
+    transition-duration: 0s;
+  }
+}
+
 /* Only #1 gets a shadow. */
 .rowTop {
   box-shadow: var(--shadow-section);

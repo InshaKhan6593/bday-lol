@@ -81,6 +81,13 @@
     color: var(--color-paper);
   }
 
+  /* Phones: sinks at once on a tap like every clickable (globals.css); the transition above would slow it. */
+  @media (hover: none) {
+    .hoverInvert:active {
+      transition-duration: 0s;
+    }
+  }
+
   /* ---------- Sizes (height + type) ---------- */
 
   .size-sm {

@@ -111,6 +111,18 @@
   cursor: pointer;
 }
 
+/* Phones: the whole question card sinks while its question is being tapped (the site's rule, globals.css). */
+@media (hover: none) {
+  .item {
+    transition: transform var(--duration-press) var(--ease);
+  }
+
+  .item:has(> .question:active) {
+    transform: var(--press);
+    transition-duration: 0s;
+  }
+}
+
 .question::-webkit-details-marker {
   display: none;
 }

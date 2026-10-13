@@ -17,7 +17,7 @@
 
   html {
     -webkit-text-size-adjust: 100%;
-    /* Phones tint a tapped link or button blue by default; buttons have their own press state (.lift:active). */
+    /* Phones tint a tapped link or button blue by default; clickables have their own press state (.lift:active, .press:active). */
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -94,6 +94,24 @@
   .lift:active {
     transform: none;
     box-shadow: none;
+  }
+
+  /*
+   * Phones have no hover, so "press flat" above looks the same as resting.
+   * A tap sinks the clickable instead. It goes down at once (a tap is shorter
+   * than the transition) and comes back up over the usual press time.
+   * "press" gives the same to a clickable that doesn't lift.
+   */
+  @media (hover: none) {
+    .lift:active,
+    .press:active {
+      transform: var(--press);
+      transition-duration: 0s;
+    }
+
+    .press {
+      transition: transform var(--duration-press) var(--ease);
+    }
   }
 }
 

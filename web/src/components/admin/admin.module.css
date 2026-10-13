@@ -86,6 +86,14 @@
   box-shadow: none;
 }
 
+/* Phones have no hover to press back from: a tapped button sinks instead (the site's rule, globals.css). */
+@media (hover: none) {
+  .button:active:not(:disabled, [data-disabled]) {
+    transform: var(--press);
+    transition-duration: 0s;
+  }
+}
+
 .badge {
   /* Never squeezed: a tag that can't fit pushes the table wider instead of losing its word. */
   flex: none;

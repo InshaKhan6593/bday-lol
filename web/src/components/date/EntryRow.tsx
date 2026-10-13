@@ -126,7 +126,7 @@ export function EntryRow({
       </div>
 
       {picked && (
-        <Link href={claimHref} className={styles.outrankHere}>
+        <Link href={claimHref} className={cx(styles.outrankHere, "lift")}>
           {claimText}
           <Icon name="arrowRight" size={16} />
         </Link>
