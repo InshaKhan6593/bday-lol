@@ -87,6 +87,9 @@
 }
 
 .badge {
+  /* Never squeezed: a tag that can't fit pushes the table wider instead of losing its word. */
+  flex: none;
+  overflow: visible;
   border: var(--border-thin);
   color: var(--color-ink);
   font-weight: var(--weight-bold);
@@ -262,6 +265,15 @@
   object-fit: cover;
 }
 
+/* Long names and bios are cut short with "…" in the table; Edit shows them in full. */
+.personName,
+.personSub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 280px;
+}
+
 .personName {
   font-weight: var(--weight-bold);
   font-size: var(--text-label);
@@ -275,10 +287,6 @@
 .personSub {
   color: var(--color-text-tertiary);
   font-size: var(--text-fine);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 340px;
 }
 
 .money {
@@ -328,6 +336,192 @@
   grid-column: 1 / -1;
 }
 
+/* One field per row, like the site's Claim form. */
+.formStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* A form section's small heading ("About the birthday person"). */
+.sectionLabel {
+  margin-top: var(--space-lg);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-caps-sm);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+form > .sectionLabel:first-of-type {
+  margin-top: 0;
+  margin-bottom: var(--space-lg);
+}
+
+/* Who leads the picked date, like the Claim form's black box. */
+.leaderBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding: var(--space-lg) var(--space-xl);
+  border-radius: var(--radius-control);
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+.leaderLabel {
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-caps-sm);
+  text-transform: uppercase;
+  color: var(--admin-accent);
+}
+
+.leaderName {
+  font-size: var(--text-title-sm);
+  font-weight: var(--weight-bold);
+  overflow-wrap: anywhere;
+}
+
+.leaderNote {
+  font-size: var(--text-fine);
+  color: var(--color-on-ink-secondary);
+}
+
+.leaderAmount {
+  font-size: var(--text-stat);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Month and Day lists: the site's menu panel, in the admin's thinner stroke. */
+.listPanel {
+  border: var(--border-thin);
+  border-radius: var(--radius-cell);
+  box-shadow: var(--shadow-lift);
+}
+
+.listOption {
+  font-weight: var(--weight-medium);
+  border-radius: var(--radius-cell);
+}
+
+.listOption[data-combobox-selected],
+.listOption[data-combobox-active] {
+  background: var(--admin-ground);
+  color: var(--color-ink);
+}
+
+.listOption[data-checked] {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+/* The title with a few facts next to it (the listings' counts). */
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm) var(--space-lg);
+}
+
+.counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.count {
+  background: var(--color-paper);
+}
+
+/* The listings' tabs sit at the end of the filter row. */
+.filterTabs {
+  margin-left: auto;
+}
+
+/* Edit, Remove and Restore on a row: quiet icons that only show a shape under the pointer. */
+.rowAction {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius-cell);
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.rowAction:hover {
+  background: var(--admin-ground);
+  color: var(--color-ink);
+}
+
+.actionCell {
+  width: 1%;
+  text-align: right;
+}
+
+/* The row's menu: Edit, then Remove or Restore. */
+.menuItem {
+  font-weight: var(--weight-bold);
+  border-radius: var(--radius-cell);
+}
+
+.menuItem[data-hovered] {
+  background: var(--admin-ground);
+}
+
+.menuDanger {
+  color: var(--color-error-strong);
+}
+
+/* Headings in the page editor stand apart from the answer above them. */
+.richContent h2:not(:first-child) {
+  margin-top: var(--space-xl);
+}
+
+/* The status tags keep clear of the next column. */
+.statusCell {
+  padding-right: var(--space-xl) !important;
+}
+
+.addedCell {
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+  font-size: var(--text-fine);
+}
+
+/* A column heading that sorts: looks like the heading, acts like a button. */
+.sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sort:hover,
+.sort[data-active] {
+  color: var(--color-ink);
+}
+
+.sortArrow {
+  visibility: hidden;
+}
+
+.sort:hover .sortArrow,
+.sort[data-active] .sortArrow {
+  visibility: visible;
+}
+
 .swatches {
   display: flex;
   flex-wrap: wrap;
@@ -365,8 +559,15 @@
   margin-bottom: var(--space-2xl);
 }
 
+/* The label sits at the top and the figures at the bottom, so a label on two lines keeps the cards level. */
 .stat {
+  display: flex;
+  flex-direction: column;
   padding: var(--space-lg) var(--space-xl);
+}
+
+.stat .statValue {
+  margin-top: auto;
 }
 
 .statLabel {
@@ -396,11 +597,42 @@
   margin: var(--space-2xl) 0 var(--space-md);
 }
 
-.editor {
-  font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
-  font-size: var(--text-caption);
-  font-weight: var(--weight-regular);
+/* The page editor: a document you type in, with the site's ink outline. */
+.richEditor {
+  border: var(--border-thin);
+  border-radius: var(--radius-cell);
+  background: var(--color-paper);
+}
+
+.richToolbar {
+  border-bottom: var(--border-thin);
+  border-radius: var(--radius-cell) var(--radius-cell) 0 0;
+}
+
+.richContent {
+  max-height: 62vh;
+  overflow-y: auto;
+  font-size: var(--text-note);
   line-height: var(--leading-loose);
+  border-radius: 0 0 var(--radius-cell) var(--radius-cell);
+}
+
+.richContent h2 {
+  font-size: var(--text-title-sm);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-title);
+}
+
+.accountCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  max-width: 920px;
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+.accountCards .sectionLabel {
+  margin-top: 0;
 }
 
 .login {

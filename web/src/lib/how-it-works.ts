@@ -1,11 +1,14 @@
 import type { BoardTypeSettings } from "@/config/board-types";
+import { parseLegalDoc, type LegalBlock } from "./legal";
 import { formatUsd } from "./money";
+import { plainText } from "./rich-text";
 
 /** The money rules the How it works copy quotes ("Bids start at $5", "Boosts start at $2"). */
 type CopyRules = Pick<BoardTypeSettings, "minOpenBidCents" | "minStepCents" | "minBoostCents">;
 
 export type Step = { title: string; body: string };
-export type Faq = { q: string; a: string };
+/** `a` is the whole answer as plain text; `blocks` are its paragraphs and bullet lists once the admin has edited it. */
+export type Faq = { q: string; a: string; blocks?: LegalBlock[] };
 
 /** How it works wording, verbatim from How.dc.html (the homepage has its own, decided 07 A5). */
 export function howItWorksSteps(rules: CopyRules): Step[] {
@@ -84,26 +87,20 @@ export function faqToMarkdown(faq: Faq[]): string {
   return faq.map(({ q, a }) => `## ${q}\n\n${a}`).join("\n\n") + "\n";
 }
 
-/** Reads that text back. Questions without an answer are dropped; text before the first question is ignored. */
+/**
+ * Reads that text back. Questions without an answer are dropped; text before the first question is
+ * ignored. An answer keeps its paragraphs, bullet lists and formatting (lib/rich-text.ts).
+ */
 export function parseFaqMarkdown(markdown: string): Faq[] {
-  const faq: Faq[] = [];
-  let current: { q: string; lines: string[] } | null = null;
-  const close = () => {
-    if (!current) return;
-    const a = current.lines.join(" ").replace(/\s+/g, " ").trim();
-    if (current.q && a) faq.push({ q: current.q, a });
-  };
-  for (const line of markdown.replace(/\r\n?/g, "\n").split("\n")) {
-    const heading = /^##\s+(.*)$/.exec(line.trim());
-    if (heading) {
-      close();
-      current = { q: heading[1]!.trim(), lines: [] };
-    } else if (current) {
-      current.lines.push(line.trim());
-    }
-  }
-  close();
-  return faq;
+  return parseLegalDoc(markdown, "").sections.flatMap((section) => {
+    const q = plainText(section.heading ?? "").trim();
+    const a = section.blocks
+      .map((block) => plainText(block.kind === "p" ? block.text : block.items.join(" ")))
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+    return q && a ? [{ q, a, blocks: section.blocks }] : [];
+  });
 }
 
 /** schema.org FAQPage structured data, so search engines can read the questions. */

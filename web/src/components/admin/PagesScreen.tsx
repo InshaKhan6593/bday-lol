@@ -1,11 +1,15 @@
 "use client";
 
-import { Alert, Anchor, Button, Group, Paper, Tabs, Text, Textarea } from "@mantine/core";
+import { Alert, Anchor, Button, Group, Paper, Tabs, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import { RichTextEditor } from "@mantine/tiptap";
+import { useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
+import { fromEditorDoc, titleLine, toEditorDoc, type EditorNode } from "@/lib/rich-text";
 import { routes } from "@/lib/routes";
 import { adminSavePage } from "@/server/actions/admin";
 import { PageHead } from "./AdminShell";
@@ -21,10 +25,22 @@ export type EditablePage = {
 };
 
 const HELP: Record<EditablePage["slug"], string> = {
-  terms: "Start a section with “## ” and a list item with “- ”. Leave an empty line between paragraphs.",
-  privacy: "Start a section with “## ” and a list item with “- ”. Leave an empty line between paragraphs.",
-  faq: "Start each question with “## ”, then write its answer underneath. The order here is the order on the page.",
+  terms: "Type as you would in a document. The H2 button turns a line into a section heading.",
+  privacy: "Type as you would in a document. The H2 button turns a line into a section heading.",
+  faq: "Make each question a heading with the H2 button, then write its answer underneath. The order here is the order on the page.",
 };
+
+/** What the editor can hold is what the pages can show: headings, paragraphs, bullets, bold, italic, underline. */
+const EDITOR_KIT = StarterKit.configure({
+  heading: { levels: [2] },
+  blockquote: false,
+  code: false,
+  codeBlock: false,
+  horizontalRule: false,
+  link: false,
+  orderedList: false,
+  strike: false,
+});
 
 /** Terms, Privacy and the FAQ: edited here, live at once, no deploy (handoff v2 §11). */
 export function PagesScreen({ pages, current }: { pages: EditablePage[]; current: EditablePage["slug"] }) {
@@ -55,8 +71,20 @@ function PageEditor({ page }: { page: EditablePage }) {
   const router = useRouter();
   const [pending, startSave] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [body, setBody] = useState(page.body);
-  const [saved, setSaved] = useState(page.body);
+  // The page's own "# Title" line stays out of the editor and goes back in on save.
+  const title = useMemo(() => titleLine(page.body), [page.body]);
+  const start = useMemo(() => toEditorDoc(page.body), [page.body]);
+  // Compared as the editor writes it, so opening a page never counts as a change.
+  const [body, setBody] = useState(() => fromEditorDoc(start, title));
+  const [saved, setSaved] = useState(body);
+  const editor = useEditor({
+    extensions: [EDITOR_KIT],
+    content: start,
+    // Drawn after the page loads: the server has no editor.
+    immediatelyRender: false,
+    editorProps: { attributes: { "aria-label": `${page.title} text`, spellcheck: "true" } },
+    onUpdate: ({ editor: current }) => setBody(fromEditorDoc(current.getJSON() as EditorNode, title)),
+  });
 
   // The action is called directly, not through useActionState: a save changes this editor's key
   // (the saved text), and the answer must outlive the editor it was sent from.
@@ -93,16 +121,24 @@ function PageEditor({ page }: { page: EditablePage }) {
           View the page
         </Anchor>
       </Group>
-      <Textarea
-        aria-label={`${page.title} text`}
-        value={body}
-        onChange={(e) => setBody(e.currentTarget.value)}
-        autosize
-        minRows={16}
-        maxRows={32}
-        classNames={{ input: `${classes.input} ${classes.editor}` }}
-        spellCheck
-      />
+      <RichTextEditor editor={editor} classNames={{ root: classes.richEditor, content: classes.richContent, toolbar: classes.richToolbar }}>
+        <RichTextEditor.Toolbar sticky stickyOffset={0}>
+          <RichTextEditor.ControlsGroup>
+            <RichTextEditor.Bold />
+            <RichTextEditor.Italic />
+            <RichTextEditor.Underline />
+          </RichTextEditor.ControlsGroup>
+          <RichTextEditor.ControlsGroup>
+            <RichTextEditor.H2 aria-label={page.slug === "faq" ? "Question" : "Section heading"} />
+            <RichTextEditor.BulletList />
+          </RichTextEditor.ControlsGroup>
+          <RichTextEditor.ControlsGroup>
+            <RichTextEditor.Undo />
+            <RichTextEditor.Redo />
+          </RichTextEditor.ControlsGroup>
+        </RichTextEditor.Toolbar>
+        <RichTextEditor.Content />
+      </RichTextEditor>
       <Group justify="space-between" mt="lg">
         <Button
           variant="default"

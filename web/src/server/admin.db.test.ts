@@ -7,6 +7,7 @@ import { paidBoost, paidClaim } from "@/test/money";
 import {
   ADMIN_PAGE_SIZE,
   countAdminEntries,
+  countAdminViews,
   lastAdminPage,
   addCompedEntry,
   compedAmountError,
@@ -65,7 +66,7 @@ describe("admin: listings", () => {
       await tx.insert(entries).values({ publicId: "pending001", boardId: board.id, name: "Not Paid", theme: "sky", status: "pending" });
       await setEntryStatus(tx, ana.id, "removed", NOON);
 
-      const rows = await listAdminEntries(tx, { key: "10-07" }, NOON);
+      const rows = await listAdminEntries(tx, { key: "10-07", sort: { by: "rank", dir: "asc" } }, NOON);
       expect(rows.map((r) => [r.name, r.rank, r.status])).toEqual([
         ["Jess Moreno", 1, "live"],
         ["Tyler Brooks", 2, "live"],
@@ -100,7 +101,7 @@ describe("admin: listings", () => {
         2026,
         Array.from({ length: 120 }, (_, i) => ({ name: `Person ${String(i + 1).padStart(3, "0")}`, usd: 5 + (i % 4), reachedAt: "2026-10-07T08:00:00-04:00" })),
       );
-      const filter = { key: "10-07" };
+      const filter = { key: "10-07", sort: { by: "rank", dir: "asc" } } as const;
       expect(await countAdminEntries(tx, filter, NOON)).toBe(120);
       expect(lastAdminPage(120)).toBe(3);
 
@@ -126,6 +127,52 @@ describe("admin: listings", () => {
       expect(lastAdminPage(0)).toBe(1);
       expect(lastAdminPage(50)).toBe(1);
       expect(lastAdminPage(51)).toBe(2);
+    });
+  });
+
+  it("is newest first unless a column is picked, and every column sorts both ways", async () => {
+    await inRollback(async (tx) => {
+      const type = await addBirthdayType(tx);
+      const board = await addPeople(tx, type, oct7, 2026, []);
+      await paidClaim(tx, board.id, { md: oct7, name: "beth", usd: 50, email: "b@example.com", at: new Date("2026-10-05T09:00:00-04:00") });
+      await paidClaim(tx, board.id, { md: oct7, name: "Carl", usd: 90, email: "c@example.com", at: new Date("2026-10-06T09:00:00-04:00") });
+      await addCompedEntry(tx, type, { md: { month: 3, day: 2 }, listing: listing("Abe"), amountCents: 70_00, photoUrl: null }, NOON);
+      const sorted = async (sort?: { by: "added" | "rank" | "name" | "date" | "total" | "status"; dir: "asc" | "desc" }) =>
+        (await listAdminEntries(tx, { sort }, NOON)).map((e) => e.name);
+
+      expect(await sorted()).toEqual(["Abe", "Carl", "beth"]);
+      expect(await sorted({ by: "added", dir: "asc" })).toEqual(["beth", "Carl", "Abe"]);
+      // Capital letters don't jump ahead of small ones.
+      expect(await sorted({ by: "name", dir: "asc" })).toEqual(["Abe", "beth", "Carl"]);
+      expect(await sorted({ by: "name", dir: "desc" })).toEqual(["Carl", "beth", "Abe"]);
+      expect(await sorted({ by: "total", dir: "desc" })).toEqual(["Carl", "Abe", "beth"]);
+      expect(await sorted({ by: "total", dir: "asc" })).toEqual(["beth", "Abe", "Carl"]);
+      // March 2 comes before October 7; the two on October 7 can be in either order.
+      expect((await sorted({ by: "date", dir: "asc" }))[0]).toBe("Abe");
+      expect((await sorted({ by: "date", dir: "desc" })).at(-1)).toBe("Abe");
+    });
+  });
+
+  it("puts removed listings last when sorting by rank, whichever way", async () => {
+    await inRollback(async (tx) => {
+      const { ana } = await board3(tx);
+      await setEntryStatus(tx, ana.id, "removed", NOON);
+      const ranks = async (dir: "asc" | "desc") => (await listAdminEntries(tx, { sort: { by: "rank", dir } }, NOON)).map((e) => e.rank);
+      expect(await ranks("asc")).toEqual([1, 2, null]);
+      expect(await ranks("desc")).toEqual([2, 1, null]);
+    });
+  });
+
+  it("counts each tab and shows only comped listings on the Comped tab", async () => {
+    await inRollback(async (tx) => {
+      const { type, board, ana } = await board3(tx);
+      await addCompedEntry(tx, type, { md: oct7, listing: listing("Famous Guest"), amountCents: 50_00, photoUrl: null }, NOON);
+      await setEntryStatus(tx, ana.id, "removed", NOON);
+      await tx.insert(entries).values({ publicId: "pending002", boardId: board.id, name: "Not Paid", theme: "sky", status: "pending" });
+
+      expect(await countAdminViews(tx, NOON)).toEqual({ all: 4, live: 3, removed: 1, comped: 1 });
+      expect((await listAdminEntries(tx, { status: "comped" }, NOON)).map((e) => e.name)).toEqual(["Famous Guest"]);
+      expect(await countAdminEntries(tx, { status: "comped" }, NOON)).toBe(1);
     });
   });
 
@@ -387,6 +434,17 @@ describe("admin: revenue", () => {
       ]);
       expect(paidCents(revenue.allTime)).toBe(27_500);
       expect(revenue.allTime.compedCents).toBe(50_000);
+
+      // The cards: the fan paid twice and is one person; comped and unpaid are never in a card.
+      expect(revenue.cards).toEqual({
+        today: { cents: 0, payments: 0, people: 0 },
+        allTime: { cents: 27_500, payments: 4, people: 3 },
+        claims: { cents: 26_000, payments: 2, people: 2 },
+        boosts: { cents: 1_500, payments: 2, people: 1 },
+      });
+      // "Today" is the Eastern day: 11:30 PM ET on Oct 7 still counts on Oct 7.
+      const onOct7 = await getRevenue(tx, new Date("2026-10-07T23:45:00-04:00"), ET);
+      expect(onOct7.cards.today).toEqual({ cents: 25_500, payments: 3, people: 2 });
     });
   });
 
@@ -396,6 +454,7 @@ describe("admin: revenue", () => {
       expect(revenue.days).toEqual([]);
       expect(revenue.months).toEqual([]);
       expect(paidCents(revenue.allTime)).toBe(0);
+      expect(revenue.cards.allTime).toEqual({ cents: 0, payments: 0, people: 0 });
     });
   });
 });

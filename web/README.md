@@ -107,16 +107,30 @@ screen and every action checks the sign-in itself.
 
 | Screen | What it does |
 |---|---|
-| Listings (`/admin`) | The newest listings on every open board, or one date's board in rank order, 50 to a page. Search by name, filter Live / Removed. **Edit** (name, bio, photo, color, child flag, gift links), **Remove** (the board moves up; nothing is refunded), **Restore** |
-| Add comped (`/admin/comped`) | A free listing on any date with an amount you set, no Stripe. It goes live at once and looks like any other; it is marked comped inside and never counted as revenue. Its amount can be changed later from Edit |
+| Listings (`/admin`) | Every listing on the open boards, newest first, 50 to a page, with how many are All / Live / Removed / Comped next to the title. Search by name, pick a date, switch tabs, and click a column heading to sort by it (again to reverse). Long names and bios are cut short with "…"; the row's ⋯ menu has **Edit** (name, bio, photo, color, child flag, gift links, shown in full), **Remove** (the board moves up; nothing is refunded) and **Restore** |
+| Add comped (`/admin/comped`) | A free listing on any date with an amount you set, no Stripe. Laid out like the site's Claim form: pick the date and a black box shows who leads it and what takes #1. It goes live at once and looks like any other; it is marked comped inside and never counted as revenue. Its amount can be changed later from Edit |
 | Famous people (`/admin/famous`) | A date's stored list with **Hide this person**: the next name moves up, and the choice survives the monthly refresh |
-| Pages (`/admin/pages`) | The text of Terms, Privacy and the FAQ. Saving publishes at once; "Back to the original" deletes the edit |
-| Revenue (`/admin/revenue`) | Paid claims and boosts by month and for the last 30 days, in Eastern Time, comped listings apart. Stripe stays the real record |
+| Pages (`/admin/pages`) | Terms, Privacy and the FAQ in an editor you type in like a document: headings (a question, on the FAQ), bullets, bold, italic, underline. Saving publishes at once; "Back to the original" deletes the edit |
+| Revenue (`/admin/revenue`) | Four cards (Today, All time, Birthday claims, Boosts: money, payments and different payers), then paid claims and boosts by month and for the last 30 days, in Eastern Time, comped listings apart. Stripe stays the real record |
+| Account (`/admin/account`) | The email and password the admin signs in with |
 
 **Set it up.** Run `pnpm admin:password`, type a password, and put the line it prints into `.env.local` (or the Vercel
-project's environment variables) as `ADMIN_PASSWORD_HASH`. Only the hash is stored. Sessions are signed with
-`APP_SECRET` and last 12 hours. Five wrong passwords from one address (30 from everyone) lock sign-in for 15 minutes.
-A new database needs migration `0006_admin_logins` (`pnpm db:migrate`).
+project's environment variables) as `ADMIN_PASSWORD_HASH`. Only the hash is stored. The sign-in email is `ADMIN_EMAIL`,
+or the alerts address (`ADMIN_ALERT_EMAIL`) when that is empty. Both are only the starting values: once the admin
+changes the email or the password on the Account screen, the saved ones (table `admin_settings`) are used instead.
+Sessions are signed with `APP_SECRET` and the password's hash and last 12 hours, so a new password signs every
+other device out. Five wrong tries from one address (30 from everyone) lock sign-in for 15 minutes.
+A new database needs migrations `0006_admin_logins` and `0010_admin_settings` (`pnpm db:migrate`).
+
+**Forgot password.** `/admin/forgot` emails a 6-digit code to the admin's address and sets a new password with it.
+The code works once, lasts 15 minutes, stops after 5 wrong guesses (each also counts toward the sign-in limit), and
+is stored only as a hash. One code a minute at most, and the form answers the same way for any email. The email
+goes out through the same mailer as the site's (Mailpit locally), so on a copy whose sender isn't verified yet it
+only reaches the address the mail provider allows.
+
+**Formatted text.** The editor saves the same plain text as before (`## ` headings, `- ` bullets) with `**bold**`,
+`*italic*` and `__underline__` inside it (`src/lib/rich-text.ts`). The pages draw these as elements, never as HTML
+from the text.
 
 **How a change reaches the site.** The functions in `src/server/admin.ts` change the database inside a
 transaction that locks the board, exactly like a payment, and keep the #1 history right (someone pushed out of #1
@@ -124,7 +138,8 @@ by a comped or restored listing gets the usual outbid email; a taken-down listin
 `src/server/actions/admin.ts` then drop the caches, throw away the saved pages and tell open pages to look again.
 A listing keeps its personal link when its name is edited, so shared links keep working.
 
-**The look.** [Mantine](https://mantine.dev) draws the components and loads only under `/admin`. The theme
+**The look.** [Mantine](https://mantine.dev) draws the components and loads only under `/admin`; the page editor is
+Mantine's [Tiptap](https://tiptap.dev) editor. The theme
 (`src/components/admin/theme.ts`, `admin.module.css`) is built from the site's own tokens: Bricolage Grotesque, ink
 outlines, hard shadows, in a calmer and denser form, on Cloud with Butter as the one accent.
 
@@ -250,7 +265,8 @@ A test copy runs on the developer's own accounts; the client's accounts replace 
    On Vercel Pro, set the email cron back to every minute (`* * * * *`).
 7. **Live boards:** set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (both public).
    `pnpm db:init` in step 2 already added the rule that lets visitors listen and only the server send.
-8. **Admin:** run `pnpm admin:password` and set the line it prints as `ADMIN_PASSWORD_HASH`. `APP_SECRET` must be a
+8. **Admin:** run `pnpm admin:password` and set the line it prints as `ADMIN_PASSWORD_HASH`; set `ADMIN_EMAIL` to the
+   address the admin signs in with (left out, the alerts address is used). `APP_SECRET` must be a
    long random string (32+ characters): it signs admin sessions and unsubscribe links.
 9. **After every deploy with a new file in `drizzle/`:** run `pnpm db:migrate` against the session pooler URL first.
 10. **Keep the tables closed to the public key:** the publishable key is in every visitor's browser, so nothing but

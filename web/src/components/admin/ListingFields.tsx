@@ -67,17 +67,8 @@ export function ListingFields({ initial, errors, limits, onPhoto }: Props) {
   const ground = THEMES[theme].ground;
 
   return (
-    <div className={classes.formGrid}>
-      <TextInput
-        name="name"
-        label="Name"
-        value={name}
-        onChange={(e) => setName(e.currentTarget.value)}
-        maxLength={limits.nameMaxLength}
-        error={errors?.name}
-        description={isMinor ? "First name only for anyone under 18." : undefined}
-        required
-      />
+    <div className={classes.formStack}>
+      <p className={classes.sectionLabel}>About the birthday person</p>
       <div>
         <Text className={classes.label} component="p">
           Photo
@@ -108,8 +99,26 @@ export function ListingFields({ initial, errors, limits, onPhoto }: Props) {
         <input type="hidden" name="removePhoto" value={removePhoto ? "1" : ""} />
       </div>
 
+      <TextInput
+        name="name"
+        label="Name"
+        placeholder="Full name"
+        value={name}
+        onChange={(e) => setName(e.currentTarget.value)}
+        maxLength={limits.nameMaxLength}
+        error={errors?.name}
+        description={isMinor ? "First name only for anyone under 18." : undefined}
+        required
+      />
+
+      <Checkbox
+        label="This is a child (under 18): first name only, no gift links"
+        checked={isMinor}
+        onChange={(e) => setIsMinor(e.currentTarget.checked)}
+      />
+      <input type="hidden" name="isMinor" value={isMinor ? "1" : ""} />
+
       <Textarea
-        className={classes.formWide}
         name="bio"
         label="One-line bio"
         value={bio}
@@ -121,10 +130,30 @@ export function ListingFields({ initial, errors, limits, onPhoto }: Props) {
         minRows={1}
       />
 
-      <div className={classes.formWide}>
-        <Text className={classes.label} component="p">
-          Color: {THEMES[theme].name}
-        </Text>
+      <p className={classes.sectionLabel}>Where should gifts go?</p>
+      <div className={classes.formGrid}>
+        {GIFT_SERVICE_ORDER.map((service) => {
+          const link = initial.giftLinks.find((l) => l.service === service);
+          return (
+            <div key={service}>
+              <input type="hidden" name="giftService" value={service} />
+              <TextInput
+                name="giftValue"
+                label={GIFT_SERVICES[service].short}
+                // Remounted when the child box changes, so a hidden link is not sent along.
+                key={isMinor ? "locked" : "open"}
+                defaultValue={isMinor ? "" : (link?.url ?? "")}
+                placeholder={GIFT_ENTRY[service].placeholder}
+                disabled={isMinor}
+              />
+            </div>
+          );
+        })}
+      </div>
+      {errors?.giftLinks && <Text className={classes.error}>{errors.giftLinks}</Text>}
+
+      <p className={classes.sectionLabel}>Color: {THEMES[theme].name}</p>
+      <div>
         <div className={classes.swatches}>
           {THEME_KEYS.map((key) => (
             <button
@@ -141,33 +170,6 @@ export function ListingFields({ initial, errors, limits, onPhoto }: Props) {
         <input type="hidden" name="theme" value={theme} />
         {errors?.theme && <Text className={classes.error}>{errors.theme}</Text>}
       </div>
-
-      <Checkbox
-        className={classes.formWide}
-        label="This is a child (under 18): first name only, no gift links"
-        checked={isMinor}
-        onChange={(e) => setIsMinor(e.currentTarget.checked)}
-      />
-      <input type="hidden" name="isMinor" value={isMinor ? "1" : ""} />
-
-      {GIFT_SERVICE_ORDER.map((service) => {
-        const link = initial.giftLinks.find((l) => l.service === service);
-        return (
-          <div key={service}>
-            <input type="hidden" name="giftService" value={service} />
-            <TextInput
-              name="giftValue"
-              label={GIFT_SERVICES[service].short}
-              // Remounted when the child box changes, so a hidden link is not sent along.
-              key={isMinor ? "locked" : "open"}
-              defaultValue={isMinor ? "" : (link?.url ?? "")}
-              placeholder={GIFT_ENTRY[service].placeholder}
-              disabled={isMinor}
-            />
-          </div>
-        );
-      })}
-      {errors?.giftLinks && <Text className={`${classes.error} ${classes.formWide}`}>{errors.giftLinks}</Text>}
     </div>
   );
 }

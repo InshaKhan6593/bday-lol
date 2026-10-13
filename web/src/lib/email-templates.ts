@@ -475,3 +475,23 @@ export function adminClaimEmail(i: AdminClaimInput): EmailContent {
     reason: "You're getting this because you're the mybday.lol admin.",
   };
 }
+
+// ---------------------------------------------------------------------------
+// Admin: the code for a forgotten password (not one of the 8 site emails)
+// ---------------------------------------------------------------------------
+
+export function adminResetEmail(i: { code: string; minutes: number }): EmailContent {
+  // "048 213": easier to read and to type.
+  const spaced = i.code.replace(/(\d{3})(?=\d)/g, "$1 ");
+  return {
+    subject: `${spaced} is your mybday.lol admin code`,
+    preheader: `Use it to set a new password. It works once and expires in ${i.minutes} minutes.`,
+    kicker: "Admin password reset",
+    title: spaced,
+    blocks: [
+      { kind: "p", text: `Type this code on the reset screen to set a new admin password. It works once and expires in ${i.minutes} minutes.` },
+      { kind: "note", text: "Didn’t ask for this? Ignore this email: your password stays as it is." },
+    ],
+    reason: "You’re getting this because someone asked to reset the password for the mybday.lol admin.",
+  };
+}

@@ -318,6 +318,16 @@ export const adminLogins = pgTable(
   (t) => [index("admin_logins_at_idx").on(t.at)],
 ).enableRLS();
 
+/**
+ * What the admin can change about their own sign-in. One row today: "password_hash", set from the
+ * Account screen. Until it exists, the password is the one in ADMIN_PASSWORD_HASH.
+ */
+export const adminSettings = pgTable("admin_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: tstz("updated_at").notNull().defaultNow(),
+}).enableRLS();
+
 // ---------------------------------------------------------------------------
 // "About [date] birthdays": famous people (refreshed monthly)
 // ---------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 import { Paper, Table } from "@mantine/core";
 import { MONTHS } from "@/lib/birthday";
 import { formatUsd } from "@/lib/money";
-import type { Revenue, RevenueRow } from "@/server/admin";
+import type { Revenue, RevenueCard, RevenueRow } from "@/server/admin";
 import { PageHead } from "./AdminShell";
 import classes from "./admin.module.css";
 
@@ -68,19 +68,22 @@ function RevenueTable({ rows, empty }: { rows: RevenueRow[]; empty: string }) {
   );
 }
 
+const count = (n: number, one: string, many = `${one}s`) => `${n.toLocaleString("en-US")} ${n === 1 ? one : many}`;
+
+/** "12 payments · 9 people". People are different payer emails: there are no accounts. */
+const cardNote = (card: RevenueCard, what = "payment") => `${count(card.payments, what)} · ${count(card.people, "person", "people")}`;
+
 /** Paid claims and boosts by month and by day, Eastern Time. Stripe stays the real record (07 B15). */
-export function RevenueScreen({ revenue, today, thisMonth }: { revenue: Revenue; today: string; thisMonth: string }) {
-  const day = revenue.days.find((d) => d.period === today);
-  const month = revenue.months.find((m) => m.period === thisMonth);
-  const count = (row: RevenueRow | undefined) => `${(row?.claims ?? 0) + (row?.boosts ?? 0)} payments`;
+export function RevenueScreen({ revenue }: { revenue: Revenue }) {
+  const { today, allTime, claims, boosts } = revenue.cards;
   return (
     <>
-      <PageHead title="Revenue" lead="Paid claims and boosts in Eastern Time. Comped listings are shown apart and never added in. Stripe is the record of what was actually charged." />
+      <PageHead title="Revenue" lead="Paid claims and boosts in Eastern Time. Comped listings are never added in. Stripe is the record of what was actually charged." />
       <div className={classes.stats}>
-        <Stat label="Today" value={formatUsd(day ? paid(day) : 0)} note={count(day)} />
-        <Stat label="This month" value={formatUsd(month ? paid(month) : 0)} note={count(month)} />
-        <Stat label="All time" value={formatUsd(paid(revenue.allTime))} note={count(revenue.allTime)} />
-        <Stat label="Comped" value={formatUsd(revenue.allTime.compedCents)} note={`${revenue.allTime.comped} listings, not revenue`} />
+        <Stat label="Today" value={formatUsd(today.cents)} note={cardNote(today)} />
+        <Stat label="All time" value={formatUsd(allTime.cents)} note={cardNote(allTime)} />
+        <Stat label="Birthday claims (all time)" value={formatUsd(claims.cents)} note={cardNote(claims, "claim")} />
+        <Stat label="Boosts (all time)" value={formatUsd(boosts.cents)} note={cardNote(boosts, "boost")} />
       </div>
       <h2 className={classes.h2}>By month</h2>
       <RevenueTable rows={revenue.months} empty="No payments yet." />

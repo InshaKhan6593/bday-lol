@@ -31,10 +31,12 @@ export const routes = {
   admin: {
     listings: "/admin" as Route,
     login: "/admin/login" as Route,
+    forgot: "/admin/forgot" as Route,
     comped: "/admin/comped" as Route,
     famous: "/admin/famous" as Route,
     pages: "/admin/pages" as Route,
     revenue: "/admin/revenue" as Route,
+    account: "/admin/account" as Route,
   },
   /** The "Unsubscribe" link in emails: a page that asks before switching anything off. */
   unsubscribe: (token: string) => `/unsubscribe?t=${encodeURIComponent(token)}` as Route,

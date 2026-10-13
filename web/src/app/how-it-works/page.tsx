@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import styles from "@/components/how/how.module.css";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { Button, Icon, Surface, ThemeScope } from "@/components/ui";
+import { Button, Icon, RichText, Surface, ThemeScope } from "@/components/ui";
 import { BIRTHDAY_BOARD_TYPE } from "@/config/board-types";
 import { zonedDate } from "@/lib/birthday";
 import { now } from "@/lib/clock";
@@ -65,7 +65,23 @@ export default async function HowItWorksPage() {
                   <Icon name="plus" size={20} />
                 </span>
               </summary>
-              <p className={styles.answer}>{item.a}</p>
+              <div className={styles.answer}>
+                {(item.blocks ?? [{ kind: "p" as const, text: item.a }]).map((block, k) =>
+                  block.kind === "p" ? (
+                    <p key={k}>
+                      <RichText text={block.text} />
+                    </p>
+                  ) : (
+                    <ul key={k}>
+                      {block.items.map((li, n) => (
+                        <li key={n}>
+                          <RichText text={li} />
+                        </li>
+                      ))}
+                    </ul>
+                  ),
+                )}
+              </div>
             </details>
           ))}
         </section>

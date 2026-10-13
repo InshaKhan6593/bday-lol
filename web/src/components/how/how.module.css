@@ -136,10 +136,18 @@
 }
 
 .answer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
   padding: 0 0 18px;
   font-size: var(--text-body);
   line-height: var(--leading-loose);
   color: var(--color-text-secondary);
+}
+
+.answer ul {
+  margin: 0;
+  padding-left: 22px;
 }
 
 /* ---------- Bottom bar ---------- */

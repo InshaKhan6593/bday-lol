@@ -1,4 +1,5 @@
-import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes, randomInt, scryptSync, timingSafeEqual } from "node:crypto";
+import { RESET_CODE_DIGITS } from "./admin-auth-rules";
 
 /**
  * The admin's sign-in (07 B14): one password, kept only as a hash in ADMIN_PASSWORD_HASH, and a
@@ -13,6 +14,16 @@ export const ADMIN_COOKIE = "admin_session";
 export const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 export const LOGIN_MAX_FAILS_PER_IP = 5;
 export const LOGIN_MAX_FAILS_TOTAL = 30;
+
+export {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  RESET_CODE_DIGITS,
+  RESET_CODE_MAX_TRIES,
+  RESET_CODE_MS,
+  RESET_RESEND_MS,
+  newPasswordError,
+} from "./admin-auth-rules";
 
 const KEY_BYTES = 64;
 
@@ -34,6 +45,37 @@ export function verifyPassword(password: string, stored: string | undefined): bo
   if (expected.length !== KEY_BYTES) return false;
   const given = scryptSync(password, Buffer.from(salt, "base64url"), KEY_BYTES);
   return timingSafeEqual(expected, given);
+}
+
+/**
+ * The key sessions are signed with: APP_SECRET tied to the current password's hash, so changing the
+ * password signs everyone out everywhere (the screen that changed it gets a fresh cookie).
+ */
+export function sessionSecret(appSecret: string, passwordHash: string): string {
+  return `${appSecret}:${passwordHash}`;
+}
+
+/** Two email addresses are the same mailbox: case and outer spaces don't count. */
+export function sameEmail(a: string, b: string): boolean {
+  const x = Buffer.from(a.trim().toLowerCase());
+  const y = Buffer.from(b.trim().toLowerCase());
+  return x.length === y.length && timingSafeEqual(x, y);
+}
+
+/** A fresh reset code, e.g. "048213": every value equally likely. */
+export function newResetCode(): string {
+  return String(randomInt(0, 10 ** RESET_CODE_DIGITS)).padStart(RESET_CODE_DIGITS, "0");
+}
+
+/** What is stored for a reset code: never the code itself. Spaces a person types between the digits don't count. */
+export function resetCodeHash(code: string, secret: string): string {
+  return createHmac("sha256", secret).update(`admin-reset:${code.replace(/\s+/g, "")}`).digest("base64url");
+}
+
+export function sameHash(a: string, b: string): boolean {
+  const x = Buffer.from(a);
+  const y = Buffer.from(b);
+  return x.length === y.length && timingSafeEqual(x, y);
 }
 
 function sign(payload: string, secret: string): string {

@@ -1,7 +1,6 @@
 import { RevenueScreen } from "@/components/admin/RevenueScreen";
 import { db } from "@/db";
 import { now } from "@/lib/clock";
-import { dayParam } from "@/lib/day-cache";
 import { getRevenue } from "@/server/admin";
 import { requireAdmin } from "@/server/admin-session";
 import { getBirthdaySettings } from "@/server/leaderboard";
@@ -10,7 +9,5 @@ import { getBirthdaySettings } from "@/server/leaderboard";
 export default async function AdminRevenuePage() {
   await requireAdmin();
   const { settings } = await getBirthdaySettings(db);
-  const instant = now();
-  const today = dayParam(instant, settings.timezone);
-  return <RevenueScreen revenue={await getRevenue(db, instant, settings.timezone)} today={today} thisMonth={today.slice(0, 7)} />;
+  return <RevenueScreen revenue={await getRevenue(db, now(), settings.timezone)} />;
 }

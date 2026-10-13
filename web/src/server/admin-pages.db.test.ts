@@ -21,13 +21,13 @@ const original = howItWorksFaq(BIRTHDAY_BOARD_TYPE.settings);
 
 describe("the FAQ as editable text", () => {
   it("survives being turned into text and read back", () => {
-    expect(parseFaqMarkdown(faqToMarkdown(original))).toEqual(original);
+    expect(parseFaqMarkdown(faqToMarkdown(original))).toMatchObject(original);
     expect(original).toHaveLength(10);
   });
 
   it("reads questions in order, joins an answer's lines, and drops a question with no answer", () => {
     const text = "Intro that is ignored.\r\n\r\n## First?\r\nLine one\r\nline two.\r\n\r\n## Empty?\r\n\r\n##   Second?  \n\nYes.\n";
-    expect(parseFaqMarkdown(text)).toEqual([
+    expect(parseFaqMarkdown(text)).toMatchObject([
       { q: "First?", a: "Line one line two." },
       { q: "Second?", a: "Yes." },
     ]);
@@ -45,7 +45,7 @@ describe("admin: pages", () => {
       expect(await getFaq(tx)).toEqual(original);
 
       await saveSitePage(tx, "faq", "## New question?\n\nNew answer.\n", NOON);
-      expect(await getFaq(tx)).toEqual([{ q: "New question?", a: "New answer." }]);
+      expect(await getFaq(tx)).toEqual([{ q: "New question?", a: "New answer.", blocks: [{ kind: "p", text: "New answer." }] }]);
       expect(await getEditablePage(tx, "faq")).toMatchObject({ edited: true, updatedAt: NOON.toISOString() });
 
       await resetSitePage(tx, "faq");
@@ -81,6 +81,20 @@ describe("admin: pages", () => {
   it("only knows its three pages", () => {
     expect(["terms", "privacy", "faq"].every(isEditablePage)).toBe(true);
     for (const bad of ["home", "", undefined, 3, "__proto__"]) expect(isEditablePage(bad), String(bad)).toBe(false);
+  });
+});
+
+describe("the FAQ with formatting", () => {
+  it("keeps an answer's paragraphs, bullets and bold, and gives search engines plain text", () => {
+    const [faq] = parseFaqMarkdown("## How do **gifts** work?\n\nYou add a *link*.\n\n- Venmo\n- __Cash App__\n");
+    expect(faq).toEqual({
+      q: "How do gifts work?",
+      a: "You add a link. Venmo Cash App",
+      blocks: [
+        { kind: "p", text: "You add a *link*." },
+        { kind: "ul", items: ["Venmo", "__Cash App__"] },
+      ],
+    });
   });
 });
 

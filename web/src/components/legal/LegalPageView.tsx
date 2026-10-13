@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { Kicker, Surface, ThemeScope } from "@/components/ui";
+import { Kicker, RichText, Surface, ThemeScope } from "@/components/ui";
 import { BIRTHDAY_BOARD_TYPE } from "@/config/board-types";
 import { cx } from "@/lib/cx";
 import type { LegalDoc } from "@/lib/legal";
+import { plainText } from "@/lib/rich-text";
 import { routes } from "@/lib/routes";
 import styles from "./legal.module.css";
 
@@ -45,16 +46,18 @@ export function LegalPageView({ doc, current }: Props) {
         <Surface as="article" radius="section" elevation="section" padding="none" className={styles.article}>
           {doc.sections.map((section, i) => (
             <section key={`${section.heading ?? "intro"}-${i}`} className={styles.section}>
-              {section.heading && <h2 className={styles.h2}>{section.heading}</h2>}
+              {section.heading && <h2 className={styles.h2}>{plainText(section.heading)}</h2>}
               {section.blocks.map((block, k) =>
                 block.kind === "p" ? (
                   <p key={k} className={styles.p}>
-                    {block.text}
+                    <RichText text={block.text} />
                   </p>
                 ) : (
                   <ul key={k} className={styles.ul}>
                     {block.items.map((item, n) => (
-                      <li key={n}>{item}</li>
+                      <li key={n}>
+                        <RichText text={item} />
+                      </li>
                     ))}
                   </ul>
                 ),

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartBarIcon, FileTextIcon, ListBulletsIcon, PlusCircleIcon, SignOutIcon, StarIcon } from "@phosphor-icons/react";
+import { ChartBarIcon, FileTextIcon, KeyIcon, ListBulletsIcon, PlusCircleIcon, SignOutIcon, StarIcon } from "@phosphor-icons/react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -14,6 +14,7 @@ const NAV: Array<{ href: Route; label: string; icon: typeof StarIcon }> = [
   { href: routes.admin.famous, label: "Famous people", icon: StarIcon },
   { href: routes.admin.pages, label: "Pages", icon: FileTextIcon },
   { href: routes.admin.revenue, label: "Revenue", icon: ChartBarIcon },
+  { href: routes.admin.account, label: "Account", icon: KeyIcon },
 ];
 
 /** The admin's frame: the black menu on the left, the screen on the right. */
@@ -45,12 +46,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** A screen's heading, with room for its main button. */
-export function PageHead({ title, lead, children }: { title: string; lead?: string; children?: React.ReactNode }) {
+/** A screen's heading, with room for a few facts next to the title (`aside`) and for its main button. */
+export function PageHead({ title, lead, aside, children }: { title: string; lead?: string; aside?: React.ReactNode; children?: React.ReactNode }) {
   return (
     <div className={classes.pageHead}>
       <div>
-        <h1 className={classes.h1}>{title}</h1>
+        <div className={classes.titleRow}>
+          <h1 className={classes.h1}>{title}</h1>
+          {aside}
+        </div>
         {lead && <p className={classes.lead}>{lead}</p>}
       </div>
       {children}

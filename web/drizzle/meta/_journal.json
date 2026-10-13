@@ -71,6 +71,13 @@
       "when": 1791850487484,
       "tag": "0009_open_date_look",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791852398514,
+      "tag": "0010_admin_settings",
+      "breakpoints": true
     }
   ]
 }

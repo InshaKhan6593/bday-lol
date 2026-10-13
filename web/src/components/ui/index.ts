@@ -7,6 +7,7 @@ export { Icon, type IconName, type IconSize } from "./Icon";
 export { IconButton } from "./IconButton";
 export { Kicker } from "./Kicker";
 export { Menu } from "./Menu";
+export { RichText } from "./RichText";
 export { Select, type SelectOption } from "./Select";
 export { ShareIcon, type ShareIconName } from "./ShareIcon";
 export { Surface } from "./Surface";

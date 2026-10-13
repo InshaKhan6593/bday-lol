@@ -1,28 +1,50 @@
 "use client";
 
-import { Alert, Anchor, Badge, Button, Group, Modal, Pagination, Paper, SegmentedControl, Table, Text, TextInput } from "@mantine/core";
+import { ActionIcon, Alert, Anchor, Badge, Button, Group, Menu, Modal, Pagination, Paper, SegmentedControl, Table, Text, TextInput } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import { ArrowCounterClockwiseIcon, CaretDownIcon, CaretUpIcon, DotsThreeIcon, PencilSimpleIcon, TrashIcon } from "@phosphor-icons/react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { startTransition, useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { THEMES } from "@/config/themes";
-import { formatLong, parseKey } from "@/lib/birthday";
+import { formatLong, formatShort, parseKey } from "@/lib/birthday";
 import { formatUsd } from "@/lib/money";
 import { initials } from "@/lib/people";
 import { routes } from "@/lib/routes";
 import { adminSaveListing, adminSetStatus, type AdminActionState } from "@/server/actions/admin";
-import type { AdminEntry } from "@/server/admin";
+import type { AdminCounts, AdminEntry, AdminSort, AdminView } from "@/server/admin";
 import { PageHead } from "./AdminShell";
 import { DateSelect } from "./DateSelect";
 import { ListingFields } from "./ListingFields";
 import classes from "./admin.module.css";
 
-type Filter = { date: string; q: string; status: "all" | "live" | "removed" };
+type Filter = { date: string; q: string; status: AdminView; sort: AdminSort };
+
+const VIEWS: Array<{ value: AdminView; label: string }> = [
+  { value: "all", label: "All" },
+  { value: "live", label: "Live" },
+  { value: "removed", label: "Removed" },
+  { value: "comped", label: "Comped" },
+];
+
+/** The sortable columns, and which way each one starts when it is first clicked. */
+const COLUMNS: Array<{ by: AdminSort["by"]; label: string; first: AdminSort["dir"] }> = [
+  { by: "rank", label: "#", first: "asc" },
+  { by: "name", label: "Person", first: "asc" },
+  { by: "date", label: "Date", first: "asc" },
+  { by: "total", label: "Total", first: "desc" },
+  { by: "status", label: "Status", first: "asc" },
+  { by: "added", label: "Added", first: "desc" },
+];
 
 type Props = {
   entries: AdminEntry[];
   filter: Filter;
+  /** How many listings each tab holds, on every open board. */
+  counts: AdminCounts;
+  /** The site's time zone, for the "Added" column. */
+  timeZone: string;
   /** Which page this is, and how many listings match in all. */
   paging: { page: number; total: number; pageSize: number };
   /** The comped part of each comped listing's total. */
@@ -37,13 +59,17 @@ function listingsUrl(filter: Filter, page = 1): Route {
   if (filter.date) params.set("date", filter.date);
   if (filter.q.trim()) params.set("q", filter.q.trim());
   if (filter.status !== "all") params.set("status", filter.status);
+  if (filter.sort.by !== "added" || filter.sort.dir !== "desc") {
+    params.set("sort", filter.sort.by);
+    params.set("dir", filter.sort.dir);
+  }
   if (page > 1) params.set("page", String(page));
   const query = params.toString();
   return (query ? `${routes.admin.listings}?${query}` : routes.admin.listings) as Route;
 }
 
 /** Everyone on the open boards: find a listing, edit it, take it down or put it back. */
-export function ListingsScreen({ entries, filter, paging, compedCents, limits, justAdded }: Props) {
+export function ListingsScreen({ entries, filter, counts, timeZone, paging, compedCents, limits, justAdded }: Props) {
   const router = useRouter();
   const [q, setQ] = useState(filter.q);
   const [editing, setEditing] = useState<AdminEntry | null>(null);
@@ -55,7 +81,8 @@ export function ListingsScreen({ entries, filter, paging, compedCents, limits, j
   const firstShown = (paging.page - 1) * paging.pageSize + 1;
 
   useEffect(() => {
-    if (justAdded) notifications.show({ message: "Comped listing added. It’s live on the board.", color: "green" });
+    // The id keeps it to one notice if the effect runs twice.
+    if (justAdded) notifications.show({ id: "comped-added", message: "Comped listing added. It’s live on the board.", color: "green" });
   }, [justAdded]);
 
   function setStatus(entry: AdminEntry, status: "live" | "removed") {
@@ -69,12 +96,26 @@ export function ListingsScreen({ entries, filter, paging, compedCents, limits, j
     });
   }
 
+  // A second click on the same column turns it round.
+  const sortBy = (column: (typeof COLUMNS)[number]) =>
+    go({ sort: { by: column.by, dir: filter.sort.by === column.by ? (filter.sort.dir === "asc" ? "desc" : "asc") : column.first } });
+  const added = new Intl.DateTimeFormat("en-US", { timeZone, month: "short", day: "numeric", year: "numeric" });
+
   const md = parseKey(filter.date);
   return (
     <>
       <PageHead
         title="Listings"
-        lead={md ? `Everyone on ${formatLong(md)}’s board, in rank order.` : "The newest listings on every open board."}
+        lead={md ? `Everyone on ${formatLong(md)}’s board. Click a column to sort by it.` : "Every listing on the open boards, newest first. Click a column to sort by it."}
+        aside={
+          <div className={classes.counts}>
+            {VIEWS.map((view) => (
+              <Badge key={view.value} className={classes.count}>
+                {view.label} {counts[view.value].toLocaleString("en-US")}
+              </Badge>
+            ))}
+          </div>
+        }
       >
         <Button component={Link} href={routes.admin.comped}>
           Add comped listing
@@ -88,20 +129,18 @@ export function ListingsScreen({ entries, filter, paging, compedCents, limits, j
           go({});
         }}
       >
-        <DateSelect value={filter.date} onChange={(date) => go({ date })} allowAll />
-        <TextInput label="Name" placeholder="Search names" value={q} onChange={(e) => setQ(e.currentTarget.value)} style={{ flex: "1 1 200px" }} />
-        <SegmentedControl
-          value={filter.status}
-          onChange={(status) => go({ status: status as Filter["status"] })}
-          data={[
-            { value: "all", label: "All" },
-            { value: "live", label: "Live" },
-            { value: "removed", label: "Removed" },
-          ]}
-        />
+        <DateSelect value={filter.date} onChange={(date) => go({ date })} allowAll compact />
+        <TextInput label="Name" placeholder="Search names" value={q} onChange={(e) => setQ(e.currentTarget.value)} w={200} />
         <Button type="submit" variant="default">
           Search
         </Button>
+        <SegmentedControl
+          className={classes.filterTabs}
+          aria-label="Which listings"
+          value={filter.status}
+          onChange={(status) => go({ status: status as AdminView })}
+          data={VIEWS}
+        />
       </form>
 
       <Paper className={classes.tableCard}>
@@ -111,11 +150,19 @@ export function ListingsScreen({ entries, filter, paging, compedCents, limits, j
           <Table>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>#</Table.Th>
-                <Table.Th>Person</Table.Th>
-                <Table.Th>Date</Table.Th>
-                <Table.Th>Total</Table.Th>
-                <Table.Th>Status</Table.Th>
+                {COLUMNS.map((column) => {
+                  const active = filter.sort.by === column.by;
+                  const up = active ? filter.sort.dir === "asc" : column.first === "asc";
+                  const Arrow = up ? CaretUpIcon : CaretDownIcon;
+                  return (
+                    <Table.Th key={column.by} aria-sort={active ? (filter.sort.dir === "asc" ? "ascending" : "descending") : undefined}>
+                      <button type="button" className={classes.sort} data-active={active || undefined} onClick={() => sortBy(column)}>
+                        {column.label}
+                        <Arrow size={12} weight="bold" aria-hidden className={classes.sortArrow} />
+                      </button>
+                    </Table.Th>
+                  );
+                })}
                 <Table.Th />
               </Table.Tr>
             </Table.Thead>
@@ -137,24 +184,26 @@ export function ListingsScreen({ entries, filter, paging, compedCents, limits, j
                           </span>
                         )}
                         <div style={{ minWidth: 0 }}>
-                          <div className={classes.personName} data-removed={removed || undefined}>
+                          <div className={classes.personName} data-removed={removed || undefined} title={entry.name}>
                             {entry.name}
                           </div>
-                          <div className={classes.personSub}>{entry.bio || entry.ownerEmail || "No bio"}</div>
+                          <div className={classes.personSub} title={entry.bio || undefined}>
+                            {entry.bio || entry.ownerEmail || "No bio"}
+                          </div>
                         </div>
                       </div>
                     </Table.Td>
-                    <Table.Td>
+                    <Table.Td style={{ whiteSpace: "nowrap" }}>
                       <Anchor component={Link} href={routes.person(date, removed ? null : entry.slug)} target="_blank" c="inherit" fw={600} underline="always">
-                        {formatLong(date)}
+                        {formatShort(date)}
                       </Anchor>
                       <Text size="xs" c="dimmed">
                         {entry.year}
                       </Text>
                     </Table.Td>
                     <Table.Td className={classes.money}>{formatUsd(entry.totalCents)}</Table.Td>
-                    <Table.Td>
-                      <Group gap={6}>
+                    <Table.Td className={classes.statusCell}>
+                      <Group gap={6} wrap="nowrap">
                         {removed ? (
                           <Badge className={classes.badgeRemoved}>Removed</Badge>
                         ) : (
@@ -164,21 +213,33 @@ export function ListingsScreen({ entries, filter, paging, compedCents, limits, j
                         {entry.isMinor && <Badge className={classes.badgeChild}>Child</Badge>}
                       </Group>
                     </Table.Td>
-                    <Table.Td>
-                      <Group gap="xs" justify="flex-end" wrap="nowrap">
-                        <Button variant="default" size="xs" onClick={() => setEditing(entry)}>
-                          Edit
-                        </Button>
-                        {removed ? (
-                          <Button variant="default" size="xs" loading={working} onClick={() => setStatus(entry, "live")}>
-                            Restore
-                          </Button>
-                        ) : (
-                          <Button variant="default" size="xs" c="red.8" onClick={() => setConfirming(entry)}>
-                            Remove
-                          </Button>
-                        )}
-                      </Group>
+                    <Table.Td className={classes.addedCell}>{entry.liveAt ? added.format(new Date(entry.liveAt)) : "–"}</Table.Td>
+                    <Table.Td className={classes.actionCell}>
+                      <Menu position="bottom-end" withinPortal classNames={{ dropdown: classes.listPanel, item: classes.menuItem }}>
+                        <Menu.Target>
+                          <ActionIcon variant="default" className={classes.rowAction} aria-label={`Actions for ${entry.name}`} loading={working && removed}>
+                            <DotsThreeIcon size={22} weight="bold" aria-hidden />
+                          </ActionIcon>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          <Menu.Item leftSection={<PencilSimpleIcon size={16} weight="bold" aria-hidden />} onClick={() => setEditing(entry)}>
+                            Edit
+                          </Menu.Item>
+                          {removed ? (
+                            <Menu.Item leftSection={<ArrowCounterClockwiseIcon size={16} weight="bold" aria-hidden />} onClick={() => setStatus(entry, "live")}>
+                              Restore
+                            </Menu.Item>
+                          ) : (
+                            <Menu.Item
+                              leftSection={<TrashIcon size={16} weight="bold" aria-hidden />}
+                              className={classes.menuDanger}
+                              onClick={() => setConfirming(entry)}
+                            >
+                              Remove
+                            </Menu.Item>
+                          )}
+                        </Menu.Dropdown>
+                      </Menu>
                     </Table.Td>
                   </Table.Tr>
                 );

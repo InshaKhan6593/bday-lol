@@ -18,7 +18,7 @@ import {
   updateListing,
   type BoardChange,
 } from "../admin";
-import { isAdmin, signIn, signOut } from "../admin-session";
+import { changeEmail, changePassword, isAdmin, requestPasswordReset, resetPassword, signIn, signOut } from "../admin-session";
 import { CACHE_TAGS, SAVED_PAGE_ROUTES } from "../cached";
 import { getBirthdaySettings } from "../leaderboard";
 import { announceBoardChange } from "../live";
@@ -35,7 +35,7 @@ export type AdminActionState = {
   ok?: boolean;
   /** Shown as a notification. */
   message?: string;
-  errors?: Partial<Record<ListingField | "photo" | "amount" | "date" | "form", string>>;
+  errors?: Partial<Record<ListingField | "photo" | "amount" | "date" | "form" | "current" | "next" | "email" | "code", string>>;
 };
 
 const NOT_SIGNED_IN: AdminActionState = { ok: false, errors: { form: "Your session ended. Sign in again." } };
@@ -88,7 +88,7 @@ function listingFrom(form: FormData) {
 // ---------------------------------------------------------------------------
 
 export async function adminSignIn(_prev: AdminActionState, form: FormData): Promise<AdminActionState> {
-  const result = await signIn(text(form, "password"));
+  const result = await signIn(text(form, "email"), text(form, "password"));
   if (!result.ok) return { ok: false, errors: { form: result.error } };
   redirect(routes.admin.listings);
 }
@@ -96,6 +96,38 @@ export async function adminSignIn(_prev: AdminActionState, form: FormData): Prom
 export async function adminSignOut(): Promise<void> {
   await signOut();
   redirect(routes.admin.login);
+}
+
+/** "Forgot password?", step 1. The answer is the same whether or not the email is the admin's. */
+export async function adminRequestReset(_prev: AdminActionState, form: FormData): Promise<AdminActionState> {
+  await requestPasswordReset(text(form, "email").slice(0, 254));
+  return { ok: true };
+}
+
+/** Step 2: the emailed code and a new password. Lands on the listings, signed in. */
+export async function adminResetPassword(_prev: AdminActionState, form: FormData): Promise<AdminActionState> {
+  const result = await resetPassword({
+    email: text(form, "email").slice(0, 254),
+    code: text(form, "code").slice(0, 20),
+    next: text(form, "next"),
+    confirm: text(form, "confirm"),
+  });
+  if (!result.ok) return { ok: false, errors: { [result.field]: result.error } };
+  redirect(routes.admin.listings);
+}
+
+export async function adminChangeEmail(_prev: AdminActionState, form: FormData): Promise<AdminActionState> {
+  if (!(await isAdmin())) return NOT_SIGNED_IN;
+  const result = await changeEmail({ current: text(form, "current"), email: text(form, "email").slice(0, 254) });
+  if (!result.ok) return { ok: false, errors: { [result.field]: result.error } };
+  return { ok: true, message: `Sign-in email changed to ${result.email}.` };
+}
+
+export async function adminChangePassword(_prev: AdminActionState, form: FormData): Promise<AdminActionState> {
+  if (!(await isAdmin())) return NOT_SIGNED_IN;
+  const result = await changePassword({ current: text(form, "current"), next: text(form, "next"), confirm: text(form, "confirm") });
+  if (!result.ok) return { ok: false, errors: { [result.field]: result.error } };
+  return { ok: true, message: "Password changed. Other devices are signed out." };
 }
 
 // ---------------------------------------------------------------------------

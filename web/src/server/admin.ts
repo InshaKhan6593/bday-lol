@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, ilike, inArray, isNull, lte, ne, sql } from "drizzle-orm";
+import { and, asc, eq, gt, ilike, inArray, isNull, lte, ne, sql } from "drizzle-orm";
 import type { BoardTypeSettings } from "@/config/board-types";
 import type { Executor } from "@/db";
 import { boards, entries, famousHidden, famousPeople, leaderLog, payments, type GiftLink } from "@/db/schema";
@@ -45,12 +45,24 @@ export type AdminEntry = {
   liveAt: string | null;
 };
 
+/** The listings tabs: everything, what's on the boards, what was taken down, and the free spots. */
+export const ADMIN_VIEWS = ["all", "live", "removed", "comped"] as const;
+export type AdminView = (typeof ADMIN_VIEWS)[number];
+
+/** The columns the listings can be ordered by. "added" is when the listing went live. */
+export const ADMIN_SORTS = ["added", "rank", "name", "date", "total", "status"] as const;
+export type AdminSort = { by: (typeof ADMIN_SORTS)[number]; dir: "asc" | "desc" };
+
+/** Newest first, unless a column is picked. */
+export const DEFAULT_ADMIN_SORT: AdminSort = { by: "added", dir: "desc" };
+
 export type AdminEntryFilter = {
   /** One date ("10-07"). Every date when left out. */
   key?: string;
   /** Part of a name. */
   q?: string;
-  status?: "live" | "removed" | "all";
+  status?: AdminView;
+  sort?: AdminSort;
   /** Which page of ADMIN_PAGE_SIZE listings, from 1. */
   page?: number;
 };
@@ -64,7 +76,8 @@ function entriesWhere(filter: AdminEntryFilter, instant: Date) {
   return and(
     lte(boards.opensAt, instant),
     gt(boards.closesAt, instant),
-    filter.status && filter.status !== "all" ? eq(entries.status, filter.status) : ne(entries.status, "pending"),
+    filter.status === "live" || filter.status === "removed" ? eq(entries.status, filter.status) : ne(entries.status, "pending"),
+    filter.status === "comped" ? eq(entries.isComped, true) : undefined,
     filter.key ? eq(boards.key, filter.key) : undefined,
     q ? ilike(entries.name, `%${q.replace(/[%_\\]/g, "\\$&")}%`) : undefined,
   );
@@ -80,14 +93,31 @@ export async function countAdminEntries(db: Executor, filter: AdminEntryFilter, 
   return row?.n ?? 0;
 }
 
+export type AdminCounts = Record<AdminView, number>;
+
+/** How many listings each tab holds, on the boards open now. */
+export async function countAdminViews(db: Executor, instant: Date): Promise<AdminCounts> {
+  const [row] = await db
+    .select({
+      all: sql<number>`count(*)::int`,
+      live: sql<number>`(count(*) filter (where ${entries.status} = 'live'))::int`,
+      removed: sql<number>`(count(*) filter (where ${entries.status} = 'removed'))::int`,
+      comped: sql<number>`(count(*) filter (where ${entries.isComped}))::int`,
+    })
+    .from(entries)
+    .innerJoin(boards, eq(boards.id, entries.boardId))
+    .where(entriesWhere({}, instant));
+  return row ?? { all: 0, live: 0, removed: 0, comped: 0 };
+}
+
 /** The last page a filter has (at least 1), so a page number from the address can be kept in range. */
 export function lastAdminPage(total: number): number {
   return Math.max(1, Math.ceil(total / ADMIN_PAGE_SIZE));
 }
 
 /**
- * One page of the listings on the boards that are open now: newest first, or in board order when one
- * date is picked. Unpaid claims never appear (they aren't on a board).
+ * One page of the listings on the boards that are open now: newest first, or ordered by the column
+ * the admin picked. Unpaid claims never appear (they aren't on a board).
  */
 export async function listAdminEntries(db: Executor, filter: AdminEntryFilter, instant: Date): Promise<AdminEntry[]> {
   const ranked = db
@@ -101,6 +131,17 @@ export async function listAdminEntries(db: Executor, filter: AdminEntryFilter, i
     .where(eq(entries.status, "live"))
     .as("ranked");
   const page = Math.max(1, Math.floor(filter.page ?? 1));
+  const { by, dir } = filter.sort ?? DEFAULT_ADMIN_SORT;
+  const way = dir === "asc" ? sql`asc` : sql`desc`;
+  // A removed listing has no rank and one that never went live has no date: both go last either way.
+  const order = {
+    added: sql`${entries.liveAt} ${way} nulls last`,
+    rank: sql`${ranked.rank} ${way} nulls last`,
+    name: sql`lower(${entries.name}) ${way}`,
+    date: sql`${boards.key} ${way}`,
+    total: sql`${entries.totalCents} ${way}`,
+    status: sql`${entries.status}::text ${way}`,
+  }[by];
   const rows = await db
     .select({
       id: entries.id,
@@ -126,10 +167,7 @@ export async function listAdminEntries(db: Executor, filter: AdminEntryFilter, i
     .leftJoin(ranked, eq(ranked.id, entries.id))
     .where(entriesWhere(filter, instant))
     // The id settles ties, so a listing is never on two pages or on none.
-    .orderBy(
-      ...(filter.key ? [asc(entries.status), desc(entries.totalCents), asc(entries.totalReachedAt)] : [desc(entries.liveAt)]),
-      asc(entries.id),
-    )
+    .orderBy(order, asc(entries.id))
     .limit(ADMIN_PAGE_SIZE)
     .offset((page - 1) * ADMIN_PAGE_SIZE);
   return rows.map(({ period, liveAt, status, ...row }) => ({
@@ -393,7 +431,11 @@ export type RevenueRow = {
   comped: number;
 };
 
-export type Revenue = { days: RevenueRow[]; months: RevenueRow[]; allTime: RevenueRow };
+/** One card at the top of the Revenue screen. `people` are different payer emails (there are no accounts). */
+export type RevenueCard = { cents: number; payments: number; people: number };
+export type RevenueCards = { today: RevenueCard; allTime: RevenueCard; claims: RevenueCard; boosts: RevenueCard };
+
+export type Revenue = { days: RevenueRow[]; months: RevenueRow[]; allTime: RevenueRow; cards: RevenueCards };
 
 const emptyRow = (period: string): RevenueRow => ({ period, claimsCents: 0, claims: 0, boostsCents: 0, boosts: 0, compedCents: 0, comped: 0 });
 
@@ -427,6 +469,37 @@ async function revenueBy(db: Executor, format: string, timeZone: string, since: 
   return [...out.values()];
 }
 
+/**
+ * The four cards: today (Eastern Time) and all time, then all-time claims and all-time boosts on
+ * their own. Comped listings are not money and are never in a card.
+ */
+async function revenueCards(db: Executor, instant: Date, timeZone: string): Promise<RevenueCards> {
+  const day = (at: unknown) => sql`to_char(${at} at time zone ${timeZone}, 'YYYY-MM-DD')`;
+  const today = sql`${day(payments.paidAt)} = ${day(sql`${instant.toISOString()}::timestamptz`)}`;
+  const card = (where: ReturnType<typeof sql>) => ({
+    cents: sql<number>`coalesce(sum(${payments.amountCents}) filter (where ${where}), 0)::int`,
+    payments: sql<number>`(count(*) filter (where ${where}))::int`,
+    people: sql<number>`(count(distinct lower(${payments.email})) filter (where ${where}))::int`,
+  });
+  const pick = (prefix: string, where: ReturnType<typeof sql>) =>
+    Object.fromEntries(Object.entries(card(where)).map(([k, v]) => [`${prefix}_${k}`, v])) as Record<string, ReturnType<typeof sql<number>>>;
+  const [row] = await db
+    .select({
+      ...pick("today", today),
+      ...pick("allTime", sql`true`),
+      ...pick("claims", sql`${payments.kind} = 'claim'`),
+      ...pick("boosts", sql`${payments.kind} = 'boost'`),
+    })
+    .from(payments)
+    .where(and(eq(payments.status, "paid"), inArray(payments.kind, ["claim", "boost"])));
+  const read = (prefix: string): RevenueCard => ({
+    cents: Number(row?.[`${prefix}_cents`] ?? 0),
+    payments: Number(row?.[`${prefix}_payments`] ?? 0),
+    people: Number(row?.[`${prefix}_people`] ?? 0),
+  });
+  return { today: read("today"), allTime: read("allTime"), claims: read("claims"), boosts: read("boosts") };
+}
+
 /** Paid claims and boosts by day (the last 30 days) and by month, in Eastern Time, with comped listings apart. */
 export async function getRevenue(db: Executor, instant: Date, timeZone: string): Promise<Revenue> {
   const days = await revenueBy(db, "YYYY-MM-DD", timeZone, new Date(instant.getTime() - 30 * 86_400_000));
@@ -435,5 +508,5 @@ export async function getRevenue(db: Executor, instant: Date, timeZone: string):
     for (const k of ["claimsCents", "claims", "boostsCents", "boosts", "compedCents", "comped"] as const) sum[k] += m[k];
     return sum;
   }, emptyRow("all"));
-  return { days, months, allTime };
+  return { days, months, allTime, cards: await revenueCards(db, instant, timeZone) };
 }
