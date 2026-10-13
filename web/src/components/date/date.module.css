@@ -341,7 +341,8 @@
  */
 .claim {
   position: absolute;
-  inset: 0;
+  /* Out over the card's outline too, so a tap on the very edge still counts. */
+  inset: calc(-1 * var(--stroke));
   z-index: 0;
   padding: 0;
   border: 0;
@@ -359,6 +360,25 @@
 .actions {
   position: relative;
   z-index: 1;
+}
+
+/*
+ * Only the real controls keep their own clicks. The strip around them, and the
+ * "Gifts open Oct 7" note (not a button), let a click fall through to the card:
+ * on phones that strip is the whole bottom of the card.
+ */
+.boostWrap,
+.actions {
+  pointer-events: none;
+}
+
+.boostWrap > .boostPill,
+.actions > * {
+  pointer-events: auto;
+}
+
+.actions > .giftsOpen {
+  pointer-events: none;
 }
 
 .avatarWrap {
@@ -846,6 +866,15 @@
 /* ---------- Mobile board (390px) ---------- */
 
 @media (max-width: 640px) {
+  /*
+   * "Back to today" wraps under ◀ Pick a date ▶ on a phone. With the picker open
+   * it would sit between the button and the picker, so it steps aside: the picker
+   * opens right under the button, and today's date is marked inside it.
+   */
+  .nav[data-picker-open] .backToday {
+    display: none;
+  }
+
   .h1 {
     font-size: var(--text-h2-lg);
   }

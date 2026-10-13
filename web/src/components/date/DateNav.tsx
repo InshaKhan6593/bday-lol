@@ -69,7 +69,7 @@ export function DateNav({ md, today, todayTheme, calendarTops }: Props) {
   return (
     <Popover.Root open={open} onOpenChange={toggle}>
       <Popover.Anchor asChild>
-        <div className={styles.nav} data-date-nav>
+        <div className={styles.nav} data-date-nav data-picker-open={open ? "" : undefined}>
           {/* The neighbouring days are fetched ahead, so ◀ ▶ change the page at once. */}
           <IconButton href={routes.date(adjacentDay(md, -1))} prefetch icon="chevronLeft" label="Previous day" />
           <Popover.Trigger asChild>
