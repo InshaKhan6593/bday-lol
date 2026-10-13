@@ -1,6 +1,6 @@
 "use client";
 
-import { ActionIcon, Alert, Anchor, Badge, Button, Group, Menu, Modal, Pagination, Paper, SegmentedControl, Table, Text, TextInput } from "@mantine/core";
+import { ActionIcon, Alert, Anchor, Badge, Button, Group, Menu, Modal, Pagination, Paper, SegmentedControl, Select, Table, Text, TextInput } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { ArrowCounterClockwiseIcon, CaretDownIcon, CaretUpIcon, DotsThreeIcon, PencilSimpleIcon, TrashIcon } from "@phosphor-icons/react";
 import type { Route } from "next";
@@ -26,6 +26,20 @@ const VIEWS: Array<{ value: AdminView; label: string }> = [
   { value: "live", label: "Live" },
   { value: "removed", label: "Removed" },
   { value: "comped", label: "Comped" },
+];
+
+/** On a phone the table is a list of cards with no headings to click, so the same orders are in one list. */
+const SORT_CHOICES: Array<{ value: string; label: string }> = [
+  { value: "added:desc", label: "Newest first" },
+  { value: "added:asc", label: "Oldest first" },
+  { value: "name:asc", label: "Name, A to Z" },
+  { value: "name:desc", label: "Name, Z to A" },
+  { value: "total:desc", label: "Total, high to low" },
+  { value: "total:asc", label: "Total, low to high" },
+  { value: "date:asc", label: "Birthday, Jan to Dec" },
+  { value: "date:desc", label: "Birthday, Dec to Jan" },
+  { value: "rank:asc", label: "Rank, #1 first" },
+  { value: "status:asc", label: "Status" },
 ];
 
 /** The sortable columns, and which way each one starts when it is first clicked. */
@@ -106,7 +120,12 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, comp
     <>
       <PageHead
         title="Listings"
-        lead={md ? `Everyone on ${formatLong(md)}’s board. Click a column to sort by it.` : "Every listing on the open boards, newest first. Click a column to sort by it."}
+        lead={
+          <>
+            {md ? `Everyone on ${formatLong(md)}’s board.` : "Every listing on the open boards, newest first."}
+            <span className={classes.deskOnly}> Click a column to sort by it.</span>
+          </>
+        }
         aside={
           <div className={classes.counts}>
             {VIEWS.map((view) => (
@@ -130,7 +149,7 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, comp
         }}
       >
         <DateSelect value={filter.date} onChange={(date) => go({ date })} allowAll compact />
-        <TextInput label="Name" placeholder="Search names" value={q} onChange={(e) => setQ(e.currentTarget.value)} w={200} />
+        <TextInput label="Name" placeholder="Search names" value={q} onChange={(e) => setQ(e.currentTarget.value)} w={200} className={classes.filterGrow} />
         <Button type="submit" variant="default">
           Search
         </Button>
@@ -141,13 +160,31 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, comp
           onChange={(status) => go({ status: status as AdminView })}
           data={VIEWS}
         />
+        <Select
+          className={classes.phoneOnly}
+          label="Sort by"
+          allowDeselect={false}
+          value={`${filter.sort.by}:${filter.sort.dir}`}
+          // An order picked from a column that isn't in the list (status, reversed) still shows as picked.
+          data={
+            SORT_CHOICES.some((choice) => choice.value === `${filter.sort.by}:${filter.sort.dir}`)
+              ? SORT_CHOICES
+              : [...SORT_CHOICES, { value: `${filter.sort.by}:${filter.sort.dir}`, label: "Custom" }]
+          }
+          onChange={(picked) => {
+            const [by, dir] = (picked ?? "added:desc").split(":") as [AdminSort["by"], AdminSort["dir"]];
+            go({ sort: { by, dir } });
+          }}
+          comboboxProps={{ position: "bottom-start", middlewares: { flip: false, shift: false }, withinPortal: true }}
+          classNames={{ dropdown: classes.listPanel, option: classes.listOption }}
+        />
       </form>
 
       <Paper className={classes.tableCard}>
         {entries.length === 0 ? (
           <p className={classes.empty}>No listings match. Try another date or name.</p>
         ) : (
-          <Table>
+          <Table className={classes.listTable}>
             <Table.Thead>
               <Table.Tr>
                 {COLUMNS.map((column) => {
@@ -173,7 +210,7 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, comp
                 return (
                   <Table.Tr key={entry.id}>
                     <Table.Td className={classes.rank}>{entry.rank ?? "–"}</Table.Td>
-                    <Table.Td>
+                    <Table.Td className={classes.personCell}>
                       <div className={classes.person}>
                         {entry.photoUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element -- small avatars from photo storage
@@ -193,11 +230,11 @@ export function ListingsScreen({ entries, filter, counts, timeZone, paging, comp
                         </div>
                       </div>
                     </Table.Td>
-                    <Table.Td style={{ whiteSpace: "nowrap" }}>
+                    <Table.Td className={classes.dateCell}>
                       <Anchor component={Link} href={routes.person(date, removed ? null : entry.slug)} target="_blank" c="inherit" fw={600} underline="always">
                         {formatShort(date)}
                       </Anchor>
-                      <Text size="xs" c="dimmed">
+                      <Text size="xs" c="dimmed" className={classes.dateYear}>
                         {entry.year}
                       </Text>
                     </Table.Td>

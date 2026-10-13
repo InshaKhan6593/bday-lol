@@ -45,13 +45,13 @@ export function FamousScreen({ date, people, listed }: Props) {
         lead={`Born on ${formatLong(md)}, best known first. The date page shows the first ${listed} that aren’t hidden.`}
       />
       <div className={classes.filters}>
-        <DateSelect value={date} onChange={(key) => key && router.push(`${routes.admin.famous}?date=${key}` as Route)} />
+        <DateSelect compact value={date} onChange={(key) => key && router.push(`${routes.admin.famous}?date=${key}` as Route)} />
       </div>
       <Paper className={classes.tableCard}>
         {people.length === 0 ? (
           <p className={classes.empty}>No famous people are stored for this date yet. The list fills in with the monthly refresh.</p>
         ) : (
-          <Table>
+          <Table className={classes.stackTable}>
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>#</Table.Th>
@@ -67,19 +67,21 @@ export function FamousScreen({ date, people, listed }: Props) {
                 const shownAt = person.hidden ? null : ++position;
                 return (
                   <Table.Tr key={`${person.source}:${person.sourceId}`}>
-                    <Table.Td className={classes.rank}>{shownAt ?? "–"}</Table.Td>
-                    <Table.Td>
+                    <Table.Td className={classes.rank} data-label="Place">
+                      {shownAt ?? "–"}
+                    </Table.Td>
+                    <Table.Td data-label="Name">
                       <span className={classes.personName} data-removed={person.hidden || undefined}>
                         {person.name}
                       </span>
                     </Table.Td>
-                    <Table.Td>
+                    <Table.Td data-label="Known for">
                       <Text size="sm">{person.knownFor}</Text>
                     </Table.Td>
-                    <Table.Td>
+                    <Table.Td data-label="Born">
                       <Text size="sm">{person.birthDate.slice(0, 4)}</Text>
                     </Table.Td>
-                    <Table.Td>
+                    <Table.Td data-label="On the site">
                       {person.hidden ? (
                         <Badge className={classes.badgeRemoved}>Hidden</Badge>
                       ) : shownAt! <= listed ? (
@@ -88,8 +90,8 @@ export function FamousScreen({ date, people, listed }: Props) {
                         <Badge className={classes.badgeChild}>Next in line</Badge>
                       )}
                     </Table.Td>
-                    <Table.Td>
-                      <Button variant="default" size="xs" loading={working} onClick={() => toggle(person)} style={{ float: "right" }}>
+                    <Table.Td className={classes.stackAction}>
+                      <Button variant="default" size="xs" loading={working} onClick={() => toggle(person)}>
                         {person.hidden ? "Show again" : "Hide this person"}
                       </Button>
                     </Table.Td>

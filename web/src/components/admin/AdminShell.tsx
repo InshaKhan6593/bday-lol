@@ -47,7 +47,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 }
 
 /** A screen's heading, with room for a few facts next to the title (`aside`) and for its main button. */
-export function PageHead({ title, lead, aside, children }: { title: string; lead?: string; aside?: React.ReactNode; children?: React.ReactNode }) {
+export function PageHead({ title, lead, aside, children }: { title: string; lead?: React.ReactNode; aside?: React.ReactNode; children?: React.ReactNode }) {
   return (
     <div className={classes.pageHead}>
       <div>

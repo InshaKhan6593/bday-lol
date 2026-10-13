@@ -46,6 +46,7 @@ export function DateSelect({ value, onChange, allowAll = false, error, compact =
         data={allowAll ? [{ value: ALL, label: "All dates" }, ...months] : months}
         error={error}
         w={compact ? 160 : undefined}
+        className={compact ? classes.filterGrow : undefined}
       />
       <Select
         {...LIST}
@@ -56,6 +57,7 @@ export function DateSelect({ value, onChange, allowAll = false, error, compact =
         onChange={(picked) => month && picked && onChange(toKey({ month, day: Number(picked) }))}
         data={Array.from({ length: days }, (_, i) => String(i + 1))}
         w={compact ? 96 : undefined}
+        className={compact ? classes.filterGrow : undefined}
       />
     </>
   );

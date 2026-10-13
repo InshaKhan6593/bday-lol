@@ -30,7 +30,7 @@ function RevenueTable({ rows, empty }: { rows: RevenueRow[]; empty: string }) {
   if (rows.length === 0) return <Paper className={classes.tableCard}><p className={classes.empty}>{empty}</p></Paper>;
   return (
     <Paper className={classes.tableCard}>
-      <Table>
+      <Table className={classes.stackTable}>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Period</Table.Th>
@@ -43,15 +43,19 @@ function RevenueTable({ rows, empty }: { rows: RevenueRow[]; empty: string }) {
         <Table.Tbody>
           {rows.map((row) => (
             <Table.Tr key={row.period}>
-              <Table.Td fw={800}>{periodLabel(row.period)}</Table.Td>
-              <Table.Td className={classes.money}>
+              <Table.Td fw={800} className={classes.stackTitle}>
+                {periodLabel(row.period)}
+              </Table.Td>
+              <Table.Td className={classes.money} data-label="Claims">
                 {formatUsd(row.claimsCents)} <span className={classes.statNote}>· {row.claims}</span>
               </Table.Td>
-              <Table.Td className={classes.money}>
+              <Table.Td className={classes.money} data-label="Boosts">
                 {formatUsd(row.boostsCents)} <span className={classes.statNote}>· {row.boosts}</span>
               </Table.Td>
-              <Table.Td className={classes.money}>{formatUsd(paid(row))}</Table.Td>
-              <Table.Td className={classes.money}>
+              <Table.Td className={classes.money} data-label="Paid total">
+                {formatUsd(paid(row))}
+              </Table.Td>
+              <Table.Td className={classes.money} data-label="Comped (not counted)">
                 {row.comped ? (
                   <>
                     {formatUsd(row.compedCents)} <span className={classes.statNote}>· {row.comped}</span>
