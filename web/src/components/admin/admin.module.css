@@ -604,6 +604,51 @@ form > .sectionLabel:first-of-type {
   color: var(--color-text-secondary);
 }
 
+/*
+ * The revenue tables: the period on the left, then figures lined up on the right, each amount over
+ * what it is made of. The paid total is the column to read, so it is the heavy one.
+ */
+.revenueTable th:not(:first-child),
+.revenueTable td:not(:first-child) {
+  text-align: right;
+}
+
+.revenueTable .stackTitle {
+  font-weight: var(--weight-bold);
+  font-size: var(--text-label);
+  white-space: nowrap;
+}
+
+.figure {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: var(--leading-snug);
+}
+
+.figureAmount {
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.figureNote {
+  font-size: var(--text-fine);
+  color: var(--color-text-tertiary);
+}
+
+.figureNone {
+  color: var(--color-text-tertiary);
+}
+
+.revenueTotal .figureAmount {
+  font-size: var(--text-title-sm);
+  font-weight: var(--weight-bold);
+}
+
+.revenueTable tbody tr:hover {
+  background: var(--admin-ground);
+}
+
 .h2 {
   font-size: var(--text-title-sm);
   font-weight: var(--weight-bold);
@@ -812,6 +857,23 @@ form > .sectionLabel:first-of-type {
     justify-content: flex-start;
     padding-bottom: var(--space-xs) !important;
     font-size: var(--text-label);
+  }
+
+  /* Revenue cards: the amount and its note side by side, the total set apart at the bottom. */
+  .stackTable .figure {
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--space-xs);
+  }
+
+  .stackTable .revenueTotal {
+    margin-top: var(--space-xs);
+    padding-top: var(--space-sm) !important;
+    border-top: 1px solid var(--color-divider);
+  }
+
+  .revenueTable tbody tr:hover {
+    background: var(--color-paper);
   }
 
   .stackTable .stackAction {
