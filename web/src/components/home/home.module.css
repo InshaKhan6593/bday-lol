@@ -120,19 +120,6 @@
   gap: 10px;
 }
 
-.shareHead {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--space-sm);
-}
-
-.shareUrl {
-  font-size: var(--text-note);
-  color: var(--color-text-tertiary);
-}
-
 /* ---------- Nobody yet ---------- */
 
 .invite {

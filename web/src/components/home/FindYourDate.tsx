@@ -43,6 +43,7 @@ export function FindYourDate({ openBidCents }: Props) {
           value={month}
           onValueChange={pickMonth}
           className={styles.finderMonth}
+          opensDown
         />
         <Select
           aria-label="Day"
@@ -51,6 +52,7 @@ export function FindYourDate({ openBidCents }: Props) {
           value={day}
           onValueChange={setDay}
           className={styles.finderDay}
+          opensDown
         />
         {picked ? (
           <Button href={routes.claim(picked)} size="lg" iconEnd={arrow} className={styles.finderGo}>

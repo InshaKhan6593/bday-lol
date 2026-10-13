@@ -4,7 +4,6 @@ import type { BoardTypeSettings } from "@/config/board-types";
 import type { ThemeKey } from "@/config/themes";
 import { giftButtons } from "@/lib/gifts";
 import { fallbackBio, firstName, stripWrappingQuotes } from "@/lib/people";
-import { displayUrl } from "@/lib/routes";
 import { birthdayShareText } from "@/lib/share";
 import type { RankedEntry } from "@/server/leaderboard";
 import { BoostButton } from "./BoostButton";
@@ -71,10 +70,7 @@ export function LeaderCard({ leader, shareUrl, dateLabel, theme, otherTotalsCent
         )}
 
         <Surface tone="none" className={styles.sharePanel}>
-          <div className={styles.shareHead}>
-            <Kicker as="h3">Share this birthday</Kicker>
-            <span className={styles.shareUrl}>{displayUrl(shareUrl)}</span>
-          </div>
+          <Kicker as="h3">Share this birthday</Kicker>
           <ShareButtons url={shareUrl} message={birthdayShareText(firstName(leader.name))} />
         </Surface>
       </div>

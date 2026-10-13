@@ -1,6 +1,7 @@
 "use client";
 
 import { Select as RadixSelect } from "radix-ui";
+import { useRef } from "react";
 import { cx } from "@/lib/cx";
 import { Icon } from "./Icon";
 import styles from "./Select.module.css";
@@ -22,7 +23,16 @@ type Props = {
   id?: string;
   "aria-label"?: string;
   className?: string;
+  /**
+   * Always open under the box, never above it. For a list near the bottom of a
+   * page, where the usual "open wherever there is room" sends it upwards over
+   * the content: the page scrolls up to make the room instead.
+   */
+  opensDown?: boolean;
 };
+
+/** Room a full list needs under its box: the list (320px), its gap and the edge padding. */
+const MENU_ROOM = 344;
 
 /**
  * Dropdown in the design language: the closed box looks like every other
@@ -35,17 +45,33 @@ type Props = {
  * hover-to-scroll arrows are left out, because they appear and vanish while
  * scrolling and made the list jump.
  */
-export function Select({ options, placeholder, className, "aria-label": ariaLabel, id, ...root }: Props) {
+export function Select({ options, placeholder, className, "aria-label": ariaLabel, id, opensDown = false, ...root }: Props) {
+  const trigger = useRef<HTMLButtonElement>(null);
+
+  // A list that must open downwards gets its room from the page: scroll just far enough to fit it.
+  function makeRoom(open: boolean) {
+    if (!open || !opensDown || !trigger.current) return;
+    const short = trigger.current.getBoundingClientRect().bottom + MENU_ROOM - window.innerHeight;
+    if (short > 0) window.scrollBy({ top: short, behavior: "instant" });
+  }
+
   return (
-    <RadixSelect.Root {...root}>
-      <RadixSelect.Trigger id={id} aria-label={ariaLabel} className={cx(styles.trigger, className)}>
+    <RadixSelect.Root {...root} onOpenChange={makeRoom}>
+      <RadixSelect.Trigger ref={trigger} id={id} aria-label={ariaLabel} className={cx(styles.trigger, className)}>
         <RadixSelect.Value placeholder={placeholder} />
         <RadixSelect.Icon className={styles.chevron}>
           <Icon name="chevronDown" size={16} />
         </RadixSelect.Icon>
       </RadixSelect.Trigger>
 
-      <RadixSelect.Content position="popper" sideOffset={8} collisionPadding={16} className={styles.menu}>
+      <RadixSelect.Content
+        position="popper"
+        side="bottom"
+        avoidCollisions={!opensDown}
+        sideOffset={8}
+        collisionPadding={16}
+        className={styles.menu}
+      >
         <RadixSelect.Viewport className={styles.viewport}>
           {options.map((option) => (
             <RadixSelect.Item key={option.value} value={option.value} disabled={option.disabled} className={styles.item}>
