@@ -61,7 +61,7 @@ describe("homepage data", () => {
     });
   });
 
-  it("lists the next 14 days with their leader and color, or as unclaimed", async () => {
+  it("lists the next 7 days with their leader and color, or as unclaimed", async () => {
     await inRollback(async (tx) => {
       const type = await addBirthdayType(tx);
       await addPeople(tx, type, { month: 10, day: 8 }, 2026, [
@@ -71,23 +71,23 @@ describe("homepage data", () => {
       await addPeople(tx, type, { month: 10, day: 10 }, 2026, [
         { name: "Dev Nolan", usd: 12, reachedAt: "2026-10-06T10:00:00-04:00", theme: "mint" },
       ]);
-      // The last day of the two weeks, and the first day past them.
-      await addPeople(tx, type, { month: 10, day: 21 }, 2026, [
+      // The last day of the week, and the first day past it.
+      await addPeople(tx, type, { month: 10, day: 14 }, 2026, [
         { name: "Priya Shah", usd: 410, reachedAt: "2026-10-06T10:00:00-04:00", theme: "orchid" },
       ]);
-      await addPeople(tx, type, { month: 10, day: 22 }, 2026, [
+      await addPeople(tx, type, { month: 10, day: 15 }, 2026, [
         { name: "Too Late", usd: 30, reachedAt: "2026-10-06T10:00:00-04:00" },
       ]);
-      // Today's own #1 is the hero, not part of the strip.
+      // Today's own #1 is the hero, not one of the coming-up days.
       await addPeople(tx, type, oct7, 2026, [{ name: "Jess Moreno", usd: 240, reachedAt: "2026-10-07T11:00:00-04:00" }]);
 
       const home = await getHomepageData(tx, NOON_OCT_7);
-      expect(home.comingUp.map((d) => d.md.day)).toEqual([8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]);
+      expect(home.comingUp.map((d) => d.md.day)).toEqual([8, 9, 10, 11, 12, 13, 14]);
       expect(home.comingUp.every((d) => d.md.month === 10)).toBe(true);
       expect(home.comingUp.filter((d) => d.leaderName)).toEqual([
         { md: { month: 10, day: 8 }, leaderName: "Marcus Thompson", topTotalCents: 8_500, theme: "lime" },
         { md: { month: 10, day: 10 }, leaderName: "Dev Nolan", topTotalCents: 1_200, theme: "mint" },
-        { md: { month: 10, day: 21 }, leaderName: "Priya Shah", topTotalCents: 41_000, theme: "orchid" },
+        { md: { month: 10, day: 14 }, leaderName: "Priya Shah", topTotalCents: 41_000, theme: "orchid" },
       ]);
       expect(home.comingUp[1]).toEqual({ md: { month: 10, day: 9 }, leaderName: null, topTotalCents: null, theme: null });
     });
@@ -100,9 +100,7 @@ describe("homepage data", () => {
         { name: "New Year", usd: 50, reachedAt: "2026-12-20T10:00:00-05:00" },
       ]);
       const home = await getHomepageData(tx, new Date("2026-12-28T12:00:00-05:00"));
-      expect(home.comingUp.map((d) => `${d.md.month}-${d.md.day}`)).toEqual([
-        "12-29", "12-30", "12-31", "1-1", "1-2", "1-3", "1-4", "1-5", "1-6", "1-7", "1-8", "1-9", "1-10", "1-11",
-      ]);
+      expect(home.comingUp.map((d) => `${d.md.month}-${d.md.day}`)).toEqual(["12-29", "12-30", "12-31", "1-1", "1-2", "1-3", "1-4"]);
       expect(home.comingUp[4]?.leaderName).toBe("New Year");
     });
   });

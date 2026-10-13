@@ -4,7 +4,7 @@ import { isEmailAddress } from "./email-address";
 
 export type ReminderInput = { ok: true; md: MonthDay; email: string } | { ok: false; message: string };
 
-/** Validates the homepage "Remind me" form. Emails are stored lowercased. */
+/** Validates a reminder signup (month, day, email). Emails are stored lowercased. */
 export function parseReminderInput(raw: { month: unknown; day: unknown; email: unknown }): ReminderInput {
   const md = { month: Number(raw.month), day: Number(raw.day) };
   const email = String(raw.email ?? "").trim().toLowerCase();

@@ -6,7 +6,11 @@ import { resubscribeReminders } from "./email/suppressions";
 
 export type ReminderState = { status: "idle" | "ok" | "error"; message?: string };
 
-/** Saves a yearly reminder. Signing up again re-subscribes someone who unsubscribed. */
+/**
+ * Saves a yearly reminder for someone who asked for one. Signing up again re-subscribes someone who unsubscribed.
+ * The homepage form that called this was removed on 2026-10-13 (the client's call): people who claim a date are
+ * added by the payment instead (server/payments.ts). Kept for the people already signed up and for a later form.
+ */
 export async function saveReminder(
   exec: Executor,
   raw: Parameters<typeof parseReminderInput>[0],

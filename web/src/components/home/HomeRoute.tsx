@@ -4,10 +4,10 @@ import { preload } from "react-dom";
 import { BoostNotice } from "@/components/boost/BoostNotice";
 import { ClaimBar } from "@/components/home/ClaimBar";
 import { ComingUp } from "@/components/home/ComingUp";
+import { FindYourDate } from "@/components/home/FindYourDate";
 import { LeaderCard } from "@/components/home/LeaderCard";
 import { NobodyYetCard } from "@/components/home/NobodyYetCard";
 import { OthersBar } from "@/components/home/OthersBar";
-import { ReminderSignup } from "@/components/home/ReminderSignup";
 import { Steps } from "@/components/home/Steps";
 import styles from "@/components/home/home.module.css";
 import { LiveBoard } from "@/components/site/LiveBoard";
@@ -99,7 +99,7 @@ export async function HomeRoute({ day }: Props) {
 
         <ComingUp days={home.comingUp} today={today} openBidCents={settings.minOpenBidCents} />
         <Steps />
-        <ReminderSignup />
+        <FindYourDate openBidCents={settings.minOpenBidCents} />
       </main>
       <SiteFooter />
     </ThemeScope>

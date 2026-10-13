@@ -4,8 +4,8 @@ import type { Executor } from "@/db";
 import { boardClosesAt, nextDates, toKey, zonedDate, type MonthDay } from "@/lib/birthday";
 import { getBirthdaySettings, getCurrentBoard, getCurrentLeaders, versionOf, type RankedEntry } from "./leaderboard";
 
-/** How many dates the "Coming up" strip holds: two weeks on a wide screen, the first week on a phone (lib/homepage-copy.ts). */
-const COMING_UP_DAYS = 14;
+/** How many dates "Coming up" loads: a week, shown as a strip on a phone; wide screens show the first four as cards (lib/homepage-copy.ts). */
+const COMING_UP_DAYS = 7;
 /** Avatars in the "X others are celebrating" bar. */
 const OTHERS_AVATARS = 4;
 
@@ -13,7 +13,7 @@ export type ComingUpDay = {
   md: MonthDay;
   leaderName: string | null;
   topTotalCents: number | null;
-  /** The #1's color, which fills the date in the strip. */
+  /** The #1's color, which fills the date in the phone's strip. */
   theme: ThemeKey | null;
 };
 

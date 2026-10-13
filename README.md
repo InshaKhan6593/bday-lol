@@ -80,7 +80,7 @@ Mailpit on :8030). Production plan: Vercel Pro + Supabase (Postgres + Storage fo
 | 3. Date rules: Eastern Time, leap years, which year's board is open, open/close times | ✅ Done (`web/src/lib/birthday.ts`) |
 | Design system: tokens + UI components, style guide at `/styleguide` (live, noindex) | ✅ Done |
 | 4. Seed data: the mockup's demo people on today's real date | ✅ Done (`pnpm db:seed`) |
-| 5a. Homepage from live data (desktop + mobile, #1 card, nobody-yet state, Boost box, countdown, Coming up, reminder signup) | ✅ Done (`web/src/app/page.tsx`, `web/src/components/home/`) |
+| 5a. Homepage from live data (desktop + mobile, #1 card, nobody-yet state, Boost box, countdown, Coming up, the "Find your birthday" card) | ✅ Done (`web/src/app/page.tsx`, `web/src/components/home/`) |
 | 5b. Date page from live data (`/october-7`: date picker with top bids, ranked list, held lines, search, claim-this-rank, Boost box, gift menu, About facts; `/oct-7` redirects) | ✅ Done (`web/src/app/[slug]/page.tsx`, `web/src/components/date/`) |
 | 5c. How it works (`/how-it-works`: 3 steps, FAQ accordion with FAQPage structured data, "Find your date" bar) | ✅ Done (`web/src/app/how-it-works/page.tsx`, copy in `web/src/lib/how-it-works.ts`) |
 | 5c. Claim (`/claim?date=october-7&rank=2`: date + bid with the leader box, B23 low-bid error, photo cropped to 512px in the browser, gift-link detection by real host, 12 color swatches that recolor the page, preview card; "Pay & claim" waits for step 6) | ✅ Done (`web/src/app/claim/page.tsx`, `web/src/components/claim/`, rules in `web/src/lib/claim.ts`) |
@@ -94,7 +94,7 @@ Mailpit on :8030). Production plan: Vercel Pro + Supabase (Postgres + Storage fo
 | 10. Admin (`/admin`, one password): listings on every open board (search, edit, take down, put back), comped listings without Stripe, "Hide this person" for famous people, Terms / Privacy / FAQ edited live, revenue by day and month with comped apart. Every change re-ranks the board, keeps the #1 history, throws away the saved pages and updates open ones. Built with [Mantine](https://mantine.dev), themed from the site's tokens | ✅ Done (`web/src/app/admin/`, `web/src/components/admin/`, `web/src/server/admin.ts`, `web/src/server/actions/admin.ts`, migration `web/drizzle/0006_admin_logins.sql`; details in [web/README.md](web/README.md#admin)). On the test copy since 2026-10-12 |
 | 11. Deploy to Vercel + Supabase, test live | 🔧 Started 2026-10-11 on the developer's own test accounts, before admin: Supabase Storage for photos (`STORAGE_DRIVER=supabase`), `pnpm db:init` for a new database, email cron once a day until the project is on Vercel Pro |
 
-**Tests:** every feature ships with tests (`pnpm test`, 438 so far): pure rules in `web/src/lib/*.test.ts` and
+**Tests:** every feature ships with tests (`pnpm test`, 441 so far): pure rules in `web/src/lib/*.test.ts` and
 database tests in `*.db.test.ts`, which run against the local Docker Postgres inside a rolled-back transaction.
 
 ## Since the first deploy (2026-10-11 and 12)

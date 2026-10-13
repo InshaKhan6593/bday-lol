@@ -90,7 +90,7 @@ The verbatim doc is in `resources/client-spec-google-doc.txt`. Screen details ar
 | 1 | **Claim confirmation** | Claimer, after payment | Rank, share link, and a note that we'll email them if they're passed. **Doubles as the receipt.** |
 | 2 | **Boost receipt** | The person who boosted | New total + share link |
 | 3 | **Outbid alert** | When someone **loses #1**: sent to them **and everyone on their alert list** | "[Name] just got passed on [date]. Boost to take #1 back." The link opens the Boost box with the amount pre-filled |
-| 4 | **Birthday reminder** | Homepage signup (month, day, email) | **One email a year, a week before** their birthday |
+| 4 | **Birthday reminder** | Homepage signup (month, day, email). The signup form was removed on 2026-10-13 at the client's request (07 D22); earlier signups still get it | **One email a year, a week before** their birthday |
 | 5 | **"Your day is here"** | **Morning of the date**, to **everyone on that day's list** | Their rank + share link |
 | 6 | **"You got boosted"** | The birthday person, when someone boosts them | **Bundle into one email about every hour** |
 | 7 | **Yearly re-claim** | Everyone who claimed a date is **automatically added to the birthday reminder** for next year | Reminder |

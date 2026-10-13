@@ -9,45 +9,38 @@ export function othersText(count: number, dateLabel: string): string {
     : `${count} other people are celebrating ${dateLabel}`;
 }
 
-/** A phone's "Coming up" strip holds the first week; a wide screen shows every date it is given. */
-export const COMING_UP_NARROW_DAYS = 7;
+/** Wide screens show the first few coming-up dates as cards; a phone shows every date it is given as a strip. */
+export const COMING_UP_CARD_DAYS = 4;
 
 /**
- * One date in the "Coming up" strip: the top bid under the day ("$85"), or "open".
- * The strip has no room for the name, so `tip` is the pop-up over the date
- * ("Marcus T. · $85") and `label` the whole story for a screen reader.
+ * Coming-up card copy (wide screens): "Marcus T." / "Claimed for $85", or "Unclaimed" / "Claim for $5".
+ * `claimed` lets the card show "Unclaimed" as a status tag instead of a name.
+ */
+export function comingUpCopy(
+  day: { leaderName: string | null; topTotalCents: number | null },
+  openBidCents: number,
+): { owner: string; price: string; claimed: boolean } {
+  return day.leaderName && day.topTotalCents !== null
+    ? { owner: shortName(day.leaderName), price: `Claimed for ${formatUsd(day.topTotalCents)}`, claimed: true }
+    : { owner: "Unclaimed", price: `Claim for ${formatUsd(openBidCents)}`, claimed: false };
+}
+
+/**
+ * One date in the phone's "Coming up" strip: the top bid under the day ("$85"), or "open".
+ * The strip has no room for the name, so `label` tells a screen reader the whole story.
  */
 export function comingUpCell(
   day: { md: MonthDay; leaderName: string | null; topTotalCents: number | null },
   openBidCents: number,
-): { sub: string; claimed: boolean; tip: string; label: string } {
+): { sub: string; claimed: boolean; label: string } {
   const date = formatLong(day.md);
   return day.leaderName && day.topTotalCents !== null
     ? {
         sub: formatUsd(day.topTotalCents),
         claimed: true,
-        tip: `${shortName(day.leaderName)} · ${formatUsd(day.topTotalCents)}`,
         label: `${date}: ${shortName(day.leaderName)} leads with ${formatUsd(day.topTotalCents)}`,
       }
-    : {
-        sub: "open",
-        claimed: false,
-        tip: `Open · claim from ${formatUsd(openBidCents)}`,
-        label: `${date}: open, bids start at ${formatUsd(openBidCents)}`,
-      };
-}
-
-/** How many dates at each end of the strip keep their pop-up inside the bar. */
-const TIP_EDGE_DAYS = 2;
-
-/**
- * Which way the pop-up over date `i` leans in a strip of `count` dates: inwards
- * near either end (a centred one would run off the page), centred otherwise.
- */
-export function comingUpTipSide(i: number, count: number): "start" | "end" | undefined {
-  if (i < TIP_EDGE_DAYS) return "start";
-  if (i >= count - TIP_EDGE_DAYS) return "end";
-  return undefined;
+    : { sub: "open", claimed: false, label: `${date}: open, bids start at ${formatUsd(openBidCents)}` };
 }
 
 /** The strip's month line: "October", or "October – November" when the dates run into the next month. */
