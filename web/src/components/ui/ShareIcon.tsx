@@ -4,6 +4,8 @@ import styles from "./ShareIcon.module.css";
 /**
  * The four share icons, from Streamline's "Plump" sets (https://www.streamlinehq.com, CC BY 4.0, credited
  * with a link in the README). "share" is the set's three linked dots. Two looks, one switch:
+ * In the plain look "link" is the set's "Link Chain Solo" (the client's pick, 2026-10-13). Streamline's
+ * free plan only exports it as a small image, so it is drawn as a mask from link-chain-solo.png.
  *
  * - "plain": one solid shape in the text color (black on white buttons, white on black ones), the
  *   same on every page. The client's choice (2026-10-11, asked for again 2026-10-13).
@@ -107,6 +109,13 @@ export function ShareIcon({ name, size = 24, tile = false, className }: Props) {
         <svg width={size} height={size} viewBox="0 0 48 48" fill="none" strokeWidth={3.5} aria-hidden="true" className={styles.svg}>
           <ThemedGlyph name={name} />
         </svg>
+      </span>
+    );
+  }
+  if (name === "link") {
+    return (
+      <span className={cx(styles.plain, className)}>
+        <span className={styles.linkMask} style={{ width: size, height: size }} aria-hidden="true" />
       </span>
     );
   }

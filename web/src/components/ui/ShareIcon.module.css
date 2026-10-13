@@ -18,4 +18,11 @@
   .svg {
     display: block;
   }
+
+  /* An image used as a shape: it takes the text color like the drawn icons. */
+  .linkMask {
+    display: block;
+    background-color: currentColor;
+    mask: url("./link-chain-solo.png") center / contain no-repeat;
+  }
 }
