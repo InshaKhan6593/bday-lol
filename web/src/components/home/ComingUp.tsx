@@ -59,7 +59,6 @@ export function ComingUp({ days, today, openBidCents }: Props) {
             );
           })}
         </div>
-        <p className={styles.stripNote}>Under each date: the current top bid.</p>
       </div>
     </section>
   );

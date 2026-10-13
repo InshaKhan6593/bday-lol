@@ -500,11 +500,6 @@
   }
 }
 
-.stripNote {
-  font-size: var(--text-fine);
-  color: var(--color-text-tertiary);
-}
-
 /* Two weeks need room: under 900px the strip holds the first week only. */
 @media (max-width: 900px) {
   .stripDay[data-later] {
