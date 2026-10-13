@@ -236,7 +236,7 @@ at the top of `src/styles/tokens.css`. Components use **tokens and primitives, n
 - color only from the theme: `--ground` and `--accent`, set by `<ThemeScope>` (fades in 0.3s)
 - ink outlines (`--border`), hard shadows (`--shadow-hero/section/menu/lift`), radii by role (`--radius-hero/card/control…`)
 - type by role (`--text-body`, `--text-title`, `--text-display`…), Bricolage Grotesque 400/600/800
-- the `lift` class gives every clickable the hover lift and press (mouse devices only)
+- the `lift` class gives every clickable the hover lift and press (mouse devices only); on phones a tapped clickable sinks instead (`--press`), and `press` gives the same to one that doesn't lift (rules in `src/app/globals.css`)
 - every `components/ui/*.module.css` wraps its rules in `@layer primitives { … }` (order set in `globals.css`). Page modules stay unlayered, so a `className` passed to a primitive always wins, whatever order the CSS loads in
 
 Decided (2026-10-09): keep the **client's look** exactly: rounded pastel shapes and Bricolage Grotesque.

@@ -425,10 +425,6 @@
   gap: var(--space-lg);
 }
 
-.formWide {
-  grid-column: 1 / -1;
-}
-
 /* One field per row, like the site's Claim form. */
 .formStack {
   display: flex;

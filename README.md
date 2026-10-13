@@ -97,13 +97,15 @@ Mailpit on :8030). Production plan: Vercel Pro + Supabase (Postgres + Storage fo
 **Tests:** every feature ships with tests (`pnpm test`, 441 so far): pure rules in `web/src/lib/*.test.ts` and
 database tests in `*.db.test.ts`, which run against the local Docker Postgres inside a rolled-back transaction.
 
-## Since the first deploy (2026-10-11 and 12)
+## Since the first deploy (2026-10-11 to 13)
 
 | What | In short | Details |
 |---|---|---|
 | Live boards | An open homepage or date page updates by itself when a claim, a boost or the admin changes its board: pushed through Supabase Realtime, with a check on a timer as the safety net | [web/README.md](web/README.md#live-boards) |
 | Saved pages | The homepage and date pages are saved copies, one per Eastern day, served from the nearest location and thrown away the moment a board changes | [web/README.md](web/README.md#saved-pages-why-the-site-is-fast) |
 | Admin | `/admin`: listings, comped listings, famous people, Terms / Privacy / FAQ, revenue | [web/README.md](web/README.md#admin) |
+| Phones (2026-10-13) | A tapped button or card sinks, so a tap shows (nothing hovers on a phone). A tap anywhere on a person's card picks it. The date picker opens right under its button | [04-design-system.md](04-design-system.md#implementation-decisions), [07 D23](07-open-questions.md#d-handoff-v2-points-to-confirm-with-the-client) |
+| Homepage (2026-10-13) | "Coming up" is the client's four cards on wide screens and a seven-day strip on phones. The closing card is "Find your birthday" (Month, Day, "Claim my birthday"), which replaced the reminder signup. The share panel no longer prints the page's address | [07 D21, D22, D24](07-open-questions.md#d-handoff-v2-points-to-confirm-with-the-client) |
 
 **Left before launch:** put the admin on the deployed copy (its password and one migration), move to the client's
 accounts (Vercel Pro, Stripe live keys, Resend with the mybday.lol domain, his Supabase), and the client's open
