@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { getTheme, type ThemeKey } from "@/config/themes";
+import { getTheme, type PageThemeKey } from "@/config/themes";
 import { initials } from "@/lib/people";
 import { absoluteUrl, displayUrl, siteOrigin } from "@/lib/routes";
 
@@ -41,7 +41,7 @@ async function photoData(photoUrl: string | null): Promise<string | null> {
 }
 
 export type CardInput = {
-  theme: ThemeKey;
+  theme: PageThemeKey;
   /** "TODAY'S BIRTHDAY", "UP FOR GRABS"… */
   kicker: string;
   /** The big line: "October 7". */

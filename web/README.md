@@ -221,7 +221,7 @@ at the top of `src/styles/tokens.css`. Components use **tokens and primitives, n
 Decided (2026-10-09): keep the **client's look** exactly: rounded pastel shapes and Bricolage Grotesque.
 We compared it with neubrutalism.com's square style and its fonts (Syne is too wide for the giant homepage date).
 Two upgrades over the mockup:
-- **Icons:** [Phosphor](https://phosphoricons.com), Bold weight, via `<Icon name="…" />`; the four share buttons use Streamline's icons via `<ShareIcon>` (filled with the theme accent; `SHARE_ICON_STYLE = "plain"` brings back the black ones the client approved; credited below). Approved by the client 2026-10-11
+- **Icons:** [Phosphor](https://phosphoricons.com), Bold weight, via `<Icon name="…" />`; the four share buttons use Streamline's icons via `<ShareIcon>` (one solid shape in the text color, the client's choice; `SHARE_ICON_STYLE = "theme"` is the accent-filled variant; credited below). Approved by the client 2026-10-11, confirmed 2026-10-13
 - **Dropdowns and popups:** [Radix UI](https://www.radix-ui.com) primitives styled with our tokens (native `<select>` lists can't be styled)
 
 ## Credits

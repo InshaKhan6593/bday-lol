@@ -3,7 +3,7 @@
 import { DropdownMenu } from "radix-ui";
 import { useShare } from "@/components/share/useShare";
 import { Icon, IconButton, ShareIcon, ThemeScope } from "@/components/ui";
-import type { ThemeKey } from "@/config/themes";
+import type { PageThemeKey } from "@/config/themes";
 import { facebookShareUrl, smsShareUrl } from "@/lib/share";
 import styles from "./date.module.css";
 import { useHoverMenu } from "./useHoverMenu";
@@ -15,7 +15,7 @@ type Props = {
   message: string;
   name: string;
   /** The page's theme: the menu is portalled, so it needs the accent passed on (icon fills). */
-  theme: ThemeKey;
+  theme: PageThemeKey;
 };
 
 /**

@@ -33,12 +33,12 @@ describe("date page data", () => {
     });
   });
 
-  it("uses Cloud for an empty date and Butter for today's cell when today is empty too", async () => {
+  it("uses the open look for an empty date and Butter for today's cell when today is empty too", async () => {
     await inRollback(async (tx) => {
       await addBirthdayType(tx);
       const page = await getDatePageData(tx, oct10, NOON_OCT_7);
       expect(page.entries).toEqual([]);
-      expect(page.theme).toBe("cloud");
+      expect(page.theme).toBe("open");
       expect(page.todayTheme).toBe("butter");
     });
   });

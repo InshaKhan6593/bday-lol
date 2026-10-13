@@ -2,7 +2,7 @@
 
 import { DropdownMenu } from "radix-ui";
 import { Button, Icon, ThemeScope } from "@/components/ui";
-import type { ThemeKey } from "@/config/themes";
+import type { PageThemeKey } from "@/config/themes";
 import type { GiftLink } from "@/db/schema";
 import { GIFT_SERVICES } from "@/lib/gifts";
 import styles from "./date.module.css";
@@ -12,7 +12,7 @@ import { useMediaQuery } from "./useMediaQuery";
 type Props = {
   links: GiftLink[];
   /** The page's theme: the menu is portalled, so it needs the accent passed on. */
-  theme: ThemeKey;
+  theme: PageThemeKey;
 };
 
 /**

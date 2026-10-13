@@ -26,7 +26,6 @@ export async function brandIcon(px: number): Promise<ImageResponse> {
           fontSize: Math.round(px * 0.78),
           fontWeight: 800,
           lineHeight: 1,
-          paddingBottom: Math.round(px * 0.08),
         }}
       >
         b

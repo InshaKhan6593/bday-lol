@@ -5,11 +5,11 @@ import styles from "./ShareIcon.module.css";
  * The four share icons, from Streamline's "Plump" sets (https://www.streamlinehq.com, CC BY 4.0, credited
  * with a link in the README). "share" is the set's three linked dots. Two looks, one switch:
  *
- * - "theme": ink outlines filled with the page's accent, so they follow each person's color.
  * - "plain": one solid shape in the text color (black on white buttons, white on black ones), the
- *   same on every page. This is the look the client approved; set SHARE_ICON_STYLE back to it to return.
+ *   same on every page. The client's choice (2026-10-11, asked for again 2026-10-13).
+ * - "theme": ink outlines filled with the page's accent, so they follow each person's color.
  */
-export const SHARE_ICON_STYLE: "theme" | "plain" = "theme";
+export const SHARE_ICON_STYLE: "theme" | "plain" = "plain";
 
 export type ShareIconName = "share" | "facebook" | "text" | "link";
 

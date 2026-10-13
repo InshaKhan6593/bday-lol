@@ -1,5 +1,5 @@
 import type { BoardTypeSettings } from "@/config/board-types";
-import type { ThemeKey } from "@/config/themes";
+import type { PageThemeKey, ThemeKey } from "@/config/themes";
 import type { Executor } from "@/db";
 import type { GiftLink } from "@/db/schema";
 import { boardClosesAt, zonedDate, type MonthDay } from "@/lib/birthday";
@@ -31,8 +31,8 @@ export type DatePageData = {
   /** Year of the board being shown (the next time this date comes round). */
   year: number;
   status: DateStatus;
-  /** The viewed date's #1 theme, or Cloud when nobody has bid. */
-  theme: ThemeKey;
+  /** The viewed date's #1 theme, or the open look when nobody has bid. */
+  theme: PageThemeKey;
   /** Today's #1 theme: the date picker paints today's cell with its ground. */
   todayTheme: ThemeKey;
   entries: DateEntry[];

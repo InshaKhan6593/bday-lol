@@ -243,7 +243,7 @@ export function StyleGuide() {
 
         <Section
           title="Share icons"
-          note="Streamline, Plump (streamlinehq.com), credited in the README. Filled with the theme accent; SHARE_ICON_STYLE switches to one solid color."
+          note="Streamline, Plump (streamlinehq.com), credited in the README. One solid shape in the text color; SHARE_ICON_STYLE switches to the accent-filled variant."
         >
           <div className={styles.row}>
             {SHARE_ICONS.map(({ name }) => (

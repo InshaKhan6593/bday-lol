@@ -17,8 +17,17 @@ export const THEMES = {
   cloud: { name: "Cloud", ground: "#E6E8EE", accent: "#FF6FAE" },
 } as const;
 
+/**
+ * The look of a date nobody has claimed yet: a white page with a Butter yellow button, so an open
+ * date reads as open and every claimed one has a color. Not one of the 12, so nobody can pick it.
+ */
+export const OPEN_THEME_KEY = "open";
+export const OPEN_THEME = { name: "Open", ground: "#FFFFFF", accent: THEMES.butter.ground } as const;
+
 export type ThemeKey = keyof typeof THEMES;
-export type Theme = (typeof THEMES)[ThemeKey];
+/** What a page can wear: a person's color, or the open look. */
+export type PageThemeKey = ThemeKey | typeof OPEN_THEME_KEY;
+export type Theme = (typeof THEMES)[ThemeKey] | typeof OPEN_THEME;
 
 export const THEME_KEYS = Object.keys(THEMES) as ThemeKey[];
 
@@ -28,5 +37,6 @@ export function isThemeKey(value: string): value is ThemeKey {
 }
 
 export function getTheme(key: string | null | undefined, fallback: ThemeKey = "butter"): Theme {
+  if (key === OPEN_THEME_KEY) return OPEN_THEME;
   return key && isThemeKey(key) ? THEMES[key] : THEMES[fallback];
 }

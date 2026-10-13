@@ -834,6 +834,11 @@
     font-size: var(--text-h2-lg);
   }
 
+  /* Full-width button, like "Claim the top spot" on the homepage. */
+  .ctaButton {
+    flex: 1 1 100%;
+  }
+
   .searchInput {
     font-size: var(--text-body);
   }

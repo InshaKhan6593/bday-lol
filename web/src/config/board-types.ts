@@ -1,4 +1,4 @@
-import type { ThemeKey } from "./themes";
+import type { PageThemeKey, ThemeKey } from "./themes";
 
 /**
  * Settings stored on a board type (and optionally overridden per board).
@@ -25,8 +25,8 @@ export type BoardTypeSettings = {
   bioMaxLength: number;
   /** Theme when nobody has bid (homepage, claim page start, how it works). */
   defaultTheme: ThemeKey;
-  /** Theme for a board with no entries on the Find page. */
-  emptyTheme: ThemeKey;
+  /** Look of a board with no entries on the Find page: the open look, white with a Butter button. */
+  emptyTheme: PageThemeKey;
   /** Theme the Claim page starts on before a color is picked (handoff v2: Sky). */
   claimTheme: ThemeKey;
 };
@@ -49,7 +49,7 @@ export const BIRTHDAY_BOARD_TYPE = {
     nameMaxLength: 40,
     bioMaxLength: 80,
     defaultTheme: "butter",
-    emptyTheme: "cloud",
+    emptyTheme: "open",
     claimTheme: "sky",
   },
 } as const satisfies { slug: string; name: string; settings: BoardTypeSettings };

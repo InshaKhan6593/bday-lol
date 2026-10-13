@@ -5,7 +5,7 @@ import { startTransition, useActionState, useState } from "react";
 import { EndingSoon } from "@/components/site/EndingSoon";
 import { Button, Chip, IconButton, Input, ThemeScope } from "@/components/ui";
 import type { BoardTypeSettings } from "@/config/board-types";
-import type { ThemeKey } from "@/config/themes";
+import type { PageThemeKey } from "@/config/themes";
 import { boostResultLine, parseAmountCents, takeTopBoost } from "@/lib/boost";
 import { formatUsd } from "@/lib/money";
 import { firstName } from "@/lib/people";
@@ -30,7 +30,7 @@ type Props = {
   topTotalCents: number;
   dateLabel: string;
   /** The page's theme, so the portalled box keeps its colors. */
-  theme: ThemeKey;
+  theme: PageThemeKey;
   settings: Pick<BoardTypeSettings, "boostChipsCents" | "defaultBoostCents" | "minBoostCents">;
   /** The page the box is on ("/" or "/october-7"): Stripe sends the booster back there. */
   returnPath: string;

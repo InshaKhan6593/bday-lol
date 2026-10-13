@@ -4,7 +4,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { Avatar, Badge, Button, Icon } from "@/components/ui";
 import type { BoardTypeSettings } from "@/config/board-types";
-import { getTheme, type ThemeKey } from "@/config/themes";
+import { getTheme, type PageThemeKey } from "@/config/themes";
 import { cx } from "@/lib/cx";
 import { outrankText } from "@/lib/date-page";
 import { formatUsd } from "@/lib/money";
@@ -21,7 +21,7 @@ type Props = {
   /** "Gifts open Oct 7" for any other day (only shown when the person has gift links). */
   giftsOpenLabel: string;
   /** The page theme (the viewed date's #1), used by the badge, tooltips and gift menu. */
-  theme: ThemeKey;
+  theme: PageThemeKey;
   shareUrl: string;
   rules: Pick<BoardTypeSettings, "minOpenBidCents" | "minStepCents">;
   /** Phones: this card was tapped, so it's outlined and shows its "Outrank…" button. */

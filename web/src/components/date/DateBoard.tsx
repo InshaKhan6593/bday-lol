@@ -6,7 +6,7 @@ import { BoostDialog } from "@/components/boost/BoostDialog";
 import { InviteButtons } from "@/components/share/ShareButtons";
 import { Button, Icon, IconButton, Surface } from "@/components/ui";
 import type { BoardTypeSettings } from "@/config/board-types";
-import type { ThemeKey } from "@/config/themes";
+import type { PageThemeKey } from "@/config/themes";
 import { formatLong, formatLongNb, type MonthDay } from "@/lib/birthday";
 import { boostBoxTop, parseBoostLink } from "@/lib/boost";
 import { BOARD_PAGE_SIZE, ctaCopy, filterByName, landingRank, moreText, searchCountText } from "@/lib/date-page";
@@ -23,7 +23,7 @@ type Props = {
   isToday: boolean;
   giftsOpenLabel: string;
   entries: DateEntry[];
-  theme: ThemeKey;
+  theme: PageThemeKey;
   shareUrl: string;
   settings: Pick<
     BoardTypeSettings,

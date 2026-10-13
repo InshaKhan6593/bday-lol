@@ -1,10 +1,10 @@
 import type { CSSProperties, ReactNode } from "react";
-import { getTheme, type ThemeKey } from "@/config/themes";
+import { getTheme, type PageThemeKey } from "@/config/themes";
 import { cx } from "@/lib/cx";
 import styles from "./ThemeScope.module.css";
 
 type Props = {
-  theme: ThemeKey;
+  theme: PageThemeKey;
   /** Paint the ground color as this element's background (page shells). */
   paint?: boolean;
   className?: string;
